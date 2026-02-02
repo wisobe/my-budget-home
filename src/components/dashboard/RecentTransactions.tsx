@@ -1,0 +1,80 @@
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useTransactions } from '@/hooks/use-transactions';
+import { useCategories } from '@/hooks/use-transactions';
+import { cn } from '@/lib/utils';
+import { ArrowUpRight, ArrowDownRight } from 'lucide-react';
+
+export function RecentTransactions() {
+  const { data: transactionsData, isLoading } = useTransactions({ per_page: 5 });
+  const { data: categoriesData } = useCategories();
+
+  const categories = categoriesData?.data || [];
+  const getCategoryName = (id?: string) => {
+    if (!id) return 'Uncategorized';
+    return categories.find(c => c.id === id)?.name || 'Unknown';
+  };
+
+  if (isLoading) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Recent Transactions</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="animate-pulse space-y-3">
+            {[1, 2, 3, 4, 5].map(i => (
+              <div key={i} className="h-14 bg-muted rounded-lg" />
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  const transactions = transactionsData?.data || [];
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Recent Transactions</CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-2">
+        {transactions.map(transaction => {
+          const isIncome = transaction.amount < 0;
+          
+          return (
+            <div
+              key={transaction.id}
+              className="flex items-center justify-between p-3 rounded-lg hover:bg-muted/50 transition-colors"
+            >
+              <div className="flex items-center gap-3">
+                <div className={cn(
+                  "h-9 w-9 rounded-full flex items-center justify-center",
+                  isIncome ? "bg-income/10" : "bg-expense/10"
+                )}>
+                  {isIncome ? (
+                    <ArrowDownRight className="h-4 w-4 text-income" />
+                  ) : (
+                    <ArrowUpRight className="h-4 w-4 text-expense" />
+                  )}
+                </div>
+                <div>
+                  <p className="font-medium text-sm">{transaction.name}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {getCategoryName(transaction.category_id)} • {transaction.date}
+                  </p>
+                </div>
+              </div>
+              <p className={cn(
+                "font-semibold",
+                isIncome ? "text-income" : "text-expense"
+              )}>
+                {isIncome ? '+' : '-'}${Math.abs(transaction.amount).toFixed(2)}
+              </p>
+            </div>
+          );
+        })}
+      </CardContent>
+    </Card>
+  );
+}
