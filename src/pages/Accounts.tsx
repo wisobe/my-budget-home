@@ -1,0 +1,143 @@
+import { AppLayout } from '@/components/layout/AppLayout';
+import { AccountsList } from '@/components/dashboard/AccountsList';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { useAccounts, useTotalBalance } from '@/hooks/use-accounts';
+import { Plus, RefreshCw, CreditCard, Wallet, PiggyBank, TrendingUp } from 'lucide-react';
+import { cn } from '@/lib/utils';
+
+const accountTypeColors = {
+  checking: 'bg-primary/10 text-primary',
+  savings: 'bg-income/10 text-income',
+  credit: 'bg-expense/10 text-expense',
+  investment: 'bg-chart-3/10 text-chart-3',
+  other: 'bg-muted text-muted-foreground',
+};
+
+const accountIcons = {
+  checking: Wallet,
+  savings: PiggyBank,
+  credit: CreditCard,
+  investment: TrendingUp,
+  other: Wallet,
+};
+
+const Accounts = () => {
+  const { data: accountsData, isLoading } = useAccounts();
+  const totalBalance = useTotalBalance();
+
+  const accounts = accountsData?.data || [];
+
+  // Group by type
+  const groupedAccounts = accounts.reduce((acc, account) => {
+    if (!acc[account.type]) acc[account.type] = [];
+    acc[account.type].push(account);
+    return acc;
+  }, {} as Record<string, typeof accounts>);
+
+  return (
+    <AppLayout
+      title="Accounts"
+      actions={
+        <div className="flex gap-2">
+          <Button variant="outline" size="sm">
+            <RefreshCw className="h-4 w-4 mr-2" />
+            Sync All
+          </Button>
+          <Button size="sm">
+            <Plus className="h-4 w-4 mr-2" />
+            Add Account
+          </Button>
+        </div>
+      }
+    >
+      <div className="space-y-6">
+        {/* Total Balance */}
+        <Card>
+          <CardHeader>
+            <CardDescription>Total Balance</CardDescription>
+            <CardTitle className="text-4xl">
+              {new Intl.NumberFormat('en-CA', { 
+                style: 'currency', 
+                currency: 'CAD' 
+              }).format(totalBalance)}
+            </CardTitle>
+          </CardHeader>
+        </Card>
+
+        {/* Accounts by Type */}
+        {Object.entries(groupedAccounts).map(([type, typeAccounts]) => {
+          const Icon = accountIcons[type as keyof typeof accountIcons];
+          const colorClass = accountTypeColors[type as keyof typeof accountTypeColors];
+          const typeTotal = typeAccounts.reduce((sum, a) => sum + a.current_balance, 0);
+
+          return (
+            <Card key={type}>
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className={cn("h-10 w-10 rounded-lg flex items-center justify-center", colorClass)}>
+                      <Icon className="h-5 w-5" />
+                    </div>
+                    <div>
+                      <CardTitle className="capitalize">{type} Accounts</CardTitle>
+                      <CardDescription>{typeAccounts.length} account(s)</CardDescription>
+                    </div>
+                  </div>
+                  <p className={cn(
+                    "text-xl font-bold",
+                    typeTotal < 0 && "text-expense"
+                  )}>
+                    {new Intl.NumberFormat('en-CA', { 
+                      style: 'currency', 
+                      currency: 'CAD' 
+                    }).format(typeTotal)}
+                  </p>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {typeAccounts.map(account => (
+                  <div
+                    key={account.id}
+                    className="flex items-center justify-between p-4 rounded-lg bg-muted/50 hover:bg-muted transition-colors cursor-pointer"
+                  >
+                    <div>
+                      <p className="font-medium">{account.name}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {account.institution_name}
+                        {account.last_synced && (
+                          <> • Last synced {new Date(account.last_synced).toLocaleDateString()}</>
+                        )}
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <p className={cn(
+                        "font-semibold",
+                        account.current_balance < 0 && "text-expense"
+                      )}>
+                        {new Intl.NumberFormat('en-CA', { 
+                          style: 'currency', 
+                          currency: account.currency 
+                        }).format(account.current_balance)}
+                      </p>
+                      {account.available_balance !== undefined && (
+                        <p className="text-xs text-muted-foreground">
+                          Available: {new Intl.NumberFormat('en-CA', { 
+                            style: 'currency', 
+                            currency: account.currency 
+                          }).format(account.available_balance)}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
+          );
+        })}
+      </div>
+    </AppLayout>
+  );
+};
+
+export default Accounts;
