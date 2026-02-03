@@ -1,9 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { accountsApi } from '@/lib/api';
 import { mockAccounts } from '@/lib/mock-data';
-
-// Set to true to use mock data during development
-const USE_MOCK_DATA = true;
+import { USE_MOCK_DATA } from '@/lib/config';
 
 export function useAccounts() {
   return useQuery({

@@ -1,9 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { reportsApi } from '@/lib/api';
 import { mockSpendingInsights, mockMonthlyOverview } from '@/lib/mock-data';
-
-// Set to true to use mock data during development
-const USE_MOCK_DATA = true;
+import { USE_MOCK_DATA } from '@/lib/config';
 
 export function useSpendingByCategory(startDate: string, endDate: string) {
   return useQuery({
