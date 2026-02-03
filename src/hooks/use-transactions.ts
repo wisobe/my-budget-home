@@ -2,9 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { transactionsApi } from '@/lib/api';
 import { mockTransactions, mockCategories } from '@/lib/mock-data';
 import type { Transaction } from '@/types';
-
-// Set to true to use mock data during development
-const USE_MOCK_DATA = true;
+import { USE_MOCK_DATA } from '@/lib/config';
 
 interface UseTransactionsParams {
   page?: number;
