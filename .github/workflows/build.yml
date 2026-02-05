@@ -1,0 +1,41 @@
+name: Build and Package
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:  # Allows manual trigger from GitHub
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build project
+        run: npm run build
+        env:
+          VITE_API_URL: /api
+
+      - name: Copy API files to dist
+        run: |
+          cp -r public/api dist/api
+          # Remove sample config from deployment
+          rm -f dist/api/config.sample.php
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: budgetwise-deploy
+          path: dist/
+          retention-days: 30
