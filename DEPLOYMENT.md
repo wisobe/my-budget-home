@@ -157,15 +157,19 @@ On your **local machine** (or on the server if Node.js is installed):
 2. Create a `.env` file in the project root:
 
 ```bash
-VITE_API_URL=/api
+# For root deployment (https://your-domain.com/)
+VITE_BASE_PATH=/
+
+# For subdirectory deployment (https://your-domain.com/budgetwise/)
+# VITE_BASE_PATH=/budgetwise
 ```
 
 3. Update `src/lib/config.ts`:
 
 ```typescript
 export const USE_MOCK_DATA = false;  // Change to false
-export const API_BASE_URL = import.meta.env.VITE_API_URL || '/api';
 export const PLAID_ENV = 'sandbox';
+// BASE_PATH and API_BASE_URL are auto-configured from VITE_BASE_PATH
 ```
 
 4. Build the project:
