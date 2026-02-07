@@ -22,10 +22,13 @@ jobs:
       - name: Install dependencies
         run: npm install
 
+      # Set VITE_BASE_PATH if your app lives in a subdirectory.
+      # Examples: '/budgetwise' or '/apps/finance'
+      # Leave empty or '/' for root deployment.
       - name: Build project
         run: npm run build
         env:
-          VITE_API_URL: /api
+          VITE_BASE_PATH: /
 
       - name: Copy API files to dist
         run: |
