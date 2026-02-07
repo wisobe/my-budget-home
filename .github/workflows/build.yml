@@ -28,7 +28,7 @@ jobs:
       - name: Build project
         run: npm run build
         env:
-          VITE_BASE_PATH: /
+          VITE_BASE_PATH: /budget
 
       - name: Copy API files to dist
         run: |
