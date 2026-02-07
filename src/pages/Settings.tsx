@@ -11,10 +11,12 @@ import { Plus, Trash2, CheckCircle2, XCircle, Loader2, Database, Key, ExternalLi
 import { useState } from 'react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { API_BASE_URL } from '@/lib/config';
+import { useMockDataSetting } from '@/contexts/MockDataContext';
 
 const Settings = () => {
   const { data: categoriesData } = useCategories();
   const categories = categoriesData?.data || [];
+  const { useMockData, setUseMockData } = useMockDataSetting();
   
   const [dbTestStatus, setDbTestStatus] = useState<'idle' | 'testing' | 'success' | 'error'>('idle');
   const [dbTestMessage, setDbTestMessage] = useState('');
@@ -242,10 +244,10 @@ const Settings = () => {
                   Toggle between mock data and real database
                 </p>
               </div>
-              <Switch defaultChecked />
+              <Switch checked={useMockData} onCheckedChange={setUseMockData} />
             </div>
             <p className="text-xs text-muted-foreground">
-              To disable mock data, set <code className="bg-muted px-1 rounded">use_mock_data = false</code> in your server's config.php
+              When disabled, data is fetched from your real database API
             </p>
             <Separator />
             <div className="flex items-center justify-between">

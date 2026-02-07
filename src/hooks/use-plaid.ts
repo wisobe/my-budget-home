@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { API_BASE_URL, USE_MOCK_DATA } from '@/lib/config';
+import { API_BASE_URL } from '@/lib/config';
+import { useMockDataSetting } from '@/contexts/MockDataContext';
 import type { PlaidConnection } from '@/types';
 
 // Mock connections for development
@@ -33,10 +34,11 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
 }
 
 export function usePlaidConnections() {
+  const { useMockData } = useMockDataSetting();
   return useQuery({
-    queryKey: ['plaid-connections'],
+    queryKey: ['plaid-connections', useMockData],
     queryFn: async () => {
-      if (USE_MOCK_DATA) {
+      if (useMockData) {
         return { data: mockConnections, success: true };
       }
       return request<{ data: PlaidConnection[]; success: boolean }>('/plaid/connections.php');

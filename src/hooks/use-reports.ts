@@ -1,13 +1,14 @@
 import { useQuery } from '@tanstack/react-query';
 import { reportsApi } from '@/lib/api';
 import { mockSpendingInsights, mockMonthlyOverview } from '@/lib/mock-data';
-import { USE_MOCK_DATA } from '@/lib/config';
+import { useMockDataSetting } from '@/contexts/MockDataContext';
 
 export function useSpendingByCategory(startDate: string, endDate: string) {
+  const { useMockData } = useMockDataSetting();
   return useQuery({
-    queryKey: ['spending-by-category', startDate, endDate],
+    queryKey: ['spending-by-category', startDate, endDate, useMockData],
     queryFn: async () => {
-      if (USE_MOCK_DATA) {
+      if (useMockData) {
         return { data: mockSpendingInsights, success: true };
       }
       return reportsApi.getSpendingByCategory({ start_date: startDate, end_date: endDate });
@@ -16,10 +17,11 @@ export function useSpendingByCategory(startDate: string, endDate: string) {
 }
 
 export function useMonthlyOverview(year: number) {
+  const { useMockData } = useMockDataSetting();
   return useQuery({
-    queryKey: ['monthly-overview', year],
+    queryKey: ['monthly-overview', year, useMockData],
     queryFn: async () => {
-      if (USE_MOCK_DATA) {
+      if (useMockData) {
         return { data: mockMonthlyOverview, success: true };
       }
       return reportsApi.getMonthlyOverview({ year });
@@ -28,10 +30,11 @@ export function useMonthlyOverview(year: number) {
 }
 
 export function useIncomeVsExpenses(startDate: string, endDate: string) {
+  const { useMockData } = useMockDataSetting();
   return useQuery({
-    queryKey: ['income-vs-expenses', startDate, endDate],
+    queryKey: ['income-vs-expenses', startDate, endDate, useMockData],
     queryFn: async () => {
-      if (USE_MOCK_DATA) {
+      if (useMockData) {
         // Generate mock data
         const data = [];
         const start = new Date(startDate);
