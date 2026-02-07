@@ -2,7 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { transactionsApi } from '@/lib/api';
 import { mockTransactions, mockCategories } from '@/lib/mock-data';
 import type { Transaction } from '@/types';
-import { USE_MOCK_DATA } from '@/lib/config';
+import { useMockDataSetting } from '@/contexts/MockDataContext';
 
 interface UseTransactionsParams {
   page?: number;
@@ -15,10 +15,11 @@ interface UseTransactionsParams {
 }
 
 export function useTransactions(params: UseTransactionsParams = {}) {
+  const { useMockData } = useMockDataSetting();
   return useQuery({
-    queryKey: ['transactions', params],
+    queryKey: ['transactions', params, useMockData],
     queryFn: async () => {
-      if (USE_MOCK_DATA) {
+      if (useMockData) {
         let filtered = [...mockTransactions];
         
         if (params.account_id) {
@@ -60,10 +61,11 @@ export function useTransactions(params: UseTransactionsParams = {}) {
 }
 
 export function useTransaction(id: string) {
+  const { useMockData } = useMockDataSetting();
   return useQuery({
-    queryKey: ['transaction', id],
+    queryKey: ['transaction', id, useMockData],
     queryFn: async () => {
-      if (USE_MOCK_DATA) {
+      if (useMockData) {
         const transaction = mockTransactions.find(t => t.id === id);
         if (!transaction) throw new Error('Transaction not found');
         return { data: transaction, success: true };
@@ -76,10 +78,11 @@ export function useTransaction(id: string) {
 
 export function useCategorizeTransaction() {
   const queryClient = useQueryClient();
+  const { useMockData } = useMockDataSetting();
 
   return useMutation({
     mutationFn: async ({ id, category_id }: { id: string; category_id: string }) => {
-      if (USE_MOCK_DATA) {
+      if (useMockData) {
         const transaction = mockTransactions.find(t => t.id === id);
         if (transaction) {
           transaction.category_id = category_id;
@@ -95,13 +98,13 @@ export function useCategorizeTransaction() {
 }
 
 export function useCategories() {
+  const { useMockData } = useMockDataSetting();
   return useQuery({
-    queryKey: ['categories'],
+    queryKey: ['categories', useMockData],
     queryFn: async () => {
-      if (USE_MOCK_DATA) {
+      if (useMockData) {
         return { data: mockCategories, success: true };
       }
-      // Import from api when not using mock
       const { categoriesApi } = await import('@/lib/api');
       return categoriesApi.list();
     },

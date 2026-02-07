@@ -1,13 +1,14 @@
 import { useQuery } from '@tanstack/react-query';
 import { accountsApi } from '@/lib/api';
 import { mockAccounts } from '@/lib/mock-data';
-import { USE_MOCK_DATA } from '@/lib/config';
+import { useMockDataSetting } from '@/contexts/MockDataContext';
 
 export function useAccounts() {
+  const { useMockData } = useMockDataSetting();
   return useQuery({
-    queryKey: ['accounts'],
+    queryKey: ['accounts', useMockData],
     queryFn: async () => {
-      if (USE_MOCK_DATA) {
+      if (useMockData) {
         return { data: mockAccounts, success: true };
       }
       return accountsApi.list();
@@ -16,10 +17,11 @@ export function useAccounts() {
 }
 
 export function useAccount(id: string) {
+  const { useMockData } = useMockDataSetting();
   return useQuery({
-    queryKey: ['account', id],
+    queryKey: ['account', id, useMockData],
     queryFn: async () => {
-      if (USE_MOCK_DATA) {
+      if (useMockData) {
         const account = mockAccounts.find(a => a.id === id);
         if (!account) throw new Error('Account not found');
         return { data: account, success: true };
