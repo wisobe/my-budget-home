@@ -10,6 +10,7 @@ import { useCategories } from '@/hooks/use-transactions';
 import { Plus, Trash2, CheckCircle2, XCircle, Loader2, Database, Key, ExternalLink } from 'lucide-react';
 import { useState } from 'react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { API_BASE_URL } from '@/lib/config';
 
 const Settings = () => {
   const { data: categoriesData } = useCategories();
@@ -21,7 +22,7 @@ const Settings = () => {
   const testDatabaseConnection = async () => {
     setDbTestStatus('testing');
     try {
-      const apiUrl = (import.meta.env.VITE_API_URL || '/api') + '/settings/test-db.php';
+      const apiUrl = `${API_BASE_URL}/settings/test-db.php`;
       const response = await fetch(apiUrl, { method: 'POST' });
       const result = await response.json();
       
