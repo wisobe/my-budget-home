@@ -47,10 +47,46 @@ function useMockData(): bool {
     return $config['app']['use_mock_data'] ?? true;
 }
 
-// Helper function to get Plaid client
-function getPlaidClient(): PlaidClient {
+/**
+ * Get a Plaid client for the specified environment.
+ * @param string $environment 'sandbox' or 'production'
+ */
+function getPlaidClient(string $environment = 'sandbox'): PlaidClient {
     global $config;
-    return new PlaidClient($config['plaid']);
+    
+    // Validate environment
+    if (!in_array($environment, ['sandbox', 'production'])) {
+        $environment = 'sandbox';
+    }
+    
+    // Support both old (flat) and new (nested) config formats
+    if (isset($config['plaid'][$environment])) {
+        $plaidConfig = $config['plaid'][$environment];
+        $plaidConfig['environment'] = $environment;
+    } else {
+        // Fallback: old flat config format
+        $plaidConfig = $config['plaid'];
+    }
+    
+    return new PlaidClient($plaidConfig);
+}
+
+/**
+ * Get Plaid environment from request body or query string, default to sandbox
+ */
+function getPlaidEnvironment(): string {
+    // Check POST body first
+    $body = json_decode(file_get_contents('php://input'), true) ?? [];
+    if (isset($body['plaid_environment']) && in_array($body['plaid_environment'], ['sandbox', 'production'])) {
+        return $body['plaid_environment'];
+    }
+    
+    // Check query string
+    if (isset($_GET['plaid_environment']) && in_array($_GET['plaid_environment'], ['sandbox', 'production'])) {
+        return $_GET['plaid_environment'];
+    }
+    
+    return 'sandbox';
 }
 
 // Helper to validate required fields

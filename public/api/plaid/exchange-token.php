@@ -4,6 +4,7 @@
  * POST /api/plaid/exchange-token.php
  * 
  * Exchanges a public token from Plaid Link for an access token
+ * Accepts plaid_environment in POST body ('sandbox' or 'production')
  */
 
 require_once __DIR__ . '/../includes/bootstrap.php';
@@ -16,7 +17,8 @@ try {
     $body = getJsonBody();
     validateRequired($body, ['public_token', 'institution_id']);
     
-    $plaid = getPlaidClient();
+    $environment = $body['plaid_environment'] ?? 'sandbox';
+    $plaid = getPlaidClient($environment);
     
     // Exchange public token for access token
     $exchangeResult = $plaid->exchangePublicToken($body['public_token']);
@@ -33,14 +35,14 @@ try {
     // Store connection in database
     $pdo = Database::getConnection();
     
-    // Insert or update plaid connection
+    // Insert plaid connection with environment tag
     $stmt = $pdo->prepare('
         INSERT INTO plaid_connections (
             id, institution_id, institution_name, access_token_encrypted, 
-            item_id, status, created_at
+            item_id, status, plaid_environment, created_at
         ) VALUES (
             :id, :institution_id, :institution_name, :access_token,
-            :item_id, :status, NOW()
+            :item_id, :status, :plaid_environment, NOW()
         )
     ');
     
@@ -53,6 +55,7 @@ try {
         'access_token' => $accessToken, // In production, encrypt this!
         'item_id' => $itemId,
         'status' => 'active',
+        'plaid_environment' => $environment,
     ]);
     
     // Insert accounts
@@ -95,6 +98,7 @@ try {
         'institution_id' => $body['institution_id'],
         'institution_name' => $institutionName,
         'status' => 'active',
+        'plaid_environment' => $environment,
         'accounts_count' => count($accountsResult['accounts']),
         'created_at' => date('c'),
     ]);

@@ -17,5 +17,5 @@ export const BASE_PATH = import.meta.env.VITE_BASE_PATH || '/';
 // Defaults to BASE_PATH + 'api' so it works in subdirectories
 export const API_BASE_URL = import.meta.env.VITE_API_URL || `${BASE_PATH === '/' ? '' : BASE_PATH}/api`;
 
-// Plaid environment (should match your server config)
-export const PLAID_ENV = 'sandbox'; // 'sandbox' | 'development' | 'production'
+// Plaid environment is now managed at runtime via the Settings UI toggle
+// and persisted in localStorage. See MockDataContext.tsx for the implementation.

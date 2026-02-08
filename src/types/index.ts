@@ -44,6 +44,7 @@ export interface PlaidConnection {
   institution_id: string;
   institution_name: string;
   access_token_encrypted?: string; // Backend only
+  plaid_environment?: 'sandbox' | 'production';
   last_synced?: string;
   status: 'active' | 'error' | 'pending';
   error_message?: string;

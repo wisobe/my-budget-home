@@ -63,6 +63,7 @@ export const transactionsApi = {
     start_date?: string;
     end_date?: string;
     search?: string;
+    plaid_environment?: string;
   }) => {
     const searchParams = new URLSearchParams();
     if (params) {
@@ -118,7 +119,13 @@ export const categoriesApi = {
 // ============ Accounts API ============
 
 export const accountsApi = {
-  list: () => request<ApiResponse<Account[]>>('/accounts'),
+  list: (params?: { plaid_environment?: string }) => {
+    const searchParams = new URLSearchParams();
+    if (params?.plaid_environment) {
+      searchParams.set('plaid_environment', params.plaid_environment);
+    }
+    return request<ApiResponse<Account[]>>(`/accounts?${searchParams}`);
+  },
 
   get: (id: string) => request<ApiResponse<Account>>(`/accounts/${id}`),
 
