@@ -10,11 +10,13 @@ CREATE TABLE IF NOT EXISTS plaid_connections (
     item_id VARCHAR(100),
     sync_cursor TEXT,
     status ENUM('active', 'error', 'pending') DEFAULT 'pending',
+    plaid_environment ENUM('sandbox', 'production') NOT NULL DEFAULT 'sandbox',
     error_message TEXT,
     last_synced DATETIME,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     INDEX idx_status (status),
-    INDEX idx_institution (institution_id)
+    INDEX idx_institution (institution_id),
+    INDEX idx_environment (plaid_environment)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Accounts (bank accounts synced from Plaid)
@@ -100,3 +102,10 @@ INSERT IGNORE INTO categories (id, name, color, is_income) VALUES
 ('cat_health', 'Health', '#f97316', FALSE),
 ('cat_housing', 'Housing', '#6366f1', FALSE),
 ('cat_other', 'Other', '#6b7280', FALSE);
+
+-- ============================================================
+-- MIGRATION: Run this if you already have the old schema
+-- ============================================================
+-- ALTER TABLE plaid_connections 
+--   ADD COLUMN plaid_environment ENUM('sandbox', 'production') NOT NULL DEFAULT 'sandbox' AFTER status,
+--   ADD INDEX idx_environment (plaid_environment);

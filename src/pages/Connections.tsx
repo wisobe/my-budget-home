@@ -2,16 +2,53 @@ import { AppLayout } from '@/components/layout/AppLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Plus, RefreshCw, ExternalLink, Trash2, AlertCircle, CheckCircle2, Loader2 } from 'lucide-react';
+import { Plus, RefreshCw, ExternalLink, Trash2, AlertCircle, CheckCircle2, Loader2, FlaskConical, Building2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { usePlaidConnections, useSyncPlaidConnection, useRemovePlaidConnection } from '@/hooks/use-plaid';
+import { usePlaidConnections, useCreateLinkToken, useExchangePlaidToken, useSyncPlaidConnection, useRemovePlaidConnection } from '@/hooks/use-plaid';
+import { useMockDataSetting } from '@/contexts/MockDataContext';
 import { toast } from '@/components/ui/sonner';
+import { useCallback, useEffect, useState } from 'react';
+import { usePlaidLink } from 'react-plaid-link';
+
+/**
+ * Plaid Link wrapper component.
+ * Receives a link token and opens the Plaid modal.
+ */
+function PlaidLinkButton({ linkToken, onSuccess, onExit }: {
+  linkToken: string;
+  onSuccess: (publicToken: string, metadata: any) => void;
+  onExit: () => void;
+}) {
+  const { open, ready } = usePlaidLink({
+    token: linkToken,
+    onSuccess: (publicToken, metadata) => {
+      onSuccess(publicToken, metadata);
+    },
+    onExit: () => {
+      onExit();
+    },
+  });
+
+  useEffect(() => {
+    if (ready) {
+      open();
+    }
+  }, [ready, open]);
+
+  return null; // This component just triggers the Plaid modal
+}
 
 const Connections = () => {
   const { data: connectionsData, isLoading } = usePlaidConnections();
+  const createLinkTokenMutation = useCreateLinkToken();
+  const exchangeTokenMutation = useExchangePlaidToken();
   const syncMutation = useSyncPlaidConnection();
   const removeMutation = useRemovePlaidConnection();
-  
+  const { plaidEnvironment, useMockData } = useMockDataSetting();
+
+  const [linkToken, setLinkToken] = useState<string | null>(null);
+  const [isConnecting, setIsConnecting] = useState(false);
+
   const connections = connectionsData?.data || [];
 
   const handleSync = async (connectionId: string) => {
@@ -34,33 +71,91 @@ const Connections = () => {
     }
   };
 
-  const handleConnectBank = () => {
-    toast.info('To connect a bank, ensure your backend is configured with Plaid credentials');
+  const handleConnectBank = async () => {
+    if (useMockData) {
+      toast.info('Disable mock data in Settings to connect a real bank');
+      return;
+    }
+
+    setIsConnecting(true);
+    try {
+      const result = await createLinkTokenMutation.mutateAsync();
+      setLinkToken(result.data.link_token);
+    } catch (error: any) {
+      toast.error(`Failed to initialize bank connection: ${error.message}`);
+      setIsConnecting(false);
+    }
   };
+
+  const handlePlaidSuccess = useCallback(async (publicToken: string, metadata: any) => {
+    setLinkToken(null);
+    try {
+      const institutionId = metadata?.institution?.institution_id || 'unknown';
+      await exchangeTokenMutation.mutateAsync({
+        publicToken,
+        institutionId,
+      });
+      toast.success('Bank connected successfully! Syncing transactions...');
+    } catch (error: any) {
+      toast.error(`Failed to connect bank: ${error.message}`);
+    } finally {
+      setIsConnecting(false);
+    }
+  }, [exchangeTokenMutation]);
+
+  const handlePlaidExit = useCallback(() => {
+    setLinkToken(null);
+    setIsConnecting(false);
+  }, []);
 
   return (
     <AppLayout
       title="Bank Connections"
       actions={
-        <Button size="sm" onClick={handleConnectBank}>
-          <Plus className="h-4 w-4 mr-2" />
+        <Button size="sm" onClick={handleConnectBank} disabled={isConnecting}>
+          {isConnecting ? (
+            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+          ) : (
+            <Plus className="h-4 w-4 mr-2" />
+          )}
           Connect Bank
         </Button>
       }
     >
+      {/* Plaid Link modal trigger */}
+      {linkToken && (
+        <PlaidLinkButton
+          linkToken={linkToken}
+          onSuccess={handlePlaidSuccess}
+          onExit={handlePlaidExit}
+        />
+      )}
+
       <div className="space-y-6">
-        {/* Info Card */}
+        {/* Environment Indicator */}
         <Card className="border-primary/20 bg-primary/5">
           <CardContent className="pt-6">
             <div className="flex gap-4">
               <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-                <ExternalLink className="h-5 w-5 text-primary" />
+                {plaidEnvironment === 'sandbox' ? (
+                  <FlaskConical className="h-5 w-5 text-primary" />
+                ) : (
+                  <Building2 className="h-5 w-5 text-primary" />
+                )}
               </div>
               <div>
-                <h3 className="font-semibold mb-1">Plaid Integration</h3>
+                <div className="flex items-center gap-2 mb-1">
+                  <h3 className="font-semibold">Plaid Integration</h3>
+                  <Badge variant="outline" className={cn(
+                    plaidEnvironment === 'sandbox' ? "border-amber-500 text-amber-600" : "border-emerald-500 text-emerald-600"
+                  )}>
+                    {plaidEnvironment === 'sandbox' ? 'Sandbox' : 'Production'}
+                  </Badge>
+                </div>
                 <p className="text-sm text-muted-foreground">
-                  This app uses Plaid to securely connect to your Canadian financial institutions like Desjardins. 
-                  Your PHP backend handles Plaid API calls and stores access tokens securely.
+                  {plaidEnvironment === 'sandbox'
+                    ? 'You are using sandbox mode with test bank data. Switch to production in Settings when ready for real banks.'
+                    : 'You are using production mode with real bank connections. Be careful — this uses real financial data.'}
                 </p>
                 <a 
                   href="https://plaid.com/docs/" 
@@ -81,6 +176,7 @@ const Connections = () => {
             <CardTitle>Connected Banks</CardTitle>
             <CardDescription>
               Manage your bank connections and sync status
+              {plaidEnvironment === 'sandbox' && ' (sandbox environment)'}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -95,10 +191,16 @@ const Connections = () => {
                 </div>
                 <h3 className="font-semibold mb-2">No banks connected</h3>
                 <p className="text-sm text-muted-foreground mb-4">
-                  Connect your bank accounts to automatically sync transactions
+                  {plaidEnvironment === 'sandbox'
+                    ? 'Connect a test bank to try out the transaction sync flow'
+                    : 'Connect your bank accounts to automatically sync transactions'}
                 </p>
-                <Button onClick={handleConnectBank}>
-                  <Plus className="h-4 w-4 mr-2" />
+                <Button onClick={handleConnectBank} disabled={isConnecting}>
+                  {isConnecting ? (
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  ) : (
+                    <Plus className="h-4 w-4 mr-2" />
+                  )}
                   Connect Your First Bank
                 </Button>
               </div>

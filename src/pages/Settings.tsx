@@ -7,16 +7,17 @@ import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 import { useCategories } from '@/hooks/use-transactions';
-import { Plus, Trash2, CheckCircle2, XCircle, Loader2, Database, Key, ExternalLink } from 'lucide-react';
+import { Plus, Trash2, CheckCircle2, XCircle, Loader2, Database, Key, ExternalLink, FlaskConical, Building2 } from 'lucide-react';
 import { useState } from 'react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { API_BASE_URL } from '@/lib/config';
 import { useMockDataSetting } from '@/contexts/MockDataContext';
+import { cn } from '@/lib/utils';
 
 const Settings = () => {
   const { data: categoriesData } = useCategories();
   const categories = categoriesData?.data || [];
-  const { useMockData, setUseMockData } = useMockDataSetting();
+  const { useMockData, setUseMockData, plaidEnvironment, setPlaidEnvironment } = useMockDataSetting();
   
   const [dbTestStatus, setDbTestStatus] = useState<'idle' | 'testing' | 'success' | 'error'>('idle');
   const [dbTestMessage, setDbTestMessage] = useState('');
@@ -148,31 +149,64 @@ const Settings = () => {
               Plaid Configuration
             </CardTitle>
             <CardDescription>
-              Your Plaid credentials are stored securely on your server
+              Switch between sandbox (test) and production (real bank) environments
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label>Environment</Label>
-                <Select defaultValue="sandbox" disabled>
-                  <SelectTrigger className="bg-muted">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="sandbox">Sandbox</SelectItem>
-                    <SelectItem value="development">Development</SelectItem>
-                    <SelectItem value="production">Production</SelectItem>
-                  </SelectContent>
-                </Select>
+            <div className="space-y-3">
+              <Label>Active Environment</Label>
+              <div className="grid grid-cols-2 gap-3">
+                <button
+                  onClick={() => setPlaidEnvironment('sandbox')}
+                  className={cn(
+                    "flex items-center gap-3 p-4 rounded-lg border-2 transition-all text-left",
+                    plaidEnvironment === 'sandbox'
+                      ? "border-primary bg-primary/5"
+                      : "border-border hover:border-muted-foreground/30"
+                  )}
+                >
+                  <FlaskConical className={cn(
+                    "h-5 w-5",
+                    plaidEnvironment === 'sandbox' ? "text-primary" : "text-muted-foreground"
+                  )} />
+                  <div>
+                    <p className="font-medium">Sandbox</p>
+                    <p className="text-xs text-muted-foreground">Test with fake bank data</p>
+                  </div>
+                </button>
+                <button
+                  onClick={() => setPlaidEnvironment('production')}
+                  className={cn(
+                    "flex items-center gap-3 p-4 rounded-lg border-2 transition-all text-left",
+                    plaidEnvironment === 'production'
+                      ? "border-primary bg-primary/5"
+                      : "border-border hover:border-muted-foreground/30"
+                  )}
+                >
+                  <Building2 className={cn(
+                    "h-5 w-5",
+                    plaidEnvironment === 'production' ? "text-primary" : "text-muted-foreground"
+                  )} />
+                  <div>
+                    <p className="font-medium">Production</p>
+                    <p className="text-xs text-muted-foreground">Real bank connections</p>
+                  </div>
+                </button>
               </div>
-              <div className="space-y-2">
-                <Label>Country</Label>
-                <Input value="Canada (CA)" readOnly className="bg-muted" />
-              </div>
+              <p className="text-xs text-muted-foreground">
+                Each environment uses separate Plaid credentials and stores connections independently.
+                Switching environments will only show data from that environment.
+              </p>
+            </div>
+
+            <Separator />
+
+            <div className="space-y-2">
+              <Label>Country</Label>
+              <Input value="Canada (CA)" readOnly className="bg-muted" />
             </div>
             <p className="text-xs text-muted-foreground">
-              Edit these settings in <code className="bg-muted px-1 rounded">config.php</code> on your server.
+              Configure credentials for each environment in <code className="bg-muted px-1 rounded">config.php</code> on your server.
               Get your API keys from{' '}
               <a 
                 href="https://dashboard.plaid.com/developers/keys" 

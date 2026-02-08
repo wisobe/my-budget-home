@@ -15,9 +15,9 @@ interface UseTransactionsParams {
 }
 
 export function useTransactions(params: UseTransactionsParams = {}) {
-  const { useMockData } = useMockDataSetting();
+  const { useMockData, plaidEnvironment } = useMockDataSetting();
   return useQuery({
-    queryKey: ['transactions', params, useMockData],
+    queryKey: ['transactions', params, useMockData, plaidEnvironment],
     queryFn: async () => {
       if (useMockData) {
         let filtered = [...mockTransactions];
@@ -55,7 +55,7 @@ export function useTransactions(params: UseTransactionsParams = {}) {
           total_pages: Math.ceil(filtered.length / perPage),
         };
       }
-      return transactionsApi.list(params);
+      return transactionsApi.list({ ...params, plaid_environment: plaidEnvironment });
     },
   });
 }

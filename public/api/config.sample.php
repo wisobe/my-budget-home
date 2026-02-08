@@ -24,12 +24,20 @@ return [
 
     // ============ Plaid Configuration ============
     // Get these from https://dashboard.plaid.com/developers/keys
+    // Separate credentials for sandbox and production environments
     'plaid' => [
-        'client_id'   => 'your_plaid_client_id',
-        'secret'      => 'your_plaid_secret_key',
-        'environment' => 'sandbox',  // 'sandbox', 'development', or 'production'
-        'country_codes' => ['CA'],   // Canada for Desjardins
-        'products'    => ['transactions'],
+        'sandbox' => [
+            'client_id'     => 'your_sandbox_client_id',
+            'secret'        => 'your_sandbox_secret_key',
+            'country_codes' => ['CA'],
+            'products'      => ['transactions'],
+        ],
+        'production' => [
+            'client_id'     => 'your_production_client_id',
+            'secret'        => 'your_production_secret_key',
+            'country_codes' => ['CA'],
+            'products'      => ['transactions'],
+        ],
     ],
 
     // ============ Application Settings ============

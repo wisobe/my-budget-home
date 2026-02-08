@@ -4,22 +4,22 @@ import { mockAccounts } from '@/lib/mock-data';
 import { useMockDataSetting } from '@/contexts/MockDataContext';
 
 export function useAccounts() {
-  const { useMockData } = useMockDataSetting();
+  const { useMockData, plaidEnvironment } = useMockDataSetting();
   return useQuery({
-    queryKey: ['accounts', useMockData],
+    queryKey: ['accounts', useMockData, plaidEnvironment],
     queryFn: async () => {
       if (useMockData) {
         return { data: mockAccounts, success: true };
       }
-      return accountsApi.list();
+      return accountsApi.list({ plaid_environment: plaidEnvironment });
     },
   });
 }
 
 export function useAccount(id: string) {
-  const { useMockData } = useMockDataSetting();
+  const { useMockData, plaidEnvironment } = useMockDataSetting();
   return useQuery({
-    queryKey: ['account', id, useMockData],
+    queryKey: ['account', id, useMockData, plaidEnvironment],
     queryFn: async () => {
       if (useMockData) {
         const account = mockAccounts.find(a => a.id === id);

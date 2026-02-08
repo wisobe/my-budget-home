@@ -4,6 +4,7 @@
  * GET /api/transactions/index.php
  * 
  * Lists transactions with optional filters and pagination
+ * Accepts ?plaid_environment=sandbox|production query param
  */
 
 require_once __DIR__ . '/../includes/bootstrap.php';
@@ -21,6 +22,11 @@ try {
     $startDate = $_GET['start_date'] ?? null;
     $endDate = $_GET['end_date'] ?? null;
     $search = $_GET['search'] ?? null;
+    $environment = $_GET['plaid_environment'] ?? 'sandbox';
+    
+    if (!in_array($environment, ['sandbox', 'production'])) {
+        $environment = 'sandbox';
+    }
     
     if (useMockData()) {
         // Return mock transactions
@@ -68,9 +74,13 @@ try {
     
     $pdo = Database::getConnection();
     
-    // Build query
+    // Build query — filter by plaid_environment through account → connection join
     $where = ['1=1'];
     $params = [];
+    
+    // Always filter by environment
+    $where[] = 'c.plaid_environment = :environment';
+    $params['environment'] = $environment;
     
     if ($accountId) {
         $where[] = 't.account_id = :account_id';
@@ -101,7 +111,12 @@ try {
     $whereClause = implode(' AND ', $where);
     
     // Get total count
-    $countStmt = $pdo->prepare("SELECT COUNT(*) FROM transactions t WHERE {$whereClause}");
+    $countStmt = $pdo->prepare("
+        SELECT COUNT(*) FROM transactions t
+        INNER JOIN accounts a ON t.account_id = a.id
+        INNER JOIN plaid_connections c ON a.plaid_connection_id = c.id
+        WHERE {$whereClause}
+    ");
     $countStmt->execute($params);
     $total = (int)$countStmt->fetchColumn();
     
@@ -110,12 +125,13 @@ try {
     $stmt = $pdo->prepare("
         SELECT 
             t.*,
-            c.name as category_name,
-            c.color as category_color,
+            cat.name as category_name,
+            cat.color as category_color,
             a.name as account_name
         FROM transactions t
-        LEFT JOIN categories c ON t.category_id = c.id
-        LEFT JOIN accounts a ON t.account_id = a.id
+        INNER JOIN accounts a ON t.account_id = a.id
+        INNER JOIN plaid_connections c ON a.plaid_connection_id = c.id
+        LEFT JOIN categories cat ON t.category_id = cat.id
         WHERE {$whereClause}
         ORDER BY t.date DESC, t.created_at DESC
         LIMIT :limit OFFSET :offset

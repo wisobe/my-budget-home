@@ -10,6 +10,7 @@ const mockConnections: PlaidConnection[] = [
     institution_id: 'ins_desjardins',
     institution_name: 'Desjardins',
     status: 'active',
+    plaid_environment: 'sandbox',
     last_synced: new Date().toISOString(),
     created_at: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
   },
@@ -34,24 +35,31 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
 }
 
 export function usePlaidConnections() {
-  const { useMockData } = useMockDataSetting();
+  const { useMockData, plaidEnvironment } = useMockDataSetting();
   return useQuery({
-    queryKey: ['plaid-connections', useMockData],
+    queryKey: ['plaid-connections', useMockData, plaidEnvironment],
     queryFn: async () => {
       if (useMockData) {
-        return { data: mockConnections, success: true };
+        return { data: mockConnections.filter(c => c.plaid_environment === plaidEnvironment), success: true };
       }
-      return request<{ data: PlaidConnection[]; success: boolean }>('/plaid/connections.php');
+      return request<{ data: PlaidConnection[]; success: boolean }>(
+        `/plaid/connections.php?plaid_environment=${plaidEnvironment}`
+      );
     },
   });
 }
 
 export function useCreateLinkToken() {
+  const { plaidEnvironment } = useMockDataSetting();
+
   return useMutation({
     mutationFn: async () => {
-      return request<{ data: { link_token: string; expiration: string }; success: boolean }>(
+      return request<{ data: { link_token: string; expiration: string; environment: string }; success: boolean }>(
         '/plaid/link-token.php',
-        { method: 'POST' }
+        {
+          method: 'POST',
+          body: JSON.stringify({ plaid_environment: plaidEnvironment }),
+        }
       );
     },
   });
@@ -59,6 +67,7 @@ export function useCreateLinkToken() {
 
 export function useExchangePlaidToken() {
   const queryClient = useQueryClient();
+  const { plaidEnvironment } = useMockDataSetting();
 
   return useMutation({
     mutationFn: async ({ publicToken, institutionId }: { publicToken: string; institutionId: string }) => {
@@ -69,6 +78,7 @@ export function useExchangePlaidToken() {
           body: JSON.stringify({
             public_token: publicToken,
             institution_id: institutionId,
+            plaid_environment: plaidEnvironment,
           }),
         }
       );
