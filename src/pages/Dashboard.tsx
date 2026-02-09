@@ -5,8 +5,8 @@ import { RecentTransactions } from '@/components/dashboard/RecentTransactions';
 import { SpendingChart } from '@/components/dashboard/SpendingChart';
 import { useAccounts, useTotalBalance } from '@/hooks/use-accounts';
 import { useTransactions } from '@/hooks/use-transactions';
-import { Button } from '@/components/ui/button';
-import { RefreshCw, Wallet, TrendingUp, TrendingDown, PiggyBank } from 'lucide-react';
+import { SyncButton } from '@/components/transactions/SyncButton';
+import { Wallet, TrendingUp, TrendingDown, PiggyBank } from 'lucide-react';
 
 const Dashboard = () => {
   const totalBalance = useTotalBalance();
@@ -32,12 +32,7 @@ const Dashboard = () => {
   return (
     <AppLayout 
       title="Dashboard"
-      actions={
-        <Button variant="outline" size="sm">
-          <RefreshCw className="h-4 w-4 mr-2" />
-          Sync Accounts
-        </Button>
-      }
+      actions={<SyncButton />}
     >
       <div className="space-y-6">
         {/* Stats Grid */}
