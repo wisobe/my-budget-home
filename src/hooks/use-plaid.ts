@@ -127,3 +127,63 @@ export function useRemovePlaidConnection() {
     },
   });
 }
+
+/**
+ * Sync all Plaid connections sequentially.
+ * Returns totals for added/modified/removed transactions.
+ */
+export function useSyncAllConnections() {
+  const queryClient = useQueryClient();
+  const { useMockData, plaidEnvironment } = useMockDataSetting();
+
+  return useMutation({
+    mutationFn: async () => {
+      if (useMockData) {
+        return { added: 0, modified: 0, removed: 0, accounts_updated: 0 };
+      }
+
+      // Fetch current connections for the active environment
+      const connectionsResult = await request<{ data: PlaidConnection[]; success: boolean }>(
+        `/plaid/connections.php?plaid_environment=${plaidEnvironment}`
+      );
+
+      const connections = connectionsResult.data || [];
+      if (connections.length === 0) {
+        throw new Error('No bank connections found. Connect a bank first.');
+      }
+
+      let totalAdded = 0;
+      let totalModified = 0;
+      let totalRemoved = 0;
+      let totalAccounts = 0;
+
+      // Sync each connection sequentially (avoid rate limits)
+      for (const connection of connections) {
+        const result = await request<{
+          data: { added: number; modified: number; removed: number; accounts_updated: number };
+          success: boolean;
+        }>('/plaid/sync.php', {
+          method: 'POST',
+          body: JSON.stringify({ connection_id: connection.id }),
+        });
+
+        totalAdded += result.data.added;
+        totalModified += result.data.modified;
+        totalRemoved += result.data.removed;
+        totalAccounts += result.data.accounts_updated;
+      }
+
+      return {
+        added: totalAdded,
+        modified: totalModified,
+        removed: totalRemoved,
+        accounts_updated: totalAccounts,
+      };
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['plaid-connections'] });
+      queryClient.invalidateQueries({ queryKey: ['accounts'] });
+      queryClient.invalidateQueries({ queryKey: ['transactions'] });
+    },
+  });
+}

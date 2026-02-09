@@ -3,7 +3,8 @@ import { AccountsList } from '@/components/dashboard/AccountsList';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useAccounts, useTotalBalance } from '@/hooks/use-accounts';
-import { Plus, RefreshCw, CreditCard, Wallet, PiggyBank, TrendingUp } from 'lucide-react';
+import { SyncButton } from '@/components/transactions/SyncButton';
+import { Plus, CreditCard, Wallet, PiggyBank, TrendingUp } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const accountTypeColors = {
@@ -40,10 +41,7 @@ const Accounts = () => {
       title="Accounts"
       actions={
         <div className="flex gap-2">
-          <Button variant="outline" size="sm">
-            <RefreshCw className="h-4 w-4 mr-2" />
-            Sync All
-          </Button>
+          <SyncButton />
           <Button size="sm">
             <Plus className="h-4 w-4 mr-2" />
             Add Account

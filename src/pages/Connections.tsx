@@ -91,17 +91,29 @@ const Connections = () => {
     setLinkToken(null);
     try {
       const institutionId = metadata?.institution?.institution_id || 'unknown';
-      await exchangeTokenMutation.mutateAsync({
+      const result = await exchangeTokenMutation.mutateAsync({
         publicToken,
         institutionId,
       });
-      toast.success('Bank connected successfully! Syncing transactions...');
+      toast.success('Bank connected! Syncing transactions...');
+
+      // Auto-sync the newly created connection
+      try {
+        const connectionId = result.data?.id || (result as any).data?.id;
+        if (connectionId) {
+          const syncResult = await syncMutation.mutateAsync(connectionId);
+          toast.success(`Initial sync complete: ${syncResult.data.added} transactions imported.`);
+        }
+      } catch (syncError: any) {
+        toast.warning('Bank connected, but initial sync failed. Try the Sync button manually.');
+        console.error('Auto-sync failed:', syncError);
+      }
     } catch (error: any) {
       toast.error(`Failed to connect bank: ${error.message}`);
     } finally {
       setIsConnecting(false);
     }
-  }, [exchangeTokenMutation]);
+  }, [exchangeTokenMutation, syncMutation]);
 
   const handlePlaidExit = useCallback(() => {
     setLinkToken(null);
