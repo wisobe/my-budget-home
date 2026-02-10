@@ -26,7 +26,7 @@ CREATE TABLE IF NOT EXISTS accounts (
     plaid_connection_id VARCHAR(50),
     name VARCHAR(255) NOT NULL,
     official_name VARCHAR(255),
-    type ENUM('checking', 'savings', 'credit', 'investment', 'other') NOT NULL,
+    type ENUM('checking', 'savings', 'credit', 'investment', 'depository', 'loan', 'other') NOT NULL,
     subtype VARCHAR(100),
     current_balance DECIMAL(15, 2) DEFAULT 0,
     available_balance DECIMAL(15, 2),
@@ -109,3 +109,5 @@ INSERT IGNORE INTO categories (id, name, color, is_income) VALUES
 -- ALTER TABLE plaid_connections 
 --   ADD COLUMN plaid_environment ENUM('sandbox', 'production') NOT NULL DEFAULT 'sandbox' AFTER status,
 --   ADD INDEX idx_environment (plaid_environment);
+--
+-- ALTER TABLE accounts MODIFY COLUMN type ENUM('checking', 'savings', 'credit', 'investment', 'depository', 'loan', 'other') NOT NULL;

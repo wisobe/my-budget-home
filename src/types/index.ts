@@ -29,7 +29,7 @@ export interface Account {
   plaid_account_id?: string;
   name: string;
   official_name?: string;
-  type: 'checking' | 'savings' | 'credit' | 'investment' | 'other';
+  type: 'checking' | 'savings' | 'credit' | 'investment' | 'depository' | 'loan' | 'other';
   subtype?: string;
   current_balance: number;
   available_balance?: number;
