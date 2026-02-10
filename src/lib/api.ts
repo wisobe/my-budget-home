@@ -71,7 +71,7 @@ export const transactionsApi = {
         if (value !== undefined) searchParams.set(key, String(value));
       });
     }
-    return request<PaginatedResponse<Transaction>>(`/transactions?${searchParams}`);
+    return request<PaginatedResponse<Transaction>>(`/transactions/?${searchParams}`);
   },
 
   get: (id: string) => request<ApiResponse<Transaction>>(`/transactions/${id}`),
@@ -98,10 +98,10 @@ export const transactionsApi = {
 // ============ Categories API ============
 
 export const categoriesApi = {
-  list: () => request<ApiResponse<Category[]>>('/categories'),
+  list: () => request<ApiResponse<Category[]>>('/categories/'),
 
   create: (data: Omit<Category, 'id' | 'created_at'>) =>
-    request<ApiResponse<Category>>('/categories', {
+    request<ApiResponse<Category>>('/categories/', {
       method: 'POST',
       body: JSON.stringify(data),
     }),
@@ -124,7 +124,7 @@ export const accountsApi = {
     if (params?.plaid_environment) {
       searchParams.set('plaid_environment', params.plaid_environment);
     }
-    return request<ApiResponse<Account[]>>(`/accounts?${searchParams}`);
+    return request<ApiResponse<Account[]>>(`/accounts/?${searchParams}`);
   },
 
   get: (id: string) => request<ApiResponse<Account>>(`/accounts/${id}`),

@@ -10,9 +10,13 @@ import { useCategories } from '@/hooks/use-transactions';
 import { Plus, Trash2, CheckCircle2, XCircle, Loader2, Database, Key, ExternalLink, FlaskConical, Building2 } from 'lucide-react';
 import { useState } from 'react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { API_BASE_URL } from '@/lib/config';
 import { useMockDataSetting } from '@/contexts/MockDataContext';
 import { cn } from '@/lib/utils';
+import { categoriesApi } from '@/lib/api';
+import { useQueryClient } from '@tanstack/react-query';
+import { toast } from '@/components/ui/sonner';
 
 const Settings = () => {
   const { data: categoriesData } = useCategories();
@@ -21,6 +25,12 @@ const Settings = () => {
   
   const [dbTestStatus, setDbTestStatus] = useState<'idle' | 'testing' | 'success' | 'error'>('idle');
   const [dbTestMessage, setDbTestMessage] = useState('');
+  const [newCatName, setNewCatName] = useState('');
+  const [newCatColor, setNewCatColor] = useState('#6b7280');
+  const [newCatIsIncome, setNewCatIsIncome] = useState(false);
+  const [addCatOpen, setAddCatOpen] = useState(false);
+  const [addingCat, setAddingCat] = useState(false);
+  const queryClient = useQueryClient();
 
   const testDatabaseConnection = async () => {
     setDbTestStatus('testing');
@@ -230,10 +240,55 @@ const Settings = () => {
                   Manage your transaction categories
                 </CardDescription>
               </div>
-              <Button size="sm">
-                <Plus className="h-4 w-4 mr-2" />
-                Add Category
-              </Button>
+              <Dialog open={addCatOpen} onOpenChange={setAddCatOpen}>
+                <DialogTrigger asChild>
+                  <Button size="sm">
+                    <Plus className="h-4 w-4 mr-2" />
+                    Add Category
+                  </Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Add Category</DialogTitle>
+                  </DialogHeader>
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <Label>Name</Label>
+                      <Input value={newCatName} onChange={e => setNewCatName(e.target.value)} placeholder="e.g. Subscriptions" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Color</Label>
+                      <div className="flex items-center gap-2">
+                        <input type="color" value={newCatColor} onChange={e => setNewCatColor(e.target.value)} className="h-9 w-12 rounded border cursor-pointer" />
+                        <Input value={newCatColor} onChange={e => setNewCatColor(e.target.value)} className="flex-1" />
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Switch checked={newCatIsIncome} onCheckedChange={setNewCatIsIncome} />
+                      <Label>Income category</Label>
+                    </div>
+                    <Button className="w-full" disabled={!newCatName.trim() || addingCat} onClick={async () => {
+                      setAddingCat(true);
+                      try {
+                        await categoriesApi.create({ name: newCatName.trim(), color: newCatColor, is_income: newCatIsIncome });
+                        queryClient.invalidateQueries({ queryKey: ['categories'] });
+                        toast.success('Category created');
+                        setNewCatName('');
+                        setNewCatColor('#6b7280');
+                        setNewCatIsIncome(false);
+                        setAddCatOpen(false);
+                      } catch (e: any) {
+                        toast.error(e.message || 'Failed to create category');
+                      } finally {
+                        setAddingCat(false);
+                      }
+                    }}>
+                      {addingCat ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : null}
+                      Create Category
+                    </Button>
+                  </div>
+                </DialogContent>
+              </Dialog>
             </div>
           </CardHeader>
           <CardContent>

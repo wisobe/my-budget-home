@@ -7,19 +7,23 @@ import { SyncButton } from '@/components/transactions/SyncButton';
 import { Plus, CreditCard, Wallet, PiggyBank, TrendingUp } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-const accountTypeColors = {
+const accountTypeColors: Record<string, string> = {
   checking: 'bg-primary/10 text-primary',
   savings: 'bg-income/10 text-income',
   credit: 'bg-expense/10 text-expense',
   investment: 'bg-chart-3/10 text-chart-3',
+  depository: 'bg-primary/10 text-primary',
+  loan: 'bg-expense/10 text-expense',
   other: 'bg-muted text-muted-foreground',
 };
 
-const accountIcons = {
+const accountIcons: Record<string, typeof Wallet> = {
   checking: Wallet,
   savings: PiggyBank,
   credit: CreditCard,
   investment: TrendingUp,
+  depository: Wallet,
+  loan: CreditCard,
   other: Wallet,
 };
 
@@ -65,8 +69,8 @@ const Accounts = () => {
 
         {/* Accounts by Type */}
         {Object.entries(groupedAccounts).map(([type, typeAccounts]) => {
-          const Icon = accountIcons[type as keyof typeof accountIcons];
-          const colorClass = accountTypeColors[type as keyof typeof accountTypeColors];
+          const Icon = accountIcons[type] || Wallet;
+          const colorClass = accountTypeColors[type] || accountTypeColors.other;
           const typeTotal = typeAccounts.reduce((sum, a) => sum + a.current_balance, 0);
 
           return (

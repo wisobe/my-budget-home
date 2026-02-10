@@ -3,11 +3,13 @@ import { useAccounts } from '@/hooks/use-accounts';
 import { CreditCard, Wallet, PiggyBank, TrendingUp } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-const accountIcons = {
+const accountIcons: Record<string, typeof Wallet> = {
   checking: Wallet,
   savings: PiggyBank,
   credit: CreditCard,
   investment: TrendingUp,
+  depository: Wallet,
+  loan: CreditCard,
   other: Wallet,
 };
 
@@ -40,7 +42,7 @@ export function AccountsList() {
       </CardHeader>
       <CardContent className="space-y-3">
         {accounts.map(account => {
-          const Icon = accountIcons[account.type];
+          const Icon = accountIcons[account.type] || Wallet;
           const isNegative = account.current_balance < 0;
           
           return (
