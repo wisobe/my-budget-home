@@ -9,10 +9,9 @@ import { Badge } from '@/components/ui/badge';
 import { useCategories } from '@/hooks/use-transactions';
 import { Plus, Trash2, CheckCircle2, XCircle, Loader2, Database, Key, ExternalLink, FlaskConical, Building2 } from 'lucide-react';
 import { useState } from 'react';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { API_BASE_URL } from '@/lib/config';
-import { useMockDataSetting } from '@/contexts/MockDataContext';
+import { usePlaidEnvironment } from '@/contexts/PlaidEnvironmentContext';
 import { cn } from '@/lib/utils';
 import { categoriesApi } from '@/lib/api';
 import { useQueryClient } from '@tanstack/react-query';
@@ -21,7 +20,7 @@ import { toast } from '@/components/ui/sonner';
 const Settings = () => {
   const { data: categoriesData } = useCategories();
   const categories = categoriesData?.data || [];
-  const { useMockData, setUseMockData, plaidEnvironment, setPlaidEnvironment } = useMockDataSetting();
+  const { plaidEnvironment, setPlaidEnvironment } = usePlaidEnvironment();
   
   const [dbTestStatus, setDbTestStatus] = useState<'idle' | 'testing' | 'success' | 'error'>('idle');
   const [dbTestMessage, setDbTestMessage] = useState('');
@@ -38,7 +37,6 @@ const Settings = () => {
       const apiUrl = `${API_BASE_URL}/settings/test-db.php`;
       const response = await fetch(apiUrl, { method: 'POST' });
       const result = await response.json();
-      
       if (result.data?.success) {
         setDbTestStatus('success');
         setDbTestMessage(`Connected! MariaDB ${result.data.version}`);
@@ -62,9 +60,7 @@ const Settings = () => {
               <ExternalLink className="h-5 w-5" />
               Backend Setup Guide
             </CardTitle>
-            <CardDescription>
-              Follow these steps to connect your self-hosted backend
-            </CardDescription>
+            <CardDescription>Follow these steps to connect your self-hosted backend</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-3 text-sm">
@@ -93,7 +89,7 @@ const Settings = () => {
                 <Badge variant="outline" className="shrink-0">4</Badge>
                 <div>
                   <p className="font-medium">Set the API URL</p>
-                  <p className="text-muted-foreground">Set <code className="bg-muted px-1 rounded">VITE_API_URL</code> in your .env file (e.g., <code className="bg-muted px-1 rounded">https://yourdomain.com/api</code>)</p>
+                  <p className="text-muted-foreground">Set <code className="bg-muted px-1 rounded">VITE_API_URL</code> in your .env file</p>
                 </div>
               </div>
             </div>
@@ -107,60 +103,40 @@ const Settings = () => {
               <Database className="h-5 w-5" />
               API Configuration
             </CardTitle>
-            <CardDescription>
-              Configure your backend API endpoint
-            </CardDescription>
+            <CardDescription>Configure your backend API endpoint</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="api-url">Backend API URL</Label>
-              <Input
-                id="api-url"
-                placeholder="https://your-server.com/api"
-                defaultValue={import.meta.env.VITE_API_URL || '/api'}
-                readOnly
-                className="bg-muted"
-              />
-              <p className="text-xs text-muted-foreground">
-                Set this in your .env file as <code className="bg-muted px-1 rounded">VITE_API_URL</code>
-              </p>
+              <Input id="api-url" defaultValue={import.meta.env.VITE_API_URL || '/api'} readOnly className="bg-muted" />
+              <p className="text-xs text-muted-foreground">Set this in your .env file as <code className="bg-muted px-1 rounded">VITE_API_URL</code></p>
             </div>
-            
             <Separator />
-            
             <div className="space-y-2">
               <Label>Database Connection</Label>
               <div className="flex gap-2">
-                <Button 
-                  variant="outline" 
-                  onClick={testDatabaseConnection}
-                  disabled={dbTestStatus === 'testing'}
-                >
+                <Button variant="outline" onClick={testDatabaseConnection} disabled={dbTestStatus === 'testing'}>
                   {dbTestStatus === 'testing' && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
                   {dbTestStatus === 'success' && <CheckCircle2 className="h-4 w-4 mr-2 text-income" />}
                   {dbTestStatus === 'error' && <XCircle className="h-4 w-4 mr-2 text-destructive" />}
                   Test Connection
                 </Button>
                 {dbTestMessage && (
-                  <p className={`text-sm self-center ${dbTestStatus === 'success' ? 'text-income' : 'text-destructive'}`}>
-                    {dbTestMessage}
-                  </p>
+                  <p className={`text-sm self-center ${dbTestStatus === 'success' ? 'text-income' : 'text-destructive'}`}>{dbTestMessage}</p>
                 )}
               </div>
             </div>
           </CardContent>
         </Card>
 
-        {/* Plaid Configuration Info */}
+        {/* Plaid Configuration */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Key className="h-5 w-5" />
               Plaid Configuration
             </CardTitle>
-            <CardDescription>
-              Switch between sandbox (test) and production (real bank) environments
-            </CardDescription>
+            <CardDescription>Switch between sandbox (test) and production (real bank) environments</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-3">
@@ -170,15 +146,10 @@ const Settings = () => {
                   onClick={() => setPlaidEnvironment('sandbox')}
                   className={cn(
                     "flex items-center gap-3 p-4 rounded-lg border-2 transition-all text-left",
-                    plaidEnvironment === 'sandbox'
-                      ? "border-primary bg-primary/5"
-                      : "border-border hover:border-muted-foreground/30"
+                    plaidEnvironment === 'sandbox' ? "border-primary bg-primary/5" : "border-border hover:border-muted-foreground/30"
                   )}
                 >
-                  <FlaskConical className={cn(
-                    "h-5 w-5",
-                    plaidEnvironment === 'sandbox' ? "text-primary" : "text-muted-foreground"
-                  )} />
+                  <FlaskConical className={cn("h-5 w-5", plaidEnvironment === 'sandbox' ? "text-primary" : "text-muted-foreground")} />
                   <div>
                     <p className="font-medium">Sandbox</p>
                     <p className="text-xs text-muted-foreground">Test with fake bank data</p>
@@ -188,15 +159,10 @@ const Settings = () => {
                   onClick={() => setPlaidEnvironment('production')}
                   className={cn(
                     "flex items-center gap-3 p-4 rounded-lg border-2 transition-all text-left",
-                    plaidEnvironment === 'production'
-                      ? "border-primary bg-primary/5"
-                      : "border-border hover:border-muted-foreground/30"
+                    plaidEnvironment === 'production' ? "border-primary bg-primary/5" : "border-border hover:border-muted-foreground/30"
                   )}
                 >
-                  <Building2 className={cn(
-                    "h-5 w-5",
-                    plaidEnvironment === 'production' ? "text-primary" : "text-muted-foreground"
-                  )} />
+                  <Building2 className={cn("h-5 w-5", plaidEnvironment === 'production' ? "text-primary" : "text-muted-foreground")} />
                   <div>
                     <p className="font-medium">Production</p>
                     <p className="text-xs text-muted-foreground">Real bank connections</p>
@@ -205,25 +171,16 @@ const Settings = () => {
               </div>
               <p className="text-xs text-muted-foreground">
                 Each environment uses separate Plaid credentials and stores connections independently.
-                Switching environments will only show data from that environment.
               </p>
             </div>
-
             <Separator />
-
             <div className="space-y-2">
               <Label>Country</Label>
               <Input value="Canada (CA)" readOnly className="bg-muted" />
             </div>
             <p className="text-xs text-muted-foreground">
-              Configure credentials for each environment in <code className="bg-muted px-1 rounded">config.php</code> on your server.
-              Get your API keys from{' '}
-              <a 
-                href="https://dashboard.plaid.com/developers/keys" 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="text-primary hover:underline"
-              >
+              Configure credentials in <code className="bg-muted px-1 rounded">config.php</code>.{' '}
+              <a href="https://dashboard.plaid.com/developers/keys" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
                 Plaid Dashboard
               </a>
             </p>
@@ -236,21 +193,14 @@ const Settings = () => {
             <div className="flex items-center justify-between">
               <div>
                 <CardTitle>Categories</CardTitle>
-                <CardDescription>
-                  Manage your transaction categories
-                </CardDescription>
+                <CardDescription>Manage your transaction categories</CardDescription>
               </div>
               <Dialog open={addCatOpen} onOpenChange={setAddCatOpen}>
                 <DialogTrigger asChild>
-                  <Button size="sm">
-                    <Plus className="h-4 w-4 mr-2" />
-                    Add Category
-                  </Button>
+                  <Button size="sm"><Plus className="h-4 w-4 mr-2" />Add Category</Button>
                 </DialogTrigger>
                 <DialogContent>
-                  <DialogHeader>
-                    <DialogTitle>Add Category</DialogTitle>
-                  </DialogHeader>
+                  <DialogHeader><DialogTitle>Add Category</DialogTitle></DialogHeader>
                   <div className="space-y-4">
                     <div className="space-y-2">
                       <Label>Name</Label>
@@ -273,15 +223,10 @@ const Settings = () => {
                         await categoriesApi.create({ name: newCatName.trim(), color: newCatColor, is_income: newCatIsIncome });
                         queryClient.invalidateQueries({ queryKey: ['categories'] });
                         toast.success('Category created');
-                        setNewCatName('');
-                        setNewCatColor('#6b7280');
-                        setNewCatIsIncome(false);
-                        setAddCatOpen(false);
+                        setNewCatName(''); setNewCatColor('#6b7280'); setNewCatIsIncome(false); setAddCatOpen(false);
                       } catch (e: any) {
                         toast.error(e.message || 'Failed to create category');
-                      } finally {
-                        setAddingCat(false);
-                      }
+                      } finally { setAddingCat(false); }
                     }}>
                       {addingCat ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : null}
                       Create Category
@@ -294,19 +239,11 @@ const Settings = () => {
           <CardContent>
             <div className="space-y-2">
               {categories.map(category => (
-                <div
-                  key={category.id}
-                  className="flex items-center justify-between p-3 rounded-lg hover:bg-muted/50 transition-colors"
-                >
+                <div key={category.id} className="flex items-center justify-between p-3 rounded-lg hover:bg-muted/50 transition-colors">
                   <div className="flex items-center gap-3">
-                    <div
-                      className="h-4 w-4 rounded-full"
-                      style={{ backgroundColor: category.color }}
-                    />
+                    <div className="h-4 w-4 rounded-full" style={{ backgroundColor: category.color }} />
                     <span className="font-medium">{category.name}</span>
-                    {category.is_income && (
-                      <Badge variant="secondary" className="text-xs">Income</Badge>
-                    )}
+                    {category.is_income && <Badge variant="secondary" className="text-xs">Income</Badge>}
                   </div>
                   <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-destructive">
                     <Trash2 className="h-4 w-4" />
@@ -321,24 +258,9 @@ const Settings = () => {
         <Card>
           <CardHeader>
             <CardTitle>Preferences</CardTitle>
-            <CardDescription>
-              Customize your app experience
-            </CardDescription>
+            <CardDescription>Customize your app experience</CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="font-medium">Use Mock Data</p>
-                <p className="text-sm text-muted-foreground">
-                  Toggle between mock data and real database
-                </p>
-              </div>
-              <Switch checked={useMockData} onCheckedChange={setUseMockData} />
-            </div>
-            <p className="text-xs text-muted-foreground">
-              When disabled, data is fetched from your real database API
-            </p>
-            <Separator />
             <div className="flex items-center justify-between">
               <div>
                 <p className="font-medium">Dark Mode</p>
@@ -369,9 +291,7 @@ const Settings = () => {
         <Card>
           <CardHeader>
             <CardTitle>Data Export</CardTitle>
-            <CardDescription>
-              Export your financial data
-            </CardDescription>
+            <CardDescription>Export your financial data</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex gap-4">

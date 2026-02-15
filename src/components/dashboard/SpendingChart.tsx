@@ -1,7 +1,8 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useSpendingByCategory } from '@/hooks/use-reports';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
-import { mockCategories } from '@/lib/mock-data';
+
+const FALLBACK_COLORS = ['#22c55e', '#f97316', '#3b82f6', '#8b5cf6', '#ec4899', '#14b8a6', '#ef4444', '#6366f1'];
 
 export function SpendingChart() {
   const today = new Date();
@@ -24,13 +25,13 @@ export function SpendingChart() {
   }
 
   const insights = spendingData?.data || [];
-  
+
   const chartData = insights
-    .filter(i => !mockCategories.find(c => c.id === i.category_id)?.is_income)
-    .map(insight => ({
+    .filter(i => i.total_amount > 0)
+    .map((insight, index) => ({
       name: insight.category_name,
       value: insight.total_amount,
-      color: mockCategories.find(c => c.id === insight.category_id)?.color || '#888888',
+      color: FALLBACK_COLORS[index % FALLBACK_COLORS.length],
     }));
 
   return (
@@ -39,29 +40,35 @@ export function SpendingChart() {
         <CardTitle>Spending by Category</CardTitle>
       </CardHeader>
       <CardContent>
-        <ResponsiveContainer width="100%" height={300}>
-          <PieChart>
-            <Pie
-              data={chartData}
-              cx="50%"
-              cy="50%"
-              innerRadius={60}
-              outerRadius={100}
-              paddingAngle={2}
-              dataKey="value"
-            >
-              {chartData.map((entry, index) => (
-                <Cell key={`cell-${index}`} fill={entry.color} />
-              ))}
-            </Pie>
-            <Tooltip
-              formatter={(value: number) => 
-                new Intl.NumberFormat('en-CA', { style: 'currency', currency: 'CAD' }).format(value)
-              }
-            />
-            <Legend />
-          </PieChart>
-        </ResponsiveContainer>
+        {chartData.length === 0 ? (
+          <div className="h-[300px] flex items-center justify-center text-muted-foreground">
+            No spending data for this month
+          </div>
+        ) : (
+          <ResponsiveContainer width="100%" height={300}>
+            <PieChart>
+              <Pie
+                data={chartData}
+                cx="50%"
+                cy="50%"
+                innerRadius={60}
+                outerRadius={100}
+                paddingAngle={2}
+                dataKey="value"
+              >
+                {chartData.map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={entry.color} />
+                ))}
+              </Pie>
+              <Tooltip
+                formatter={(value: number) =>
+                  new Intl.NumberFormat('en-CA', { style: 'currency', currency: 'CAD' }).format(value)
+                }
+              />
+              <Legend />
+            </PieChart>
+          </ResponsiveContainer>
+        )}
       </CardContent>
     </Card>
   );
