@@ -28,49 +28,6 @@ try {
         $environment = 'sandbox';
     }
     
-    if (useMockData()) {
-        // Return mock transactions
-        $mockTransactions = [
-            [
-                'id' => '1',
-                'account_id' => '1',
-                'date' => date('Y-m-d'),
-                'name' => 'Grocery Store',
-                'merchant_name' => 'Metro',
-                'amount' => 85.43,
-                'category_id' => '2',
-                'pending' => false,
-                'created_at' => date('c'),
-                'updated_at' => date('c'),
-            ],
-            [
-                'id' => '2',
-                'account_id' => '1',
-                'date' => date('Y-m-d', strtotime('-1 day')),
-                'name' => 'Gas Station',
-                'merchant_name' => 'Shell',
-                'amount' => 65.00,
-                'category_id' => '3',
-                'pending' => false,
-                'created_at' => date('c'),
-                'updated_at' => date('c'),
-            ],
-            [
-                'id' => '3',
-                'account_id' => '1',
-                'date' => date('Y-m-d', strtotime('-2 days')),
-                'name' => 'Salary Deposit',
-                'merchant_name' => null,
-                'amount' => -2500.00,
-                'category_id' => '1',
-                'pending' => false,
-                'created_at' => date('c'),
-                'updated_at' => date('c'),
-            ],
-        ];
-        
-        Response::paginated($mockTransactions, count($mockTransactions), $page, $perPage);
-    }
     
     $pdo = Database::getConnection();
     

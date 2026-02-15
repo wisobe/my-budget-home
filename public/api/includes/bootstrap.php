@@ -41,11 +41,6 @@ function getJsonBody(): array {
     return json_decode($body, true) ?? [];
 }
 
-// Helper function to check if using mock data
-function useMockData(): bool {
-    global $config;
-    return $config['app']['use_mock_data'] ?? true;
-}
 
 /**
  * Get a Plaid client for the specified environment.
