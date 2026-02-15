@@ -42,7 +42,6 @@ return [
 
     // ============ Application Settings ============
     'app' => [
-        'use_mock_data' => true,     // Set to false to use real database
         'debug_mode'    => false,    // Enable detailed error messages
         'allowed_origins' => [       // CORS allowed origins
             'http://localhost:5173',

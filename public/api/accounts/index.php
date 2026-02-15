@@ -19,52 +19,6 @@ try {
         $environment = 'sandbox';
     }
 
-    if (useMockData()) {
-        // Return mock accounts
-        $mockAccounts = [
-            [
-                'id' => '1',
-                'name' => 'Chequing Account',
-                'official_name' => 'Desjardins Chequing',
-                'type' => 'checking',
-                'subtype' => 'checking',
-                'current_balance' => 2847.53,
-                'available_balance' => 2847.53,
-                'currency' => 'CAD',
-                'institution_name' => 'Desjardins',
-                'last_synced' => date('c'),
-                'created_at' => date('c', strtotime('-30 days')),
-            ],
-            [
-                'id' => '2',
-                'name' => 'Savings Account',
-                'official_name' => 'Desjardins Savings',
-                'type' => 'savings',
-                'subtype' => 'savings',
-                'current_balance' => 15420.00,
-                'available_balance' => 15420.00,
-                'currency' => 'CAD',
-                'institution_name' => 'Desjardins',
-                'last_synced' => date('c'),
-                'created_at' => date('c', strtotime('-30 days')),
-            ],
-            [
-                'id' => '3',
-                'name' => 'Credit Card',
-                'official_name' => 'Desjardins Visa',
-                'type' => 'credit',
-                'subtype' => 'credit card',
-                'current_balance' => -543.21,
-                'available_balance' => 4456.79,
-                'currency' => 'CAD',
-                'institution_name' => 'Desjardins',
-                'last_synced' => date('c'),
-                'created_at' => date('c', strtotime('-30 days')),
-            ],
-        ];
-        
-        Response::success($mockAccounts);
-    }
     
     $pdo = Database::getConnection();
     

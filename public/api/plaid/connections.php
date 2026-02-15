@@ -19,21 +19,6 @@ try {
         $environment = 'sandbox';
     }
 
-    if (useMockData()) {
-        // Return mock data
-        Response::success([
-            [
-                'id' => '1',
-                'institution_id' => 'ins_desjardins',
-                'institution_name' => 'Desjardins',
-                'status' => 'active',
-                'plaid_environment' => $environment,
-                'last_synced' => date('c'),
-                'accounts_count' => 3,
-                'created_at' => date('c', strtotime('-30 days')),
-            ]
-        ]);
-    }
     
     $pdo = Database::getConnection();
     
