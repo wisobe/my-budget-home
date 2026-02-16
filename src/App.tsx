@@ -1,3 +1,4 @@
+import React from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -37,29 +38,31 @@ function AuthGate({ children }: { children: React.ReactNode }) {
 }
 
 const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <AuthProvider>
-      <PlaidEnvironmentProvider>
-        <TooltipProvider>
-          <Toaster />
-          <Sonner />
-          <AuthGate>
-            <BrowserRouter basename={BASE_PATH}>
-              <Routes>
-                <Route path="/" element={<Dashboard />} />
-                <Route path="/transactions" element={<Transactions />} />
-                <Route path="/reports" element={<Reports />} />
-                <Route path="/accounts" element={<Accounts />} />
-                <Route path="/connections" element={<Connections />} />
-                <Route path="/settings" element={<Settings />} />
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-            </BrowserRouter>
-          </AuthGate>
-        </TooltipProvider>
-      </PlaidEnvironmentProvider>
-    </AuthProvider>
-  </QueryClientProvider>
+  <React.StrictMode>
+    <QueryClientProvider client={queryClient}>
+      <AuthProvider>
+        <PlaidEnvironmentProvider>
+          <TooltipProvider>
+            <Toaster />
+            <Sonner />
+            <AuthGate>
+              <BrowserRouter basename={BASE_PATH}>
+                <Routes>
+                  <Route path="/" element={<Dashboard />} />
+                  <Route path="/transactions" element={<Transactions />} />
+                  <Route path="/reports" element={<Reports />} />
+                  <Route path="/accounts" element={<Accounts />} />
+                  <Route path="/connections" element={<Connections />} />
+                  <Route path="/settings" element={<Settings />} />
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+              </BrowserRouter>
+            </AuthGate>
+          </TooltipProvider>
+        </PlaidEnvironmentProvider>
+      </AuthProvider>
+    </QueryClientProvider>
+  </React.StrictMode>
 );
 
 export default App;

@@ -43,6 +43,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const result = await authApi.login(password);
     sessionStorage.setItem('auth_token', result.data.token);
     setIsAuthenticated(true);
+    setAuthEnabled(true);
   }, []);
 
   const logout = useCallback(() => {
