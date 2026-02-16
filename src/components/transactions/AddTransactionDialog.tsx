@@ -44,7 +44,7 @@ export function AddTransactionDialog({ open, onOpenChange }: Props) {
         date,
         name,
         amount: isExpense ? Math.abs(numAmount) : -Math.abs(numAmount),
-        category_id: categoryId || undefined,
+        category_id: categoryId && categoryId !== 'none' ? categoryId : undefined,
         notes: notes || undefined,
       });
       toast.success('Transaction created');
@@ -105,7 +105,7 @@ export function AddTransactionDialog({ open, onOpenChange }: Props) {
             <Select value={categoryId} onValueChange={setCategoryId}>
               <SelectTrigger><SelectValue placeholder="No category" /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="">No category</SelectItem>
+                <SelectItem value="none">No category</SelectItem>
                 {categories.map(c => (
                   <SelectItem key={c.id} value={c.id}>
                     <div className="flex items-center gap-2">
