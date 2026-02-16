@@ -41,25 +41,20 @@ function getJsonBody(): array {
     return json_decode($body, true) ?? [];
 }
 
-
 /**
  * Get a Plaid client for the specified environment.
- * @param string $environment 'sandbox' or 'production'
  */
 function getPlaidClient(string $environment = 'sandbox'): PlaidClient {
     global $config;
     
-    // Validate environment
     if (!in_array($environment, ['sandbox', 'production'])) {
         $environment = 'sandbox';
     }
     
-    // Support both old (flat) and new (nested) config formats
     if (isset($config['plaid'][$environment])) {
         $plaidConfig = $config['plaid'][$environment];
         $plaidConfig['environment'] = $environment;
     } else {
-        // Fallback: old flat config format
         $plaidConfig = $config['plaid'];
     }
     
@@ -67,20 +62,16 @@ function getPlaidClient(string $environment = 'sandbox'): PlaidClient {
 }
 
 /**
- * Get Plaid environment from request body or query string, default to sandbox
+ * Get Plaid environment from request body or query string
  */
 function getPlaidEnvironment(): string {
-    // Check POST body first
     $body = json_decode(file_get_contents('php://input'), true) ?? [];
     if (isset($body['plaid_environment']) && in_array($body['plaid_environment'], ['sandbox', 'production'])) {
         return $body['plaid_environment'];
     }
-    
-    // Check query string
     if (isset($_GET['plaid_environment']) && in_array($_GET['plaid_environment'], ['sandbox', 'production'])) {
         return $_GET['plaid_environment'];
     }
-    
     return 'sandbox';
 }
 
@@ -90,5 +81,64 @@ function validateRequired(array $data, array $fields): void {
         if (!isset($data[$field]) || $data[$field] === '') {
             Response::error("Missing required field: {$field}");
         }
+    }
+}
+
+/**
+ * Get Authorization header from various sources (Apache compatibility)
+ */
+function getAuthorizationHeader(): string {
+    if (isset($_SERVER['HTTP_AUTHORIZATION'])) {
+        return $_SERVER['HTTP_AUTHORIZATION'];
+    }
+    if (isset($_SERVER['REDIRECT_HTTP_AUTHORIZATION'])) {
+        return $_SERVER['REDIRECT_HTTP_AUTHORIZATION'];
+    }
+    if (function_exists('apache_request_headers')) {
+        $headers = apache_request_headers();
+        if (isset($headers['Authorization'])) {
+            return $headers['Authorization'];
+        }
+    }
+    return '';
+}
+
+/**
+ * Verify auth token from Authorization header
+ */
+function requireAuthToken(): void {
+    $authHeader = getAuthorizationHeader();
+    if (!preg_match('/Bearer\s+(.+)/i', $authHeader, $matches)) {
+        Response::unauthorized('Authentication required');
+    }
+    try {
+        $pdo = Database::getConnection();
+        $stmt = $pdo->prepare('SELECT 1 FROM auth_tokens WHERE token = :token AND expires_at > NOW()');
+        $stmt->execute(['token' => $matches[1]]);
+        if (!$stmt->fetch()) {
+            Response::unauthorized('Invalid or expired token');
+        }
+    } catch (PDOException $e) {
+        // auth_tokens table may not exist yet - allow access
+    }
+}
+
+// ============================================================
+// Auto-auth middleware: protect all endpoints except auth/login and auth/verify
+// ============================================================
+$_requestUri = $_SERVER['REQUEST_URI'] ?? '';
+$_isOpenAuthEndpoint = preg_match('#/auth/(login|verify)\.php#', $_requestUri);
+
+if (!$_isOpenAuthEndpoint && $_SERVER['REQUEST_METHOD'] !== 'OPTIONS') {
+    try {
+        $pdo = Database::getConnection();
+        $stmt = $pdo->prepare("SELECT 1 FROM app_settings WHERE setting_key = 'password_hash' LIMIT 1");
+        $stmt->execute();
+        if ($stmt->fetch()) {
+            // Password is configured, require auth token
+            requireAuthToken();
+        }
+    } catch (Exception $e) {
+        // Tables don't exist yet (first-time setup), skip auth
     }
 }

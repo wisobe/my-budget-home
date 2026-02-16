@@ -8,6 +8,7 @@ import {
   Settings,
   Link2,
   Wallet,
+  LogOut,
 } from 'lucide-react';
 import {
   Sidebar,
@@ -18,6 +19,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from '@/components/ui/sidebar';
+import { useAuth } from '@/contexts/AuthContext';
 
 const navigation = [
   { name: 'Dashboard', href: '/', icon: LayoutDashboard },
@@ -30,6 +32,7 @@ const navigation = [
 
 export function AppSidebar() {
   const location = useLocation();
+  const { logout, authEnabled } = useAuth();
 
   return (
     <Sidebar>
@@ -67,8 +70,18 @@ export function AppSidebar() {
         </SidebarMenu>
       </SidebarContent>
 
-      <SidebarFooter className="border-t border-sidebar-border px-6 py-4">
-        <p className="text-xs text-sidebar-foreground/50">
+      <SidebarFooter className="border-t border-sidebar-border px-3 py-3">
+        {authEnabled && (
+          <SidebarMenu>
+            <SidebarMenuItem>
+              <SidebarMenuButton onClick={logout} tooltip="Logout">
+                <LogOut className="h-5 w-5" />
+                <span>Logout</span>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          </SidebarMenu>
+        )}
+        <p className="text-xs text-sidebar-foreground/50 px-3 pt-1">
           Self-hosted budgeting
         </p>
       </SidebarFooter>

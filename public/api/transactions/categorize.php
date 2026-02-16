@@ -2,8 +2,7 @@
 /**
  * Categorize Transaction Endpoint
  * POST /api/transactions/categorize.php
- * 
- * Assigns a category to a transaction
+ * Body: { "transaction_id": "...", "category_id": "..." or null }
  */
 
 require_once __DIR__ . '/../includes/bootstrap.php';
@@ -14,10 +13,14 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 
 try {
     $body = getJsonBody();
-    validateRequired($body, ['transaction_id', 'category_id']);
+    validateRequired($body, ['transaction_id']);
+    
+    // category_id can be null/empty to uncategorize
+    $categoryId = !empty($body['category_id']) ? $body['category_id'] : null;
     
     $pdo = Database::getConnection();
     
+    // Update transaction category
     $stmt = $pdo->prepare('
         UPDATE transactions 
         SET category_id = :category_id, updated_at = NOW()
@@ -25,13 +28,17 @@ try {
     ');
     
     $stmt->execute([
-        'category_id' => $body['category_id'],
+        'category_id' => $categoryId,
         'id' => $body['transaction_id'],
     ]);
     
     if ($stmt->rowCount() === 0) {
         Response::notFound('Transaction not found');
     }
+    
+    // Clear any existing splits when re-categorizing the whole transaction
+    $pdo->prepare('DELETE FROM transaction_splits WHERE transaction_id = :id')
+        ->execute(['id' => $body['transaction_id']]);
     
     // Fetch updated transaction
     $fetchStmt = $pdo->prepare('SELECT * FROM transactions WHERE id = :id');

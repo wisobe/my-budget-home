@@ -6,14 +6,15 @@ import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
-import { useCategories } from '@/hooks/use-transactions';
-import { Plus, Trash2, CheckCircle2, XCircle, Loader2, Database, Key, ExternalLink, FlaskConical, Building2 } from 'lucide-react';
+import { useCategories, useDeleteCategory } from '@/hooks/use-transactions';
+import { useAuth } from '@/contexts/AuthContext';
+import { Plus, Trash2, CheckCircle2, XCircle, Loader2, Database, Key, ExternalLink, FlaskConical, Building2, Lock, LogOut } from 'lucide-react';
 import { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { API_BASE_URL } from '@/lib/config';
 import { usePlaidEnvironment } from '@/contexts/PlaidEnvironmentContext';
 import { cn } from '@/lib/utils';
-import { categoriesApi } from '@/lib/api';
+import { categoriesApi, authApi } from '@/lib/api';
 import { useQueryClient } from '@tanstack/react-query';
 import { toast } from '@/components/ui/sonner';
 
@@ -21,7 +22,9 @@ const Settings = () => {
   const { data: categoriesData } = useCategories();
   const categories = categoriesData?.data || [];
   const { plaidEnvironment, setPlaidEnvironment } = usePlaidEnvironment();
-  
+  const { logout } = useAuth();
+  const deleteCategoryMutation = useDeleteCategory();
+
   const [dbTestStatus, setDbTestStatus] = useState<'idle' | 'testing' | 'success' | 'error'>('idle');
   const [dbTestMessage, setDbTestMessage] = useState('');
   const [newCatName, setNewCatName] = useState('');
@@ -29,13 +32,24 @@ const Settings = () => {
   const [newCatIsIncome, setNewCatIsIncome] = useState(false);
   const [addCatOpen, setAddCatOpen] = useState(false);
   const [addingCat, setAddingCat] = useState(false);
+
+  // Change password state
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [changingPassword, setChangingPassword] = useState(false);
+
   const queryClient = useQueryClient();
 
   const testDatabaseConnection = async () => {
     setDbTestStatus('testing');
     try {
       const apiUrl = `${API_BASE_URL}/settings/test-db.php`;
-      const response = await fetch(apiUrl, { method: 'POST' });
+      const token = sessionStorage.getItem('auth_token');
+      const response = await fetch(apiUrl, {
+        method: 'POST',
+        headers: token ? { 'Authorization': `Bearer ${token}` } : {},
+      });
       const result = await response.json();
       if (result.data?.success) {
         setDbTestStatus('success');
@@ -44,15 +58,90 @@ const Settings = () => {
         setDbTestStatus('error');
         setDbTestMessage(result.data?.message || 'Connection failed');
       }
-    } catch (error) {
+    } catch {
       setDbTestStatus('error');
       setDbTestMessage('Could not reach API endpoint');
+    }
+  };
+
+  const handleDeleteCategory = async (id: string, name: string) => {
+    if (!confirm(`Delete "${name}"? Transactions using this category will be moved to "Other".`)) return;
+    try {
+      await deleteCategoryMutation.mutateAsync(id);
+      toast.success(`Category "${name}" deleted`);
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to delete category');
+    }
+  };
+
+  const handleChangePassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (newPassword !== confirmPassword) {
+      toast.error('New passwords do not match');
+      return;
+    }
+    if (newPassword.length < 6) {
+      toast.error('Password must be at least 6 characters');
+      return;
+    }
+    setChangingPassword(true);
+    try {
+      await authApi.changePassword(currentPassword, newPassword);
+      toast.success('Password changed successfully');
+      setCurrentPassword('');
+      setNewPassword('');
+      setConfirmPassword('');
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to change password');
+    } finally {
+      setChangingPassword(false);
     }
   };
 
   return (
     <AppLayout title="Settings">
       <div className="space-y-6 max-w-2xl">
+        {/* Security / Password */}
+        <Card>
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle className="flex items-center gap-2">
+                  <Lock className="h-5 w-5" />
+                  Security
+                </CardTitle>
+                <CardDescription>Change your app password</CardDescription>
+              </div>
+              <Button variant="outline" size="sm" onClick={logout}>
+                <LogOut className="h-4 w-4 mr-2" />
+                Logout
+              </Button>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleChangePassword} className="space-y-4">
+              <div className="space-y-2">
+                <Label>Current Password</Label>
+                <Input type="password" value={currentPassword} onChange={e => setCurrentPassword(e.target.value)} required />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>New Password</Label>
+                  <Input type="password" value={newPassword} onChange={e => setNewPassword(e.target.value)} required />
+                </div>
+                <div className="space-y-2">
+                  <Label>Confirm New Password</Label>
+                  <Input type="password" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} required />
+                </div>
+              </div>
+              <Button type="submit" disabled={changingPassword || !currentPassword || !newPassword}>
+                {changingPassword && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                Change Password
+              </Button>
+            </form>
+          </CardContent>
+        </Card>
+
         {/* Setup Guide */}
         <Card className="border-primary/20 bg-primary/5">
           <CardHeader>
@@ -245,7 +334,13 @@ const Settings = () => {
                     <span className="font-medium">{category.name}</span>
                     {category.is_income && <Badge variant="secondary" className="text-xs">Income</Badge>}
                   </div>
-                  <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-destructive">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="text-muted-foreground hover:text-destructive"
+                    onClick={() => handleDeleteCategory(category.id, category.name)}
+                    disabled={deleteCategoryMutation.isPending}
+                  >
                     <Trash2 className="h-4 w-4" />
                   </Button>
                 </div>
