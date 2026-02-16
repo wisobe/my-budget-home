@@ -1,52 +1,70 @@
 import { useState } from 'react';
-import { useTransactions, useCategories, useCategorizeTransaction } from '@/hooks/use-transactions';
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
+  useTransactions,
+  useCategories,
+  useCategorizeTransaction,
+  useExcludeTransaction,
+} from '@/hooks/use-transactions';
+import {
+  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from '@/components/ui/table';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '@/components/ui/select';
+import {
+  DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { Badge } from '@/components/ui/badge';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
-import { Search, ChevronLeft, ChevronRight, ArrowUpRight, ArrowDownRight } from 'lucide-react';
+import {
+  Search, ChevronLeft, ChevronRight, ArrowUpRight, ArrowDownRight,
+  MoreHorizontal, Split, EyeOff, Eye,
+} from 'lucide-react';
+import { SplitTransactionDialog } from './SplitTransactionDialog';
+import type { Transaction } from '@/types';
 
 export function TransactionList() {
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
+  const [showExcluded, setShowExcluded] = useState(false);
+  const [splitTransaction, setSplitTransaction] = useState<Transaction | null>(null);
+  const [splitOpen, setSplitOpen] = useState(false);
 
   const { data: transactionsData, isLoading } = useTransactions({
     page,
     per_page: 15,
     search: search || undefined,
     category_id: categoryFilter !== 'all' ? categoryFilter : undefined,
+    show_excluded: showExcluded,
   });
 
   const { data: categoriesData } = useCategories();
   const categorize = useCategorizeTransaction();
+  const excludeMutation = useExcludeTransaction();
 
   const transactions = transactionsData?.data || [];
   const categories = categoriesData?.data || [];
   const totalPages = transactionsData?.total_pages || 1;
 
-  const getCategoryById = (id?: string) => {
-    if (!id) return null;
-    return categories.find(c => c.id === id);
+  const handleCategorize = (transactionId: string, value: string) => {
+    categorize.mutate({
+      id: transactionId,
+      category_id: value === 'none' ? null : value,
+    });
   };
 
-  const handleCategorize = (transactionId: string, categoryId: string) => {
-    categorize.mutate({ id: transactionId, category_id: categoryId });
+  const handleExclude = (transaction: Transaction) => {
+    excludeMutation.mutate({ id: transaction.id, excluded: !transaction.excluded });
+  };
+
+  const handleSplit = (transaction: Transaction) => {
+    setSplitTransaction(transaction);
+    setSplitOpen(true);
   };
 
   return (
@@ -57,23 +75,25 @@ export function TransactionList() {
           <Input
             placeholder="Search transactions..."
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={(e) => { setSearch(e.target.value); setPage(1); }}
             className="pl-9"
           />
         </div>
-        <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+        <Select value={categoryFilter} onValueChange={(v) => { setCategoryFilter(v); setPage(1); }}>
           <SelectTrigger className="w-full sm:w-[200px]">
             <SelectValue placeholder="All Categories" />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All Categories</SelectItem>
             {categories.map(category => (
-              <SelectItem key={category.id} value={category.id}>
-                {category.name}
-              </SelectItem>
+              <SelectItem key={category.id} value={category.id}>{category.name}</SelectItem>
             ))}
           </SelectContent>
         </Select>
+        <div className="flex items-center gap-2">
+          <Switch id="show-excluded" checked={showExcluded} onCheckedChange={setShowExcluded} />
+          <Label htmlFor="show-excluded" className="text-sm whitespace-nowrap">Show excluded</Label>
+        </div>
       </div>
 
       <div className="rounded-lg border bg-card">
@@ -85,30 +105,32 @@ export function TransactionList() {
               <TableHead>Category</TableHead>
               <TableHead>Date</TableHead>
               <TableHead className="text-right">Amount</TableHead>
+              <TableHead className="w-12"></TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {isLoading ? (
               Array.from({ length: 10 }).map((_, i) => (
                 <TableRow key={i}>
-                  <TableCell colSpan={5}>
+                  <TableCell colSpan={6}>
                     <div className="h-10 bg-muted animate-pulse rounded" />
                   </TableCell>
                 </TableRow>
               ))
             ) : transactions.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
+                <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
                   No transactions found
                 </TableCell>
               </TableRow>
             ) : (
               transactions.map(transaction => {
                 const isIncome = transaction.amount < 0;
-                const category = getCategoryById(transaction.category_id);
+                const isExcluded = !!transaction.excluded;
+                const hasSplits = (transaction.split_count ?? 0) > 0;
 
                 return (
-                  <TableRow key={transaction.id}>
+                  <TableRow key={transaction.id} className={cn(isExcluded && "opacity-50")}>
                     <TableCell>
                       <div className={cn(
                         "h-8 w-8 rounded-full flex items-center justify-center",
@@ -123,64 +145,86 @@ export function TransactionList() {
                     </TableCell>
                     <TableCell>
                       <div>
-                        <p className="font-medium">{transaction.name}</p>
+                        <p className={cn("font-medium", isExcluded && "line-through")}>{transaction.name}</p>
                         {transaction.merchant_name && transaction.merchant_name !== transaction.name && (
                           <p className="text-sm text-muted-foreground">{transaction.merchant_name}</p>
                         )}
-                        {transaction.pending && (
-                          <Badge variant="outline" className="mt-1 text-xs">Pending</Badge>
-                        )}
+                        <div className="flex gap-1 mt-1">
+                          {transaction.pending && <Badge variant="outline" className="text-xs">Pending</Badge>}
+                          {hasSplits && <Badge variant="secondary" className="text-xs">Split</Badge>}
+                          {isExcluded && <Badge variant="destructive" className="text-xs">Excluded</Badge>}
+                        </div>
                       </div>
                     </TableCell>
                     <TableCell>
-                      <Select
-                        value={transaction.category_id || 'uncategorized'}
-                        onValueChange={(value) => handleCategorize(transaction.id, value)}
-                      >
-                        <SelectTrigger className="w-[150px]">
-                          <SelectValue>
-                            {category ? (
-                              <div className="flex items-center gap-2">
-                                <div
-                                  className="h-3 w-3 rounded-full"
-                                  style={{ backgroundColor: category.color }}
-                                />
-                                {category.name}
-                              </div>
-                            ) : (
-                              <span className="text-muted-foreground">Select...</span>
-                            )}
-                          </SelectValue>
-                        </SelectTrigger>
-                        <SelectContent>
-                          {categories.map(cat => (
-                            <SelectItem key={cat.id} value={cat.id}>
-                              <div className="flex items-center gap-2">
-                                <div
-                                  className="h-3 w-3 rounded-full"
-                                  style={{ backgroundColor: cat.color }}
-                                />
-                                {cat.name}
-                              </div>
+                      {hasSplits ? (
+                        <Badge variant="secondary" className="cursor-pointer" onClick={() => handleSplit(transaction)}>
+                          Split — Edit
+                        </Badge>
+                      ) : (
+                        <Select
+                          value={transaction.category_id || 'none'}
+                          onValueChange={(value) => handleCategorize(transaction.id, value)}
+                        >
+                          <SelectTrigger className="w-[150px]">
+                            <SelectValue>
+                              {transaction.category_id && transaction.category_name ? (
+                                <div className="flex items-center gap-2">
+                                  <div className="h-3 w-3 rounded-full" style={{ backgroundColor: transaction.category_color || '#6b7280' }} />
+                                  {transaction.category_name}
+                                </div>
+                              ) : (
+                                <span className="text-muted-foreground">Select...</span>
+                              )}
+                            </SelectValue>
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="none">
+                              <span className="text-muted-foreground">None (remove)</span>
                             </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                            {categories.map(cat => (
+                              <SelectItem key={cat.id} value={cat.id}>
+                                <div className="flex items-center gap-2">
+                                  <div className="h-3 w-3 rounded-full" style={{ backgroundColor: cat.color }} />
+                                  {cat.name}
+                                </div>
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      )}
                     </TableCell>
                     <TableCell className="text-muted-foreground">
                       {new Date(transaction.date).toLocaleDateString('en-CA', {
-                        month: 'short',
-                        day: 'numeric',
-                        year: 'numeric',
+                        month: 'short', day: 'numeric', year: 'numeric',
                       })}
                     </TableCell>
                     <TableCell className="text-right">
-                      <span className={cn(
-                        "font-semibold",
-                        isIncome ? "text-income" : "text-expense"
-                      )}>
+                      <span className={cn("font-semibold", isIncome ? "text-income" : "text-expense")}>
                         {isIncome ? '+' : '-'}${Math.abs(transaction.amount).toFixed(2)}
                       </span>
+                    </TableCell>
+                    <TableCell>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                            <MoreHorizontal className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem onClick={() => handleSplit(transaction)}>
+                            <Split className="h-4 w-4 mr-2" />
+                            {hasSplits ? 'Edit Split' : 'Split'}
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handleExclude(transaction)}>
+                            {isExcluded ? (
+                              <><Eye className="h-4 w-4 mr-2" /> Include</>
+                            ) : (
+                              <><EyeOff className="h-4 w-4 mr-2" /> Exclude</>
+                            )}
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     </TableCell>
                   </TableRow>
                 );
@@ -192,30 +236,22 @@ export function TransactionList() {
 
       {/* Pagination */}
       <div className="flex items-center justify-between">
-        <p className="text-sm text-muted-foreground">
-          Page {page} of {totalPages}
-        </p>
+        <p className="text-sm text-muted-foreground">Page {page} of {totalPages}</p>
         <div className="flex gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setPage(p => Math.max(1, p - 1))}
-            disabled={page === 1}
-          >
-            <ChevronLeft className="h-4 w-4" />
-            Previous
+          <Button variant="outline" size="sm" onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1}>
+            <ChevronLeft className="h-4 w-4" /> Previous
           </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setPage(p => Math.min(totalPages, p + 1))}
-            disabled={page === totalPages}
-          >
-            Next
-            <ChevronRight className="h-4 w-4" />
+          <Button variant="outline" size="sm" onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page === totalPages}>
+            Next <ChevronRight className="h-4 w-4" />
           </Button>
         </div>
       </div>
+
+      <SplitTransactionDialog
+        open={splitOpen}
+        onOpenChange={setSplitOpen}
+        transaction={splitTransaction}
+      />
     </div>
   );
 }

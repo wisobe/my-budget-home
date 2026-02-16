@@ -10,8 +10,25 @@ export interface Transaction {
   amount: number; // Positive = expense, Negative = income
   category_id?: string;
   pending: boolean;
+  excluded: boolean;
+  notes?: string;
+  split_count?: number;
+  category_name?: string;
+  category_color?: string;
+  account_name?: string;
   created_at: string;
   updated_at: string;
+}
+
+export interface TransactionSplit {
+  id: string;
+  transaction_id: string;
+  category_id?: string;
+  amount: number;
+  is_excluded: boolean;
+  category_name?: string;
+  category_color?: string;
+  created_at: string;
 }
 
 export interface Category {
@@ -43,7 +60,7 @@ export interface PlaidConnection {
   id: string;
   institution_id: string;
   institution_name: string;
-  access_token_encrypted?: string; // Backend only
+  access_token_encrypted?: string;
   plaid_environment?: 'sandbox' | 'production';
   last_synced?: string;
   status: 'active' | 'error' | 'pending';
@@ -104,4 +121,10 @@ export interface PlaidSyncResult {
   modified: number;
   removed: number;
   accounts_updated: number;
+}
+
+// Auth types
+export interface AuthVerifyResponse {
+  auth_enabled: boolean;
+  token_valid: boolean;
 }

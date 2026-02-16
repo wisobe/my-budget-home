@@ -2,9 +2,6 @@
 /**
  * Transactions List Endpoint
  * GET /api/transactions/index.php
- * 
- * Lists transactions with optional filters and pagination
- * Accepts ?plaid_environment=sandbox|production query param
  */
 
 require_once __DIR__ . '/../includes/bootstrap.php';
@@ -14,7 +11,6 @@ if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
 }
 
 try {
-    // Parse query parameters
     $page = max(1, (int)($_GET['page'] ?? 1));
     $perPage = min(100, max(1, (int)($_GET['per_page'] ?? 20)));
     $accountId = $_GET['account_id'] ?? null;
@@ -23,21 +19,26 @@ try {
     $endDate = $_GET['end_date'] ?? null;
     $search = $_GET['search'] ?? null;
     $environment = $_GET['plaid_environment'] ?? 'sandbox';
+    $showExcluded = ($_GET['show_excluded'] ?? '0') === '1';
     
     if (!in_array($environment, ['sandbox', 'production'])) {
         $environment = 'sandbox';
     }
     
-    
     $pdo = Database::getConnection();
     
-    // Build query — filter by plaid_environment through account → connection join
     $where = ['1=1'];
     $params = [];
     
-    // Always filter by environment
-    $where[] = 'c.plaid_environment = :environment';
+    // Filter by environment (join through account → connection)
+    // Use LEFT JOIN to also include manual transactions (no connection)
+    $joinType = 'LEFT';
+    $where[] = '(c.plaid_environment = :environment OR a.plaid_connection_id IS NULL)';
     $params['environment'] = $environment;
+    
+    if (!$showExcluded) {
+        $where[] = 't.excluded = 0';
+    }
     
     if ($accountId) {
         $where[] = 't.account_id = :account_id';
@@ -71,23 +72,24 @@ try {
     $countStmt = $pdo->prepare("
         SELECT COUNT(*) FROM transactions t
         INNER JOIN accounts a ON t.account_id = a.id
-        INNER JOIN plaid_connections c ON a.plaid_connection_id = c.id
+        LEFT JOIN plaid_connections c ON a.plaid_connection_id = c.id
         WHERE {$whereClause}
     ");
     $countStmt->execute($params);
     $total = (int)$countStmt->fetchColumn();
     
-    // Get paginated results
+    // Get paginated results with split_count
     $offset = ($page - 1) * $perPage;
     $stmt = $pdo->prepare("
         SELECT 
             t.*,
             cat.name as category_name,
             cat.color as category_color,
-            a.name as account_name
+            a.name as account_name,
+            (SELECT COUNT(*) FROM transaction_splits ts WHERE ts.transaction_id = t.id) as split_count
         FROM transactions t
         INNER JOIN accounts a ON t.account_id = a.id
-        INNER JOIN plaid_connections c ON a.plaid_connection_id = c.id
+        LEFT JOIN plaid_connections c ON a.plaid_connection_id = c.id
         LEFT JOIN categories cat ON t.category_id = cat.id
         WHERE {$whereClause}
         ORDER BY t.date DESC, t.created_at DESC

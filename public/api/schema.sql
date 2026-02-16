@@ -1,6 +1,20 @@
 -- BudgetWise Database Schema for MariaDB
 -- Run this SQL to create all required tables
 
+-- App Settings (stores password hash, etc.)
+CREATE TABLE IF NOT EXISTS app_settings (
+    setting_key VARCHAR(100) PRIMARY KEY,
+    setting_value TEXT NOT NULL,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Auth Tokens (session tokens for login)
+CREATE TABLE IF NOT EXISTS auth_tokens (
+    token VARCHAR(64) PRIMARY KEY,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    expires_at DATETIME NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 -- Plaid Connections (stores bank connections)
 CREATE TABLE IF NOT EXISTS plaid_connections (
     id VARCHAR(50) PRIMARY KEY,
@@ -65,6 +79,7 @@ CREATE TABLE IF NOT EXISTS transactions (
     amount DECIMAL(15, 2) NOT NULL,
     category_id VARCHAR(50),
     pending BOOLEAN DEFAULT FALSE,
+    excluded BOOLEAN DEFAULT FALSE,
     notes TEXT,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -73,7 +88,21 @@ CREATE TABLE IF NOT EXISTS transactions (
     INDEX idx_category (category_id),
     INDEX idx_date (date),
     INDEX idx_pending (pending),
+    INDEX idx_excluded (excluded),
     FOREIGN KEY (account_id) REFERENCES accounts(id) ON DELETE CASCADE,
+    FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Transaction Splits (for splitting a transaction across categories)
+CREATE TABLE IF NOT EXISTS transaction_splits (
+    id VARCHAR(50) PRIMARY KEY,
+    transaction_id VARCHAR(50) NOT NULL,
+    category_id VARCHAR(50),
+    amount DECIMAL(15, 2) NOT NULL,
+    is_excluded BOOLEAN DEFAULT FALSE,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_transaction (transaction_id),
+    FOREIGN KEY (transaction_id) REFERENCES transactions(id) ON DELETE CASCADE,
     FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
@@ -103,6 +132,10 @@ INSERT IGNORE INTO categories (id, name, color, is_income) VALUES
 ('cat_housing', 'Housing', '#6366f1', FALSE),
 ('cat_other', 'Other', '#6b7280', FALSE);
 
+-- Insert default password (budget2024) - bcrypt hash
+INSERT IGNORE INTO app_settings (setting_key, setting_value) VALUES
+('password_hash', '$2y$10$YourHashWillBeGeneratedOnFirstLogin');
+
 -- ============================================================
 -- MIGRATION: Run this if you already have the old schema
 -- ============================================================
@@ -111,3 +144,30 @@ INSERT IGNORE INTO categories (id, name, color, is_income) VALUES
 --   ADD INDEX idx_environment (plaid_environment);
 --
 -- ALTER TABLE accounts MODIFY COLUMN type ENUM('checking', 'savings', 'credit', 'investment', 'depository', 'loan', 'other') NOT NULL;
+--
+-- ALTER TABLE transactions ADD COLUMN excluded BOOLEAN DEFAULT FALSE;
+-- ALTER TABLE transactions ADD INDEX idx_excluded (excluded);
+--
+-- CREATE TABLE IF NOT EXISTS app_settings (
+--     setting_key VARCHAR(100) PRIMARY KEY,
+--     setting_value TEXT NOT NULL,
+--     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+-- ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+--
+-- CREATE TABLE IF NOT EXISTS auth_tokens (
+--     token VARCHAR(64) PRIMARY KEY,
+--     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+--     expires_at DATETIME NOT NULL
+-- ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+--
+-- CREATE TABLE IF NOT EXISTS transaction_splits (
+--     id VARCHAR(50) PRIMARY KEY,
+--     transaction_id VARCHAR(50) NOT NULL,
+--     category_id VARCHAR(50),
+--     amount DECIMAL(15, 2) NOT NULL,
+--     is_excluded BOOLEAN DEFAULT FALSE,
+--     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+--     INDEX idx_transaction (transaction_id),
+--     FOREIGN KEY (transaction_id) REFERENCES transactions(id) ON DELETE CASCADE,
+--     FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE SET NULL
+-- ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

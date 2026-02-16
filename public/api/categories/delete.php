@@ -1,7 +1,8 @@
 <?php
 /**
  * Category Delete Endpoint
- * DELETE /api/categories/delete.php
+ * POST /api/categories/delete.php
+ * Body: { "id": "..." }
  */
 
 require_once __DIR__ . '/../includes/bootstrap.php';
@@ -16,9 +17,13 @@ try {
     
     $pdo = Database::getConnection();
     
-    // Set transactions to uncategorized
-    $pdo->prepare('UPDATE transactions SET category_id = NULL WHERE category_id = :id')
-        ->execute(['id' => $body['id']]);
+    // Move transactions to "Other" category (cat_other) instead of NULL
+    $pdo->prepare('UPDATE transactions SET category_id = :default_cat WHERE category_id = :id')
+        ->execute(['default_cat' => 'cat_other', 'id' => $body['id']]);
+    
+    // Also update any splits referencing this category
+    $pdo->prepare('UPDATE transaction_splits SET category_id = :default_cat WHERE category_id = :id')
+        ->execute(['default_cat' => 'cat_other', 'id' => $body['id']]);
     
     // Delete category
     $stmt = $pdo->prepare('DELETE FROM categories WHERE id = :id');

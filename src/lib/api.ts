@@ -1,12 +1,10 @@
 /**
  * API Client for the Budgeting App Backend
- * 
- * This client is designed to connect to your self-hosted MariaDB backend.
- * Configure the API_BASE_URL to point to your Apache server's API endpoint.
  */
 
 import type {
   Transaction,
+  TransactionSplit,
   Category,
   Account,
   PlaidConnection,
@@ -17,6 +15,7 @@ import type {
   PaginatedResponse,
   PlaidLinkToken,
   PlaidSyncResult,
+  AuthVerifyResponse,
 } from '@/types';
 
 import { API_BASE_URL } from '@/lib/config';
@@ -33,16 +32,28 @@ async function request<T>(
   options: RequestInit = {}
 ): Promise<T> {
   const url = `${API_BASE_URL}${endpoint}`;
-  
+  const token = sessionStorage.getItem('auth_token');
+
   const config: RequestInit = {
     ...options,
     headers: {
       'Content-Type': 'application/json',
+      ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
       ...options.headers,
     },
   };
 
   const response = await fetch(url, config);
+
+  if (response.status === 401) {
+    // Only clear token and reload if this is NOT an auth endpoint
+    if (!endpoint.includes('/auth/')) {
+      sessionStorage.removeItem('auth_token');
+      window.location.reload();
+    }
+    const error = await response.json().catch(() => ({ message: 'Unauthorized' }));
+    throw new ApiError(401, error.message || 'Unauthorized');
+  }
 
   if (!response.ok) {
     const error = await response.json().catch(() => ({ message: 'Request failed' }));
@@ -51,6 +62,25 @@ async function request<T>(
 
   return response.json();
 }
+
+// ============ Auth API ============
+
+export const authApi = {
+  verify: () =>
+    request<ApiResponse<AuthVerifyResponse>>('/auth/verify.php'),
+
+  login: (password: string) =>
+    request<ApiResponse<{ token: string; expires_at: string }>>('/auth/login.php', {
+      method: 'POST',
+      body: JSON.stringify({ password }),
+    }),
+
+  changePassword: (current_password: string, new_password: string) =>
+    request<ApiResponse<null>>('/auth/change-password.php', {
+      method: 'POST',
+      body: JSON.stringify({ current_password, new_password }),
+    }),
+};
 
 // ============ Transactions API ============
 
@@ -64,34 +94,64 @@ export const transactionsApi = {
     end_date?: string;
     search?: string;
     plaid_environment?: string;
+    show_excluded?: boolean;
   }) => {
     const searchParams = new URLSearchParams();
     if (params) {
       Object.entries(params).forEach(([key, value]) => {
-        if (value !== undefined) searchParams.set(key, String(value));
+        if (value !== undefined) {
+          if (key === 'show_excluded') {
+            searchParams.set(key, value ? '1' : '0');
+          } else {
+            searchParams.set(key, String(value));
+          }
+        }
       });
     }
     return request<PaginatedResponse<Transaction>>(`/transactions/?${searchParams}`);
   },
 
-  get: (id: string) => request<ApiResponse<Transaction>>(`/transactions/${id}`),
+  get: (id: string) => request<ApiResponse<Transaction>>(`/transactions/?id=${id}`),
 
-  update: (id: string, data: Partial<Transaction>) =>
-    request<ApiResponse<Transaction>>(`/transactions/${id}`, {
-      method: 'PATCH',
+  categorize: (transaction_id: string, category_id: string | null) =>
+    request<ApiResponse<Transaction>>('/transactions/categorize.php', {
+      method: 'POST',
+      body: JSON.stringify({ transaction_id, category_id }),
+    }),
+
+  exclude: (transaction_id: string, excluded: boolean) =>
+    request<ApiResponse<{ excluded: boolean }>>('/transactions/exclude.php', {
+      method: 'POST',
+      body: JSON.stringify({ transaction_id, excluded }),
+    }),
+
+  create: (data: {
+    account_id: string;
+    date: string;
+    name: string;
+    amount: number;
+    category_id?: string;
+    merchant_name?: string;
+    notes?: string;
+  }) =>
+    request<ApiResponse<Transaction>>('/transactions/create.php', {
+      method: 'POST',
       body: JSON.stringify(data),
     }),
 
-  categorize: (id: string, category_id: string) =>
-    request<ApiResponse<Transaction>>(`/transactions/${id}/categorize`, {
+  getSplits: (transaction_id: string) =>
+    request<ApiResponse<TransactionSplit[]>>(`/transactions/splits.php?transaction_id=${transaction_id}`),
+
+  saveSplits: (transaction_id: string, splits: { category_id?: string; amount: number; is_excluded?: boolean }[]) =>
+    request<ApiResponse<TransactionSplit[]>>('/transactions/splits.php', {
       method: 'POST',
-      body: JSON.stringify({ category_id }),
+      body: JSON.stringify({ transaction_id, splits }),
     }),
 
-  bulkCategorize: (transaction_ids: string[], category_id: string) =>
-    request<ApiResponse<{ updated: number }>>('/transactions/bulk-categorize', {
-      method: 'POST',
-      body: JSON.stringify({ transaction_ids, category_id }),
+  deleteSplits: (transaction_id: string) =>
+    request<ApiResponse<null>>('/transactions/splits.php', {
+      method: 'DELETE',
+      body: JSON.stringify({ transaction_id }),
     }),
 };
 
@@ -106,14 +166,11 @@ export const categoriesApi = {
       body: JSON.stringify(data),
     }),
 
-  update: (id: string, data: Partial<Category>) =>
-    request<ApiResponse<Category>>(`/categories/${id}`, {
-      method: 'PATCH',
-      body: JSON.stringify(data),
-    }),
-
   delete: (id: string) =>
-    request<ApiResponse<void>>(`/categories/${id}`, { method: 'DELETE' }),
+    request<ApiResponse<void>>('/categories/delete.php', {
+      method: 'POST',
+      body: JSON.stringify({ id }),
+    }),
 };
 
 // ============ Accounts API ============
@@ -128,65 +185,36 @@ export const accountsApi = {
   },
 
   get: (id: string) => request<ApiResponse<Account>>(`/accounts/${id}`),
-
-  sync: (id: string) =>
-    request<ApiResponse<{ synced: boolean }>>(`/accounts/${id}/sync`, {
-      method: 'POST',
-    }),
 };
 
 // ============ Plaid Integration API ============
 
 export const plaidApi = {
   createLinkToken: () =>
-    request<ApiResponse<PlaidLinkToken>>('/plaid/link-token', {
+    request<ApiResponse<PlaidLinkToken>>('/plaid/link-token.php', {
       method: 'POST',
     }),
 
   exchangeToken: (public_token: string, institution_id: string) =>
-    request<ApiResponse<PlaidConnection>>('/plaid/exchange-token', {
+    request<ApiResponse<PlaidConnection>>('/plaid/exchange-token.php', {
       method: 'POST',
       body: JSON.stringify({ public_token, institution_id }),
     }),
 
   getConnections: () =>
-    request<ApiResponse<PlaidConnection[]>>('/plaid/connections'),
+    request<ApiResponse<PlaidConnection[]>>('/plaid/connections.php'),
 
   syncTransactions: (connection_id: string) =>
-    request<ApiResponse<PlaidSyncResult>>(`/plaid/connections/${connection_id}/sync`, {
+    request<ApiResponse<PlaidSyncResult>>('/plaid/sync.php', {
       method: 'POST',
+      body: JSON.stringify({ connection_id }),
     }),
 
   removeConnection: (connection_id: string) =>
-    request<ApiResponse<void>>(`/plaid/connections/${connection_id}`, {
-      method: 'DELETE',
-    }),
-};
-
-// ============ Budgets API ============
-
-export const budgetsApi = {
-  list: () => request<ApiResponse<Budget[]>>('/budgets'),
-
-  create: (data: Omit<Budget, 'id' | 'created_at'>) =>
-    request<ApiResponse<Budget>>('/budgets', {
+    request<ApiResponse<void>>('/plaid/remove.php', {
       method: 'POST',
-      body: JSON.stringify(data),
+      body: JSON.stringify({ connection_id }),
     }),
-
-  update: (id: string, data: Partial<Budget>) =>
-    request<ApiResponse<Budget>>(`/budgets/${id}`, {
-      method: 'PATCH',
-      body: JSON.stringify(data),
-    }),
-
-  delete: (id: string) =>
-    request<ApiResponse<void>>(`/budgets/${id}`, { method: 'DELETE' }),
-
-  getProgress: (period?: string) =>
-    request<ApiResponse<{ category_id: string; spent: number; budget: number }[]>>(
-      `/budgets/progress${period ? `?period=${period}` : ''}`
-    ),
 };
 
 // ============ Reports & Insights API ============
