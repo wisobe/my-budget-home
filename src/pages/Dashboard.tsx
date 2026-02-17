@@ -20,12 +20,12 @@ const Dashboard = () => {
   const thisMonthTransactions = transactions.filter(t => new Date(t.date) >= startOfMonth);
   
   const monthlyIncome = thisMonthTransactions
-    .filter(t => t.amount < 0)
-    .reduce((sum, t) => sum + Math.abs(t.amount), 0);
+    .filter(t => Number(t.amount) < 0)
+    .reduce((sum, t) => sum + Math.abs(Number(t.amount)), 0);
   
   const monthlyExpenses = thisMonthTransactions
-    .filter(t => t.amount > 0)
-    .reduce((sum, t) => sum + t.amount, 0);
+    .filter(t => Number(t.amount) > 0)
+    .reduce((sum, t) => sum + Number(t.amount), 0);
 
   const netSavings = monthlyIncome - monthlyExpenses;
 
