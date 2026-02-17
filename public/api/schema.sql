@@ -136,6 +136,21 @@ INSERT IGNORE INTO categories (id, name, color, is_income) VALUES
 INSERT IGNORE INTO app_settings (setting_key, setting_value) VALUES
 ('password_hash', '$2y$10$YourHashWillBeGeneratedOnFirstLogin');
 
+-- Category Rules (for auto-categorization by keyword matching)
+CREATE TABLE IF NOT EXISTS category_rules (
+    id VARCHAR(50) PRIMARY KEY,
+    category_id VARCHAR(50) NOT NULL,
+    keyword VARCHAR(255) NOT NULL,
+    match_type ENUM('contains', 'exact', 'starts_with') DEFAULT 'contains',
+    priority INT DEFAULT 0,
+    auto_learned BOOLEAN DEFAULT FALSE,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_keyword (keyword),
+    INDEX idx_category (category_id),
+    INDEX idx_priority (priority),
+    FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 -- ============================================================
 -- MIGRATION: Run this if you already have the old schema
 -- ============================================================

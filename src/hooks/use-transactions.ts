@@ -111,3 +111,31 @@ export function useDeleteCategory() {
     },
   });
 }
+
+export function useCategoryRules() {
+  return useQuery({
+    queryKey: ['category-rules'],
+    queryFn: () => categoriesApi.listRules(),
+  });
+}
+
+export function useCreateCategoryRule() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (data: { category_id: string; keyword: string; match_type?: string; priority?: number }) =>
+      categoriesApi.createRule(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['category-rules'] });
+    },
+  });
+}
+
+export function useDeleteCategoryRule() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => categoriesApi.deleteRule(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['category-rules'] });
+    },
+  });
+}

@@ -41,6 +41,18 @@ export interface Category {
   created_at: string;
 }
 
+export interface CategoryRule {
+  id: string;
+  category_id: string;
+  keyword: string;
+  match_type: 'contains' | 'exact' | 'starts_with';
+  priority: number;
+  auto_learned: boolean;
+  category_name?: string;
+  category_color?: string;
+  created_at: string;
+}
+
 export interface Account {
   id: string;
   plaid_account_id?: string;

@@ -6,9 +6,10 @@ import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
-import { useCategories, useDeleteCategory } from '@/hooks/use-transactions';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { useCategories, useDeleteCategory, useCategoryRules, useCreateCategoryRule, useDeleteCategoryRule } from '@/hooks/use-transactions';
 import { useAuth } from '@/contexts/AuthContext';
-import { Plus, Trash2, CheckCircle2, XCircle, Loader2, Key, ExternalLink, FlaskConical, Building2, Lock, LogOut } from 'lucide-react';
+import { Plus, Trash2, CheckCircle2, XCircle, Loader2, Key, ExternalLink, FlaskConical, Building2, Lock, LogOut, Sparkles } from 'lucide-react';
 import { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { API_BASE_URL } from '@/lib/config';
@@ -26,6 +27,10 @@ const Settings = () => {
   const { logout } = useAuth();
   const { darkMode, setDarkMode, autoSync, setAutoSync, showPending, setShowPending } = usePreferences();
   const deleteCategoryMutation = useDeleteCategory();
+  const { data: rulesData } = useCategoryRules();
+  const createRuleMutation = useCreateCategoryRule();
+  const deleteRuleMutation = useDeleteCategoryRule();
+  const rules = rulesData?.data || [];
 
   const [dbTestStatus, setDbTestStatus] = useState<'idle' | 'testing' | 'success' | 'error'>('idle');
   const [dbTestMessage, setDbTestMessage] = useState('');
@@ -34,6 +39,12 @@ const Settings = () => {
   const [newCatIsIncome, setNewCatIsIncome] = useState(false);
   const [addCatOpen, setAddCatOpen] = useState(false);
   const [addingCat, setAddingCat] = useState(false);
+
+  // Category rules state
+  const [addRuleOpen, setAddRuleOpen] = useState(false);
+  const [newRuleKeyword, setNewRuleKeyword] = useState('');
+  const [newRuleCategoryId, setNewRuleCategoryId] = useState('');
+  const [newRuleMatchType, setNewRuleMatchType] = useState('contains');
 
   // Change password state
   const [currentPassword, setCurrentPassword] = useState('');
@@ -333,6 +344,129 @@ const Settings = () => {
           </CardContent>
         </Card>
 
+        {/* Auto-Categorization Rules */}
+        <Card>
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle className="flex items-center gap-2">
+                  <Sparkles className="h-5 w-5" />
+                  Auto-Categorization Rules
+                </CardTitle>
+                <CardDescription>
+                  Rules are auto-learned when you categorize transactions. You can also add manual rules.
+                </CardDescription>
+              </div>
+              <Dialog open={addRuleOpen} onOpenChange={setAddRuleOpen}>
+                <DialogTrigger asChild>
+                  <Button size="sm"><Plus className="h-4 w-4 mr-2" />Add Rule</Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader><DialogTitle>Add Categorization Rule</DialogTitle></DialogHeader>
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <Label>Keyword</Label>
+                      <Input value={newRuleKeyword} onChange={e => setNewRuleKeyword(e.target.value)} placeholder="e.g. STARBUCKS" />
+                      <p className="text-xs text-muted-foreground">Matched against transaction name and merchant name (case-insensitive)</p>
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Category</Label>
+                      <Select value={newRuleCategoryId} onValueChange={setNewRuleCategoryId}>
+                        <SelectTrigger><SelectValue placeholder="Select category" /></SelectTrigger>
+                        <SelectContent>
+                          {categories.map(c => (
+                            <SelectItem key={c.id} value={c.id}>
+                              <div className="flex items-center gap-2">
+                                <div className="h-3 w-3 rounded-full" style={{ backgroundColor: c.color }} />
+                                {c.name}
+                              </div>
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Match Type</Label>
+                      <Select value={newRuleMatchType} onValueChange={setNewRuleMatchType}>
+                        <SelectTrigger><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="contains">Contains</SelectItem>
+                          <SelectItem value="exact">Exact Match</SelectItem>
+                          <SelectItem value="starts_with">Starts With</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <Button
+                      className="w-full"
+                      disabled={!newRuleKeyword.trim() || !newRuleCategoryId || createRuleMutation.isPending}
+                      onClick={async () => {
+                        try {
+                          await createRuleMutation.mutateAsync({
+                            category_id: newRuleCategoryId,
+                            keyword: newRuleKeyword.trim(),
+                            match_type: newRuleMatchType,
+                          });
+                          toast.success('Rule created');
+                          setNewRuleKeyword('');
+                          setNewRuleCategoryId('');
+                          setNewRuleMatchType('contains');
+                          setAddRuleOpen(false);
+                        } catch (e: any) {
+                          toast.error(e.message || 'Failed to create rule');
+                        }
+                      }}
+                    >
+                      {createRuleMutation.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                      Create Rule
+                    </Button>
+                  </div>
+                </DialogContent>
+              </Dialog>
+            </div>
+          </CardHeader>
+          <CardContent>
+            {rules.length === 0 ? (
+              <p className="text-sm text-muted-foreground text-center py-4">
+                No rules yet. Categorize a transaction and a rule will be auto-learned, or add one manually.
+              </p>
+            ) : (
+              <div className="space-y-2">
+                {rules.map(rule => (
+                  <div key={rule.id} className="flex items-center justify-between p-3 rounded-lg hover:bg-muted/50 transition-colors">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className="h-3 w-3 rounded-full shrink-0" style={{ backgroundColor: rule.category_color || '#6b7280' }} />
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-2">
+                          <span className="font-medium font-mono text-sm">{rule.keyword}</span>
+                          <Badge variant="outline" className="text-xs shrink-0">{rule.match_type}</Badge>
+                          {!!rule.auto_learned && <Badge variant="secondary" className="text-xs shrink-0">Auto</Badge>}
+                        </div>
+                        <p className="text-xs text-muted-foreground truncate">→ {rule.category_name || 'Unknown'}</p>
+                      </div>
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="text-muted-foreground hover:text-destructive shrink-0"
+                      onClick={async () => {
+                        if (!confirm(`Delete rule "${rule.keyword}"?`)) return;
+                        try {
+                          await deleteRuleMutation.mutateAsync(rule.id);
+                          toast.success('Rule deleted');
+                        } catch (e: any) {
+                          toast.error(e.message || 'Failed to delete rule');
+                        }
+                      }}
+                      disabled={deleteRuleMutation.isPending}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
         {/* Preferences */}
         <Card>
           <CardHeader>
