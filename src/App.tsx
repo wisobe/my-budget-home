@@ -7,6 +7,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { BASE_PATH } from "@/lib/config";
 import { PlaidEnvironmentProvider } from "@/contexts/PlaidEnvironmentContext";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
+import { PreferencesProvider } from "@/contexts/PreferencesContext";
 import { Loader2 } from "lucide-react";
 import Dashboard from "./pages/Dashboard";
 import Transactions from "./pages/Transactions";
@@ -41,25 +42,27 @@ const App = () => (
   <React.StrictMode>
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <PlaidEnvironmentProvider>
-          <TooltipProvider>
-            <Toaster />
-            <Sonner />
-            <AuthGate>
-              <BrowserRouter basename={BASE_PATH}>
-                <Routes>
-                  <Route path="/" element={<Dashboard />} />
-                  <Route path="/transactions" element={<Transactions />} />
-                  <Route path="/reports" element={<Reports />} />
-                  <Route path="/accounts" element={<Accounts />} />
-                  <Route path="/connections" element={<Connections />} />
-                  <Route path="/settings" element={<Settings />} />
-                  <Route path="*" element={<NotFound />} />
-                </Routes>
-              </BrowserRouter>
-            </AuthGate>
-          </TooltipProvider>
-        </PlaidEnvironmentProvider>
+        <PreferencesProvider>
+          <PlaidEnvironmentProvider>
+            <TooltipProvider>
+              <Toaster />
+              <Sonner />
+              <AuthGate>
+                <BrowserRouter basename={BASE_PATH}>
+                  <Routes>
+                    <Route path="/" element={<Dashboard />} />
+                    <Route path="/transactions" element={<Transactions />} />
+                    <Route path="/reports" element={<Reports />} />
+                    <Route path="/accounts" element={<Accounts />} />
+                    <Route path="/connections" element={<Connections />} />
+                    <Route path="/settings" element={<Settings />} />
+                    <Route path="*" element={<NotFound />} />
+                  </Routes>
+                </BrowserRouter>
+              </AuthGate>
+            </TooltipProvider>
+          </PlaidEnvironmentProvider>
+        </PreferencesProvider>
       </AuthProvider>
     </QueryClientProvider>
   </React.StrictMode>

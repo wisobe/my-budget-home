@@ -25,6 +25,7 @@ import {
   MoreHorizontal, Split, EyeOff, Eye,
 } from 'lucide-react';
 import { SplitTransactionDialog } from './SplitTransactionDialog';
+import { usePreferences } from '@/contexts/PreferencesContext';
 import type { Transaction } from '@/types';
 
 export function TransactionList() {
@@ -47,7 +48,8 @@ export function TransactionList() {
   const categorize = useCategorizeTransaction();
   const excludeMutation = useExcludeTransaction();
 
-  const transactions = transactionsData?.data || [];
+  const { showPending } = usePreferences();
+  const transactions = (transactionsData?.data || []).filter(t => showPending || !t.pending);
   const categories = categoriesData?.data || [];
   const totalPages = transactionsData?.total_pages || 1;
 
