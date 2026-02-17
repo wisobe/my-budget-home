@@ -1,5 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { useMonthlyOverview } from '@/hooks/use-reports';
+import { useMonthlyOverview, useMonthlyOverviewByRange } from '@/hooks/use-reports';
 import {
   LineChart,
   Line,
@@ -10,9 +10,21 @@ import {
   ResponsiveContainer,
 } from 'recharts';
 
-export function SavingsRateChart() {
+interface SavingsRateChartProps {
+  mode: 'ytd' | 'rolling';
+}
+
+export function SavingsRateChart({ mode }: SavingsRateChartProps) {
   const currentYear = new Date().getFullYear();
-  const { data: overviewData, isLoading } = useMonthlyOverview(currentYear);
+  const today = new Date();
+  const rolling12Start = new Date(today.getFullYear() - 1, today.getMonth(), today.getDate() + 1)
+    .toISOString().split('T')[0];
+  const rolling12End = today.toISOString().split('T')[0];
+
+  const ytdQuery = useMonthlyOverview(currentYear);
+  const rollingQuery = useMonthlyOverviewByRange(rolling12Start, rolling12End);
+
+  const { data: overviewData, isLoading } = mode === 'ytd' ? ytdQuery : rollingQuery;
 
   if (isLoading) {
     return (
@@ -30,9 +42,9 @@ export function SavingsRateChart() {
   const monthlyData = overviewData?.data || [];
 
   const chartData = monthlyData.map(item => ({
-    month: new Date(item.month + '-01').toLocaleDateString('en-CA', { month: 'short' }),
-    rate: item.savings_rate,
-    savings: item.net_savings,
+    month: new Date(item.month + '-01').toLocaleDateString('en-CA', { month: 'short', year: '2-digit' }),
+    rate: Number(item.savings_rate),
+    savings: Number(item.net_savings),
   }));
 
   return (

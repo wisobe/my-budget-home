@@ -4,12 +4,13 @@ import { useCategories } from '@/hooks/use-transactions';
 import { Progress } from '@/components/ui/progress';
 import { TrendingUp, TrendingDown, Minus } from 'lucide-react';
 
-export function CategoryBreakdown() {
-  const today = new Date();
-  const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1).toISOString().split('T')[0];
-  const endOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0).toISOString().split('T')[0];
+interface CategoryBreakdownProps {
+  startDate: string;
+  endDate: string;
+}
 
-  const { data: spendingData, isLoading } = useSpendingByCategory(startOfMonth, endOfMonth);
+export function CategoryBreakdown({ startDate, endDate }: CategoryBreakdownProps) {
+  const { data: spendingData, isLoading } = useSpendingByCategory(startDate, endDate);
   const { data: categoriesData } = useCategories();
   const categories = categoriesData?.data || [];
 

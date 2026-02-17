@@ -230,6 +230,11 @@ export const reportsApi = {
       `/reports/monthly-overview.php?year=${params.year}${params.month ? `&month=${params.month}` : ''}`
     ),
 
+  getMonthlyOverviewByRange: (params: { start_date: string; end_date: string }) =>
+    request<ApiResponse<MonthlyOverview[]>>(
+      `/reports/monthly-overview.php?start_date=${params.start_date}&end_date=${params.end_date}`
+    ),
+
   getIncomeVsExpenses: (params: { start_date: string; end_date: string }) =>
     request<ApiResponse<{ date: string; income: number; expenses: number }[]>>(
       `/reports/income-vs-expenses.php?start_date=${params.start_date}&end_date=${params.end_date}`

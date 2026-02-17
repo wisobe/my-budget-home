@@ -1,5 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { useMonthlyOverview } from '@/hooks/use-reports';
+import { useMonthlyOverview, useMonthlyOverviewByRange } from '@/hooks/use-reports';
 import {
   BarChart,
   Bar,
@@ -11,9 +11,23 @@ import {
   Legend,
 } from 'recharts';
 
-export function IncomeExpenseChart() {
+interface IncomeExpenseChartProps {
+  mode: 'ytd' | 'rolling';
+}
+
+export function IncomeExpenseChart({ mode }: IncomeExpenseChartProps) {
   const currentYear = new Date().getFullYear();
-  const { data: overviewData, isLoading } = useMonthlyOverview(currentYear);
+  const today = new Date();
+  const rolling12Start = new Date(today.getFullYear() - 1, today.getMonth(), today.getDate() + 1)
+    .toISOString().split('T')[0];
+  const rolling12End = today.toISOString().split('T')[0];
+
+  const ytdQuery = useMonthlyOverview(currentYear);
+  const rollingQuery = useMonthlyOverviewByRange(rolling12Start, rolling12End);
+
+  const { data: overviewData, isLoading } = mode === 'ytd' ? ytdQuery : rollingQuery;
+
+  const label = mode === 'ytd' ? `${currentYear}` : 'Rolling 12 Months';
 
   if (isLoading) {
     return (
@@ -31,16 +45,16 @@ export function IncomeExpenseChart() {
   const monthlyData = overviewData?.data || [];
 
   const chartData = monthlyData.map(item => ({
-    month: new Date(item.month + '-01').toLocaleDateString('en-CA', { month: 'short' }),
-    income: item.total_income,
-    expenses: item.total_expenses,
-    savings: item.net_savings,
+    month: new Date(item.month + '-01').toLocaleDateString('en-CA', { month: 'short', year: '2-digit' }),
+    income: Number(item.total_income),
+    expenses: Number(item.total_expenses),
+    savings: Number(item.net_savings),
   }));
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Income vs Expenses ({currentYear})</CardTitle>
+        <CardTitle>Income vs Expenses ({label})</CardTitle>
       </CardHeader>
       <CardContent>
         <ResponsiveContainer width="100%" height={350}>
