@@ -316,7 +316,7 @@ const Settings = () => {
                   <div className="flex items-center gap-3">
                     <div className="h-4 w-4 rounded-full" style={{ backgroundColor: category.color }} />
                     <span className="font-medium">{category.name}</span>
-                    {category.is_income && <Badge variant="secondary" className="text-xs">Income</Badge>}
+                    {!!category.is_income && <Badge variant="secondary" className="text-xs">Income</Badge>}
                   </div>
                   <Button
                     variant="ghost"
