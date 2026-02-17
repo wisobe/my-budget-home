@@ -1,9 +1,10 @@
 <?php
 /**
  * Spending by Category Report
- * GET /api/reports/spending-by-category.php?start_date=YYYY-MM-DD&end_date=YYYY-MM-DD
+ * GET /api/reports/spending-by-category.php?start_date=YYYY-MM-DD&end_date=YYYY-MM-DD&plaid_environment=sandbox
  *
  * Returns spending totals grouped by category with trend vs previous period.
+ * Filters by plaid_environment via account → plaid_connections join.
  */
 
 require_once __DIR__ . '/../includes/bootstrap.php';
@@ -13,14 +14,20 @@ if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
 }
 
 try {
-    $startDate = $_GET['start_date'] ?? null;
-    $endDate   = $_GET['end_date']   ?? null;
+    $startDate   = $_GET['start_date'] ?? null;
+    $endDate     = $_GET['end_date']   ?? null;
+    $environment = $_GET['plaid_environment'] ?? 'sandbox';
 
     if (!$startDate || !$endDate) {
         Response::error('start_date and end_date are required');
     }
+    if (!in_array($environment, ['sandbox', 'production'])) {
+        $environment = 'sandbox';
+    }
 
     $pdo = Database::getConnection();
+
+    $envFilter = '(c.plaid_environment = :environment OR a.plaid_connection_id IS NULL)';
 
     // Current period spending by category
     $stmt = $pdo->prepare("
@@ -30,15 +37,18 @@ try {
             SUM(t.amount)                              AS total_amount,
             COUNT(*)                                   AS transaction_count
         FROM transactions t
+        INNER JOIN accounts a ON t.account_id = a.id
+        LEFT JOIN plaid_connections c ON a.plaid_connection_id = c.id
         LEFT JOIN categories cat ON t.category_id = cat.id
         WHERE t.date >= :start_date
           AND t.date <= :end_date
           AND t.excluded = 0
           AND t.amount > 0
+          AND {$envFilter}
         GROUP BY t.category_id, cat.name
         ORDER BY total_amount DESC
     ");
-    $stmt->execute(['start_date' => $startDate, 'end_date' => $endDate]);
+    $stmt->execute(['start_date' => $startDate, 'end_date' => $endDate, 'environment' => $environment]);
     $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     // Grand total for percentage calculation
@@ -56,13 +66,16 @@ try {
             COALESCE(t.category_id, 'uncategorized') AS category_id,
             SUM(t.amount) AS total_amount
         FROM transactions t
+        INNER JOIN accounts a ON t.account_id = a.id
+        LEFT JOIN plaid_connections c ON a.plaid_connection_id = c.id
         WHERE t.date >= :start_date
           AND t.date <= :end_date
           AND t.excluded = 0
           AND t.amount > 0
+          AND {$envFilter}
         GROUP BY t.category_id
     ");
-    $prevStmt->execute(['start_date' => $prevStart, 'end_date' => $prevEnd]);
+    $prevStmt->execute(['start_date' => $prevStart, 'end_date' => $prevEnd, 'environment' => $environment]);
     $prevMap = [];
     foreach ($prevStmt->fetchAll(PDO::FETCH_ASSOC) as $p) {
         $prevMap[$p['category_id']] = (float) $p['total_amount'];

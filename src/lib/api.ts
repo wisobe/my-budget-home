@@ -235,19 +235,19 @@ export const plaidApi = {
 // ============ Reports & Insights API ============
 
 export const reportsApi = {
-  getSpendingByCategory: (params: { start_date: string; end_date: string }) =>
+  getSpendingByCategory: (params: { start_date: string; end_date: string; plaid_environment?: string }) =>
     request<ApiResponse<SpendingInsight[]>>(
-      `/reports/spending-by-category.php?start_date=${params.start_date}&end_date=${params.end_date}`
+      `/reports/spending-by-category.php?start_date=${params.start_date}&end_date=${params.end_date}${params.plaid_environment ? `&plaid_environment=${params.plaid_environment}` : ''}`
     ),
 
-  getMonthlyOverview: (params: { year: number; month?: number }) =>
+  getMonthlyOverview: (params: { year: number; month?: number; plaid_environment?: string }) =>
     request<ApiResponse<MonthlyOverview[]>>(
-      `/reports/monthly-overview.php?year=${params.year}${params.month ? `&month=${params.month}` : ''}`
+      `/reports/monthly-overview.php?year=${params.year}${params.month ? `&month=${params.month}` : ''}${params.plaid_environment ? `&plaid_environment=${params.plaid_environment}` : ''}`
     ),
 
-  getMonthlyOverviewByRange: (params: { start_date: string; end_date: string }) =>
+  getMonthlyOverviewByRange: (params: { start_date: string; end_date: string; plaid_environment?: string }) =>
     request<ApiResponse<MonthlyOverview[]>>(
-      `/reports/monthly-overview.php?start_date=${params.start_date}&end_date=${params.end_date}`
+      `/reports/monthly-overview.php?start_date=${params.start_date}&end_date=${params.end_date}${params.plaid_environment ? `&plaid_environment=${params.plaid_environment}` : ''}`
     ),
 
   getIncomeVsExpenses: (params: { start_date: string; end_date: string }) =>
