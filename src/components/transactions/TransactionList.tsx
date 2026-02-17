@@ -152,7 +152,7 @@ export function TransactionList() {
                           <p className="text-sm text-muted-foreground">{transaction.merchant_name}</p>
                         )}
                         <div className="flex gap-1 mt-1">
-                          {transaction.pending && <Badge variant="outline" className="text-xs">Pending</Badge>}
+                          {!!transaction.pending && <Badge variant="outline" className="text-xs">Pending</Badge>}
                           {hasSplits && <Badge variant="secondary" className="text-xs">Split</Badge>}
                           {isExcluded && <Badge variant="destructive" className="text-xs">Excluded</Badge>}
                         </div>
