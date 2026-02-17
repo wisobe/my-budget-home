@@ -15,6 +15,13 @@ export function useMonthlyOverview(year: number) {
   });
 }
 
+export function useMonthlyOverviewByRange(startDate: string, endDate: string) {
+  return useQuery({
+    queryKey: ['monthly-overview-range', startDate, endDate],
+    queryFn: () => reportsApi.getMonthlyOverviewByRange({ start_date: startDate, end_date: endDate }),
+  });
+}
+
 export function useIncomeVsExpenses(startDate: string, endDate: string) {
   return useQuery({
     queryKey: ['income-vs-expenses', startDate, endDate],
