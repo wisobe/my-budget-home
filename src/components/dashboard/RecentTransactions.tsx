@@ -1,6 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useTransactions } from '@/hooks/use-transactions';
 import { useCategories } from '@/hooks/use-transactions';
+import { usePreferences } from '@/contexts/PreferencesContext';
 import { cn } from '@/lib/utils';
 import { ArrowUpRight, ArrowDownRight } from 'lucide-react';
 
@@ -31,7 +32,8 @@ export function RecentTransactions() {
     );
   }
 
-  const transactions = transactionsData?.data || [];
+  const { showPending } = usePreferences();
+  const transactions = (transactionsData?.data || []).filter(t => showPending || !t.pending);
 
   return (
     <Card>

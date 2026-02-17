@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { StatCard } from '@/components/dashboard/StatCard';
 import { AccountsList } from '@/components/dashboard/AccountsList';
@@ -6,17 +7,31 @@ import { SpendingChart } from '@/components/dashboard/SpendingChart';
 import { useAccounts, useTotalBalance } from '@/hooks/use-accounts';
 import { useTransactions } from '@/hooks/use-transactions';
 import { SyncButton } from '@/components/transactions/SyncButton';
+import { useSyncAllConnections } from '@/hooks/use-plaid';
+import { usePreferences } from '@/contexts/PreferencesContext';
 import { Wallet, TrendingUp, TrendingDown, PiggyBank } from 'lucide-react';
 
 const Dashboard = () => {
   const totalBalance = useTotalBalance();
   const { data: transactionsData } = useTransactions({ per_page: 100 });
+  const { autoSync, showPending } = usePreferences();
+  const syncAll = useSyncAllConnections();
+  const hasSynced = useRef(false);
+
+  // Auto-sync on first load if enabled
+  useEffect(() => {
+    if (autoSync && !hasSynced.current) {
+      hasSynced.current = true;
+      syncAll.mutate(undefined, { onError: () => {} }); // silent
+    }
+  }, [autoSync]);
 
   // Calculate this month's income and expenses
   const now = new Date();
   const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
   
-  const transactions = transactionsData?.data || [];
+  const transactions = (transactionsData?.data || [])
+    .filter(t => showPending || !t.pending);
   const thisMonthTransactions = transactions.filter(t => new Date(t.date) >= startOfMonth);
   
   const monthlyIncome = thisMonthTransactions

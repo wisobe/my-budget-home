@@ -13,6 +13,7 @@ import { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { API_BASE_URL } from '@/lib/config';
 import { usePlaidEnvironment } from '@/contexts/PlaidEnvironmentContext';
+import { usePreferences } from '@/contexts/PreferencesContext';
 import { cn } from '@/lib/utils';
 import { categoriesApi, authApi } from '@/lib/api';
 import { useQueryClient } from '@tanstack/react-query';
@@ -23,6 +24,7 @@ const Settings = () => {
   const categories = categoriesData?.data || [];
   const { plaidEnvironment, setPlaidEnvironment } = usePlaidEnvironment();
   const { logout } = useAuth();
+  const { darkMode, setDarkMode, autoSync, setAutoSync, showPending, setShowPending } = usePreferences();
   const deleteCategoryMutation = useDeleteCategory();
 
   const [dbTestStatus, setDbTestStatus] = useState<'idle' | 'testing' | 'success' | 'error'>('idle');
@@ -343,7 +345,7 @@ const Settings = () => {
                 <p className="font-medium">Dark Mode</p>
                 <p className="text-sm text-muted-foreground">Toggle dark theme</p>
               </div>
-              <Switch />
+              <Switch checked={darkMode} onCheckedChange={setDarkMode} />
             </div>
             <Separator />
             <div className="flex items-center justify-between">
@@ -351,7 +353,7 @@ const Settings = () => {
                 <p className="font-medium">Auto-sync Transactions</p>
                 <p className="text-sm text-muted-foreground">Sync on app load</p>
               </div>
-              <Switch defaultChecked />
+              <Switch checked={autoSync} onCheckedChange={setAutoSync} />
             </div>
             <Separator />
             <div className="flex items-center justify-between">
@@ -359,7 +361,7 @@ const Settings = () => {
                 <p className="font-medium">Show Pending Transactions</p>
                 <p className="text-sm text-muted-foreground">Include pending in totals</p>
               </div>
-              <Switch defaultChecked />
+              <Switch checked={showPending} onCheckedChange={setShowPending} />
             </div>
           </CardContent>
         </Card>
