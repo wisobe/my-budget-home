@@ -8,7 +8,7 @@ import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 import { useCategories, useDeleteCategory } from '@/hooks/use-transactions';
 import { useAuth } from '@/contexts/AuthContext';
-import { Plus, Trash2, CheckCircle2, XCircle, Loader2, Database, Key, ExternalLink, FlaskConical, Building2, Lock, LogOut } from 'lucide-react';
+import { Plus, Trash2, CheckCircle2, XCircle, Loader2, Key, ExternalLink, FlaskConical, Building2, Lock, LogOut } from 'lucide-react';
 import { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { API_BASE_URL } from '@/lib/config';
@@ -181,24 +181,6 @@ const Settings = () => {
                   <p className="text-muted-foreground">Set <code className="bg-muted px-1 rounded">VITE_API_URL</code> in your .env file</p>
                 </div>
               </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* API Configuration */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Database className="h-5 w-5" />
-              API Configuration
-            </CardTitle>
-            <CardDescription>Configure your backend API endpoint</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="api-url">Backend API URL</Label>
-              <Input id="api-url" defaultValue={import.meta.env.VITE_API_URL || '/api'} readOnly className="bg-muted" />
-              <p className="text-xs text-muted-foreground">Set this in your .env file as <code className="bg-muted px-1 rounded">VITE_API_URL</code></p>
             </div>
             <Separator />
             <div className="space-y-2">
