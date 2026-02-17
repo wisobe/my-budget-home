@@ -71,7 +71,7 @@ const Accounts = () => {
         {Object.entries(groupedAccounts).map(([type, typeAccounts]) => {
           const Icon = accountIcons[type] || Wallet;
           const colorClass = accountTypeColors[type] || accountTypeColors.other;
-          const typeTotal = typeAccounts.reduce((sum, a) => sum + a.current_balance, 0);
+          const typeTotal = typeAccounts.reduce((sum, a) => sum + Number(a.current_balance || 0), 0);
 
           return (
             <Card key={type}>
@@ -115,12 +115,12 @@ const Accounts = () => {
                     <div className="text-right">
                       <p className={cn(
                         "font-semibold",
-                        account.current_balance < 0 && "text-expense"
+                        Number(account.current_balance) < 0 && "text-expense"
                       )}>
                         {new Intl.NumberFormat('en-CA', { 
                           style: 'currency', 
                           currency: account.currency 
-                        }).format(account.current_balance)}
+                        }).format(Number(account.current_balance))}
                       </p>
                       {account.available_balance !== undefined && (
                         <p className="text-xs text-muted-foreground">

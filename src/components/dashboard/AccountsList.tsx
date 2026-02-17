@@ -43,7 +43,7 @@ export function AccountsList() {
       <CardContent className="space-y-3">
         {accounts.map(account => {
           const Icon = accountIcons[account.type] || Wallet;
-          const isNegative = account.current_balance < 0;
+          const isNegative = Number(account.current_balance) < 0;
           
           return (
             <div
@@ -73,7 +73,7 @@ export function AccountsList() {
                   {new Intl.NumberFormat('en-CA', { 
                     style: 'currency', 
                     currency: account.currency 
-                  }).format(Math.abs(account.current_balance))}
+                  }).format(Math.abs(Number(account.current_balance)))}
                 </p>
                 <p className="text-xs text-muted-foreground capitalize">{account.type}</p>
               </div>

@@ -20,5 +20,5 @@ export function useAccount(id: string) {
 
 export function useTotalBalance() {
   const { data: accountsData } = useAccounts();
-  return accountsData?.data?.reduce((sum, account) => sum + account.current_balance, 0) ?? 0;
+  return accountsData?.data?.reduce((sum, account) => sum + Number(account.current_balance || 0), 0) ?? 0;
 }
