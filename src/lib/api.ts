@@ -6,6 +6,7 @@ import type {
   Transaction,
   TransactionSplit,
   Category,
+  CategoryRule,
   Account,
   PlaidConnection,
   Budget,
@@ -169,6 +170,20 @@ export const categoriesApi = {
   delete: (id: string) =>
     request<ApiResponse<void>>('/categories/delete.php', {
       method: 'POST',
+      body: JSON.stringify({ id }),
+    }),
+
+  listRules: () => request<ApiResponse<CategoryRule[]>>('/categories/rules.php'),
+
+  createRule: (data: { category_id: string; keyword: string; match_type?: string; priority?: number }) =>
+    request<ApiResponse<CategoryRule>>('/categories/rules.php', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+
+  deleteRule: (id: string) =>
+    request<ApiResponse<void>>('/categories/rules.php', {
+      method: 'DELETE',
       body: JSON.stringify({ id }),
     }),
 };

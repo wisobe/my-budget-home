@@ -6,6 +6,7 @@
  */
 
 require_once __DIR__ . '/../includes/bootstrap.php';
+require_once __DIR__ . '/../includes/AutoCategorizer.php';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     Response::error('Method not allowed', 405);
@@ -44,6 +45,16 @@ try {
     $fetchStmt = $pdo->prepare('SELECT * FROM transactions WHERE id = :id');
     $fetchStmt->execute(['id' => $body['transaction_id']]);
     $transaction = $fetchStmt->fetch();
+    
+    // Auto-learn: create/update a rule from this manual categorization
+    if ($categoryId && $transaction) {
+        AutoCategorizer::learnFromCategorization(
+            $pdo,
+            $transaction['name'],
+            $transaction['merchant_name'] ?? null,
+            $categoryId
+        );
+    }
     
     Response::success($transaction);
 } catch (Exception $e) {

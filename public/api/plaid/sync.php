@@ -7,6 +7,7 @@
  */
 
 require_once __DIR__ . '/../includes/bootstrap.php';
+require_once __DIR__ . '/../includes/AutoCategorizer.php';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     Response::error('Method not allowed', 405);
@@ -53,13 +54,16 @@ try {
             $account = $accountStmt->fetch();
             
             if ($account) {
+                // Auto-categorize using rules
+                $autoCategoryId = AutoCategorizer::match($pdo, $tx['name'], $tx['merchant_name'] ?? null);
+                
                 $insertStmt = $pdo->prepare('
                     INSERT INTO transactions (
                         id, plaid_transaction_id, account_id, date, name,
-                        merchant_name, amount, pending, created_at, updated_at
+                        merchant_name, amount, category_id, pending, created_at, updated_at
                     ) VALUES (
                         :id, :plaid_tx_id, :account_id, :date, :name,
-                        :merchant_name, :amount, :pending, NOW(), NOW()
+                        :merchant_name, :amount, :category_id, :pending, NOW(), NOW()
                     )
                     ON DUPLICATE KEY UPDATE
                         amount = :amount2,
@@ -75,6 +79,7 @@ try {
                     'name' => $tx['name'],
                     'merchant_name' => $tx['merchant_name'] ?? null,
                     'amount' => $tx['amount'],
+                    'category_id' => $autoCategoryId,
                     'pending' => $tx['pending'] ? 1 : 0,
                     'amount2' => $tx['amount'],
                     'pending2' => $tx['pending'] ? 1 : 0,
