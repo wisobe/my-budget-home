@@ -1,6 +1,7 @@
 import { AppLayout } from '@/components/layout/AppLayout';
 import { IncomeExpenseChart } from '@/components/reports/IncomeExpenseChart';
 import { SavingsRateChart } from '@/components/reports/SavingsRateChart';
+import { NetSavingsChart } from '@/components/reports/NetSavingsChart';
 import { CategoryBreakdown } from '@/components/reports/CategoryBreakdown';
 import { StatCard } from '@/components/dashboard/StatCard';
 import { useMonthlyOverview, useMonthlyOverviewByRange } from '@/hooks/use-reports';
@@ -53,6 +54,7 @@ const Reports = () => {
             <IncomeExpenseChart mode="rolling" />
             <SavingsRateChart mode="rolling" />
           </div>
+          <NetSavingsChart mode="rolling" />
           <CategoryBreakdown startDate={rolling12Start} endDate={rolling12End} />
         </TabsContent>
 
@@ -62,6 +64,7 @@ const Reports = () => {
             <IncomeExpenseChart mode="ytd" />
             <SavingsRateChart mode="ytd" />
           </div>
+          <NetSavingsChart mode="ytd" />
           <CategoryBreakdown startDate={ytdStart} endDate={rolling12End} />
         </TabsContent>
       </Tabs>
