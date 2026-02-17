@@ -42,7 +42,7 @@ export function SavingsRateChart({ mode }: SavingsRateChartProps) {
   const monthlyData = overviewData?.data || [];
 
   const chartData = monthlyData.map(item => ({
-    month: new Date(item.month + '-01').toLocaleDateString('en-CA', { month: 'short', year: '2-digit' }),
+    month: new Date(item.month + '-01T12:00:00').toLocaleDateString('en-CA', { month: 'short', year: '2-digit' }),
     rate: Number(item.savings_rate),
     savings: Number(item.net_savings),
   }));

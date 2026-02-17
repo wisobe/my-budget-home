@@ -45,7 +45,7 @@ export function IncomeExpenseChart({ mode }: IncomeExpenseChartProps) {
   const monthlyData = overviewData?.data || [];
 
   const chartData = monthlyData.map(item => ({
-    month: new Date(item.month + '-01').toLocaleDateString('en-CA', { month: 'short', year: '2-digit' }),
+    month: new Date(item.month + '-01T12:00:00').toLocaleDateString('en-CA', { month: 'short', year: '2-digit' }),
     income: Number(item.total_income),
     expenses: Number(item.total_expenses),
     savings: Number(item.net_savings),
