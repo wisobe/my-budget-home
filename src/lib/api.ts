@@ -222,22 +222,22 @@ export const plaidApi = {
 export const reportsApi = {
   getSpendingByCategory: (params: { start_date: string; end_date: string }) =>
     request<ApiResponse<SpendingInsight[]>>(
-      `/reports/spending-by-category?start_date=${params.start_date}&end_date=${params.end_date}`
+      `/reports/spending-by-category.php?start_date=${params.start_date}&end_date=${params.end_date}`
     ),
 
   getMonthlyOverview: (params: { year: number; month?: number }) =>
     request<ApiResponse<MonthlyOverview[]>>(
-      `/reports/monthly-overview?year=${params.year}${params.month ? `&month=${params.month}` : ''}`
+      `/reports/monthly-overview.php?year=${params.year}${params.month ? `&month=${params.month}` : ''}`
     ),
 
   getIncomeVsExpenses: (params: { start_date: string; end_date: string }) =>
     request<ApiResponse<{ date: string; income: number; expenses: number }[]>>(
-      `/reports/income-vs-expenses?start_date=${params.start_date}&end_date=${params.end_date}`
+      `/reports/income-vs-expenses.php?start_date=${params.start_date}&end_date=${params.end_date}`
     ),
 
   getCashFlow: (params: { start_date: string; end_date: string }) =>
     request<ApiResponse<{ date: string; amount: number; running_total: number }[]>>(
-      `/reports/cash-flow?start_date=${params.start_date}&end_date=${params.end_date}`
+      `/reports/cash-flow.php?start_date=${params.start_date}&end_date=${params.end_date}`
     ),
 };
 
