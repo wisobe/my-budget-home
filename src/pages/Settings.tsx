@@ -23,8 +23,8 @@ import { toast } from '@/components/ui/sonner';
 const Settings = () => {
   const { data: categoriesData } = useCategories();
   const categories = categoriesData?.data || [];
-  const { plaidEnvironment, setPlaidEnvironment } = usePlaidEnvironment();
-  const { logout } = useAuth();
+  const { plaidEnvironment, setPlaidEnvironment, canUseSandbox } = usePlaidEnvironment();
+  const { logout, user, isAdmin } = useAuth();
   const { darkMode, setDarkMode, autoSync, setAutoSync, showPending, setShowPending } = usePreferences();
   const deleteCategoryMutation = useDeleteCategory();
   const { data: rulesData } = useCategoryRules();
@@ -114,21 +114,30 @@ const Settings = () => {
   return (
     <AppLayout title="Settings">
       <div className="space-y-6 max-w-2xl">
-        {/* Security / Password */}
+        {/* Account & Security */}
         <Card>
           <CardHeader>
             <div className="flex items-center justify-between">
               <div>
                 <CardTitle className="flex items-center gap-2">
                   <Lock className="h-5 w-5" />
-                  Security
+                  Account
                 </CardTitle>
-                <CardDescription>Change your app password</CardDescription>
+                <CardDescription>
+                  {user ? `Signed in as ${user.email}` : 'Manage your account'}
+                </CardDescription>
               </div>
-              <Button variant="outline" size="sm" onClick={logout}>
-                <LogOut className="h-4 w-4 mr-2" />
-                Logout
-              </Button>
+              <div className="flex items-center gap-2">
+                {user && (
+                  <Badge variant={isAdmin ? 'default' : 'secondary'}>
+                    {isAdmin ? 'Admin' : 'User'}
+                  </Badge>
+                )}
+                <Button variant="outline" size="sm" onClick={logout}>
+                  <LogOut className="h-4 w-4 mr-2" />
+                  Logout
+                </Button>
+              </div>
             </div>
           </CardHeader>
           <CardContent>
@@ -155,121 +164,127 @@ const Settings = () => {
           </CardContent>
         </Card>
 
-        {/* Setup Guide */}
-        <Card className="border-primary/20 bg-primary/5">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <ExternalLink className="h-5 w-5" />
-              Backend Setup Guide
-            </CardTitle>
-            <CardDescription>Follow these steps to connect your self-hosted backend</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-3 text-sm">
-              <div className="flex gap-3">
-                <Badge variant="outline" className="shrink-0">1</Badge>
-                <div>
-                  <p className="font-medium">Upload PHP API files to your Apache server</p>
-                  <p className="text-muted-foreground">Copy the <code className="bg-muted px-1 rounded">/api</code> folder to your server's public directory</p>
+        {/* Plaid Configuration - Sandbox toggle only for admins */}
+        {canUseSandbox && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Key className="h-5 w-5" />
+                Plaid Environment
+                <Badge variant="outline" className="text-xs">Admin</Badge>
+              </CardTitle>
+              <CardDescription>Switch between sandbox (test) and production (real bank) environments</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-3">
+                <Label>Active Environment</Label>
+                <div className="grid grid-cols-2 gap-3">
+                  <button
+                    onClick={() => setPlaidEnvironment('sandbox')}
+                    className={cn(
+                      "flex items-center gap-3 p-4 rounded-lg border-2 transition-all text-left",
+                      plaidEnvironment === 'sandbox' ? "border-primary bg-primary/5" : "border-border hover:border-muted-foreground/30"
+                    )}
+                  >
+                    <FlaskConical className={cn("h-5 w-5", plaidEnvironment === 'sandbox' ? "text-primary" : "text-muted-foreground")} />
+                    <div>
+                      <p className="font-medium">Sandbox</p>
+                      <p className="text-xs text-muted-foreground">Test with fake bank data</p>
+                    </div>
+                  </button>
+                  <button
+                    onClick={() => setPlaidEnvironment('production')}
+                    className={cn(
+                      "flex items-center gap-3 p-4 rounded-lg border-2 transition-all text-left",
+                      plaidEnvironment === 'production' ? "border-primary bg-primary/5" : "border-border hover:border-muted-foreground/30"
+                    )}
+                  >
+                    <Building2 className={cn("h-5 w-5", plaidEnvironment === 'production' ? "text-primary" : "text-muted-foreground")} />
+                    <div>
+                      <p className="font-medium">Production</p>
+                      <p className="text-xs text-muted-foreground">Real bank connections</p>
+                    </div>
+                  </button>
                 </div>
+                <p className="text-xs text-muted-foreground">
+                  Each environment uses separate Plaid credentials and stores connections independently.
+                </p>
               </div>
-              <div className="flex gap-3">
-                <Badge variant="outline" className="shrink-0">2</Badge>
-                <div>
-                  <p className="font-medium">Create the database schema</p>
-                  <p className="text-muted-foreground">Run <code className="bg-muted px-1 rounded">schema.sql</code> in your MariaDB database</p>
-                </div>
-              </div>
-              <div className="flex gap-3">
-                <Badge variant="outline" className="shrink-0">3</Badge>
-                <div>
-                  <p className="font-medium">Configure your credentials</p>
-                  <p className="text-muted-foreground">Copy <code className="bg-muted px-1 rounded">config.sample.php</code> to <code className="bg-muted px-1 rounded">config.php</code> and fill in your database and Plaid credentials</p>
-                </div>
-              </div>
-              <div className="flex gap-3">
-                <Badge variant="outline" className="shrink-0">4</Badge>
-                <div>
-                  <p className="font-medium">Set the API URL</p>
-                  <p className="text-muted-foreground">Set <code className="bg-muted px-1 rounded">VITE_API_URL</code> in your .env file</p>
-                </div>
-              </div>
-            </div>
-            <Separator />
-            <div className="space-y-2">
-              <Label>Database Connection</Label>
-              <div className="flex gap-2">
-                <Button variant="outline" onClick={testDatabaseConnection} disabled={dbTestStatus === 'testing'}>
-                  {dbTestStatus === 'testing' && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-                  {dbTestStatus === 'success' && <CheckCircle2 className="h-4 w-4 mr-2 text-income" />}
-                  {dbTestStatus === 'error' && <XCircle className="h-4 w-4 mr-2 text-destructive" />}
-                  Test Connection
-                </Button>
-                {dbTestMessage && (
-                  <p className={`text-sm self-center ${dbTestStatus === 'success' ? 'text-income' : 'text-destructive'}`}>{dbTestMessage}</p>
-                )}
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Plaid Configuration */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Key className="h-5 w-5" />
-              Plaid Configuration
-            </CardTitle>
-            <CardDescription>Switch between sandbox (test) and production (real bank) environments</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-3">
-              <Label>Active Environment</Label>
-              <div className="grid grid-cols-2 gap-3">
-                <button
-                  onClick={() => setPlaidEnvironment('sandbox')}
-                  className={cn(
-                    "flex items-center gap-3 p-4 rounded-lg border-2 transition-all text-left",
-                    plaidEnvironment === 'sandbox' ? "border-primary bg-primary/5" : "border-border hover:border-muted-foreground/30"
-                  )}
-                >
-                  <FlaskConical className={cn("h-5 w-5", plaidEnvironment === 'sandbox' ? "text-primary" : "text-muted-foreground")} />
-                  <div>
-                    <p className="font-medium">Sandbox</p>
-                    <p className="text-xs text-muted-foreground">Test with fake bank data</p>
-                  </div>
-                </button>
-                <button
-                  onClick={() => setPlaidEnvironment('production')}
-                  className={cn(
-                    "flex items-center gap-3 p-4 rounded-lg border-2 transition-all text-left",
-                    plaidEnvironment === 'production' ? "border-primary bg-primary/5" : "border-border hover:border-muted-foreground/30"
-                  )}
-                >
-                  <Building2 className={cn("h-5 w-5", plaidEnvironment === 'production' ? "text-primary" : "text-muted-foreground")} />
-                  <div>
-                    <p className="font-medium">Production</p>
-                    <p className="text-xs text-muted-foreground">Real bank connections</p>
-                  </div>
-                </button>
+              <Separator />
+              <div className="space-y-2">
+                <Label>Country</Label>
+                <Input value="Canada (CA)" readOnly className="bg-muted" />
               </div>
               <p className="text-xs text-muted-foreground">
-                Each environment uses separate Plaid credentials and stores connections independently.
+                Configure credentials in <code className="bg-muted px-1 rounded">config.php</code>.{' '}
+                <a href="https://dashboard.plaid.com/developers/keys" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
+                  Plaid Dashboard
+                </a>
               </p>
-            </div>
-            <Separator />
-            <div className="space-y-2">
-              <Label>Country</Label>
-              <Input value="Canada (CA)" readOnly className="bg-muted" />
-            </div>
-            <p className="text-xs text-muted-foreground">
-              Configure credentials in <code className="bg-muted px-1 rounded">config.php</code>.{' '}
-              <a href="https://dashboard.plaid.com/developers/keys" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
-                Plaid Dashboard
-              </a>
-            </p>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Backend Setup Guide - Admin only */}
+        {isAdmin && (
+          <Card className="border-primary/20 bg-primary/5">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <ExternalLink className="h-5 w-5" />
+                Backend Setup Guide
+                <Badge variant="outline" className="text-xs">Admin</Badge>
+              </CardTitle>
+              <CardDescription>Follow these steps to connect your self-hosted backend</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-3 text-sm">
+                <div className="flex gap-3">
+                  <Badge variant="outline" className="shrink-0">1</Badge>
+                  <div>
+                    <p className="font-medium">Upload PHP API files to your Apache server</p>
+                    <p className="text-muted-foreground">Copy the <code className="bg-muted px-1 rounded">/api</code> folder to your server's public directory</p>
+                  </div>
+                </div>
+                <div className="flex gap-3">
+                  <Badge variant="outline" className="shrink-0">2</Badge>
+                  <div>
+                    <p className="font-medium">Create the database schema</p>
+                    <p className="text-muted-foreground">Run <code className="bg-muted px-1 rounded">schema.sql</code> in your MariaDB database</p>
+                  </div>
+                </div>
+                <div className="flex gap-3">
+                  <Badge variant="outline" className="shrink-0">3</Badge>
+                  <div>
+                    <p className="font-medium">Configure your credentials</p>
+                    <p className="text-muted-foreground">Copy <code className="bg-muted px-1 rounded">config.sample.php</code> to <code className="bg-muted px-1 rounded">config.php</code> and fill in your database and Plaid credentials</p>
+                  </div>
+                </div>
+                <div className="flex gap-3">
+                  <Badge variant="outline" className="shrink-0">4</Badge>
+                  <div>
+                    <p className="font-medium">Set the API URL</p>
+                    <p className="text-muted-foreground">Set <code className="bg-muted px-1 rounded">VITE_API_URL</code> in your .env file</p>
+                  </div>
+                </div>
+              </div>
+              <Separator />
+              <div className="space-y-2">
+                <Label>Database Connection</Label>
+                <div className="flex gap-2">
+                  <Button variant="outline" onClick={testDatabaseConnection} disabled={dbTestStatus === 'testing'}>
+                    {dbTestStatus === 'testing' && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                    {dbTestStatus === 'success' && <CheckCircle2 className="h-4 w-4 mr-2 text-income" />}
+                    {dbTestStatus === 'error' && <XCircle className="h-4 w-4 mr-2 text-destructive" />}
+                    Test Connection
+                  </Button>
+                  {dbTestMessage && (
+                    <p className={`text-sm self-center ${dbTestStatus === 'success' ? 'text-income' : 'text-destructive'}`}>{dbTestMessage}</p>
+                  )}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Categories Management */}
         <Card>
@@ -467,6 +482,7 @@ const Settings = () => {
             )}
           </CardContent>
         </Card>
+
         {/* Preferences */}
         <Card>
           <CardHeader>

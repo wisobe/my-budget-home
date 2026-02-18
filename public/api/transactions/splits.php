@@ -9,13 +9,29 @@
 require_once __DIR__ . '/../includes/bootstrap.php';
 
 try {
+    $userId = getCurrentUserId();
     $pdo = Database::getConnection();
+    
+    // Helper to verify transaction ownership
+    $verifyOwnership = function(string $transactionId) use ($pdo, $userId) {
+        $stmt = $pdo->prepare('
+            SELECT t.id FROM transactions t
+            INNER JOIN accounts a ON t.account_id = a.id
+            WHERE t.id = :id AND a.user_id = :user_id
+        ');
+        $stmt->execute(['id' => $transactionId, 'user_id' => $userId]);
+        if (!$stmt->fetch()) {
+            Response::notFound('Transaction not found');
+        }
+    };
     
     if ($_SERVER['REQUEST_METHOD'] === 'GET') {
         $transactionId = $_GET['transaction_id'] ?? null;
         if (!$transactionId) {
             Response::error('Missing transaction_id');
         }
+        
+        $verifyOwnership($transactionId);
         
         $stmt = $pdo->prepare('
             SELECT ts.*, cat.name as category_name, cat.color as category_color
@@ -36,8 +52,9 @@ try {
         }
         
         $transactionId = $body['transaction_id'];
+        $verifyOwnership($transactionId);
         
-        // Verify transaction exists
+        // Verify transaction exists and get amount
         $txnStmt = $pdo->prepare('SELECT amount FROM transactions WHERE id = :id');
         $txnStmt->execute(['id' => $transactionId]);
         $txn = $txnStmt->fetch();
@@ -45,7 +62,7 @@ try {
             Response::notFound('Transaction not found');
         }
         
-        // Validate splits sum equals transaction amount
+        // Validate splits sum
         $splitSum = array_reduce($body['splits'], function($sum, $s) {
             return $sum + (float)$s['amount'];
         }, 0);
@@ -56,15 +73,12 @@ try {
         
         $pdo->beginTransaction();
         
-        // Delete existing splits
         $pdo->prepare('DELETE FROM transaction_splits WHERE transaction_id = :tid')
             ->execute(['tid' => $transactionId]);
         
-        // Clear main transaction category (splits take over)
         $pdo->prepare('UPDATE transactions SET category_id = NULL, updated_at = NOW() WHERE id = :id')
             ->execute(['id' => $transactionId]);
         
-        // Insert new splits
         $insertStmt = $pdo->prepare('
             INSERT INTO transaction_splits (id, transaction_id, category_id, amount, is_excluded)
             VALUES (:id, :tid, :cat_id, :amount, :is_excluded)
@@ -82,7 +96,6 @@ try {
         
         $pdo->commit();
         
-        // Fetch saved splits
         $stmt = $pdo->prepare('
             SELECT ts.*, cat.name as category_name, cat.color as category_color
             FROM transaction_splits ts
@@ -95,6 +108,8 @@ try {
     } elseif ($_SERVER['REQUEST_METHOD'] === 'DELETE') {
         $body = getJsonBody();
         validateRequired($body, ['transaction_id']);
+        
+        $verifyOwnership($body['transaction_id']);
         
         $pdo->prepare('DELETE FROM transaction_splits WHERE transaction_id = :tid')
             ->execute(['tid' => $body['transaction_id']]);

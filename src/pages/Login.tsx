@@ -8,6 +8,7 @@ import { Wallet, Loader2, Eye, EyeOff } from 'lucide-react';
 
 const Login = () => {
   const { login } = useAuth();
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -18,9 +19,9 @@ const Login = () => {
     setError('');
     setLoading(true);
     try {
-      await login(password);
+      await login(email, password);
     } catch (err: any) {
-      setError(err.message || 'Invalid password');
+      setError(err.message || 'Invalid email or password');
     } finally {
       setLoading(false);
     }
@@ -36,10 +37,22 @@ const Login = () => {
             </div>
           </div>
           <CardTitle className="text-2xl">BudgetWise</CardTitle>
-          <CardDescription>Enter your password to continue</CardDescription>
+          <CardDescription>Sign in to your account</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="email">Email</Label>
+              <Input
+                id="email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="you@example.com"
+                autoFocus
+                autoComplete="email"
+              />
+            </div>
             <div className="space-y-2">
               <Label htmlFor="password">Password</Label>
               <div className="relative">
@@ -49,8 +62,8 @@ const Login = () => {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Enter password"
-                  autoFocus
                   className="pr-10"
+                  autoComplete="current-password"
                 />
                 <button
                   type="button"
@@ -64,7 +77,7 @@ const Login = () => {
             {error && (
               <p className="text-sm text-destructive">{error}</p>
             )}
-            <Button type="submit" className="w-full" disabled={loading || !password}>
+            <Button type="submit" className="w-full" disabled={loading || !email || !password}>
               {loading && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
               Sign In
             </Button>

@@ -12,6 +12,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 }
 
 try {
+    $userId = getCurrentUserId();
     $body = getJsonBody();
     validateRequired($body, ['transaction_id']);
     
@@ -19,15 +20,22 @@ try {
     
     $pdo = Database::getConnection();
     
+    // Verify ownership
+    $checkStmt = $pdo->prepare('
+        SELECT t.id FROM transactions t
+        INNER JOIN accounts a ON t.account_id = a.id
+        WHERE t.id = :id AND a.user_id = :user_id
+    ');
+    $checkStmt->execute(['id' => $body['transaction_id'], 'user_id' => $userId]);
+    if (!$checkStmt->fetch()) {
+        Response::notFound('Transaction not found');
+    }
+    
     $stmt = $pdo->prepare('UPDATE transactions SET excluded = :excluded, updated_at = NOW() WHERE id = :id');
     $stmt->execute([
         'excluded' => $excluded ? 1 : 0,
         'id' => $body['transaction_id'],
     ]);
-    
-    if ($stmt->rowCount() === 0) {
-        Response::notFound('Transaction not found');
-    }
     
     Response::success(['excluded' => $excluded], $excluded ? 'Transaction excluded' : 'Transaction included');
 } catch (Exception $e) {

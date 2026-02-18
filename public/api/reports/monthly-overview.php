@@ -4,8 +4,7 @@
  * GET /api/reports/monthly-overview.php?year=2026&plaid_environment=sandbox
  * GET /api/reports/monthly-overview.php?start_date=YYYY-MM-DD&end_date=YYYY-MM-DD&plaid_environment=sandbox
  *
- * Returns income, expenses, net savings and savings rate per month.
- * Filters by plaid_environment via account → plaid_connections join.
+ * Returns income, expenses, net savings and savings rate per month for the current user.
  */
 
 require_once __DIR__ . '/../includes/bootstrap.php';
@@ -15,6 +14,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
 }
 
 try {
+    $userId = getCurrentUserId();
     $startDate   = $_GET['start_date'] ?? null;
     $endDate     = $_GET['end_date']   ?? null;
     $environment = $_GET['plaid_environment'] ?? 'sandbox';
@@ -25,6 +25,7 @@ try {
     $pdo = Database::getConnection();
 
     $envFilter = '(c.plaid_environment = :environment OR a.plaid_connection_id IS NULL)';
+    $userFilter = 'a.user_id = :user_id';
 
     if ($startDate && $endDate) {
         $stmt = $pdo->prepare("
@@ -39,10 +40,11 @@ try {
               AND t.date <= :end_date
               AND t.excluded = 0
               AND {$envFilter}
+              AND {$userFilter}
             GROUP BY DATE_FORMAT(t.date, '%Y-%m')
             ORDER BY month
         ");
-        $stmt->execute(['start_date' => $startDate, 'end_date' => $endDate, 'environment' => $environment]);
+        $stmt->execute(['start_date' => $startDate, 'end_date' => $endDate, 'environment' => $environment, 'user_id' => $userId]);
     } else {
         $year = (int) ($_GET['year'] ?? date('Y'));
         $stmt = $pdo->prepare("
@@ -56,10 +58,11 @@ try {
             WHERE YEAR(t.date) = :year
               AND t.excluded = 0
               AND {$envFilter}
+              AND {$userFilter}
             GROUP BY DATE_FORMAT(t.date, '%Y-%m')
             ORDER BY month
         ");
-        $stmt->execute(['year' => $year, 'environment' => $environment]);
+        $stmt->execute(['year' => $year, 'environment' => $environment, 'user_id' => $userId]);
     }
 
     $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);

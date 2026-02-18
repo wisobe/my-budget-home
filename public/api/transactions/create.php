@@ -13,17 +13,25 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 }
 
 try {
+    $userId = getCurrentUserId();
     $body = getJsonBody();
     validateRequired($body, ['account_id', 'date', 'name', 'amount']);
     
     $pdo = Database::getConnection();
+    
+    // Verify account belongs to user
+    $accStmt = $pdo->prepare('SELECT id FROM accounts WHERE id = :id AND user_id = :user_id');
+    $accStmt->execute(['id' => $body['account_id'], 'user_id' => $userId]);
+    if (!$accStmt->fetch()) {
+        Response::error('Account not found', 404);
+    }
     
     $id = 'txn_' . uniqid();
     
     // Auto-categorize if no category provided
     $categoryId = !empty($body['category_id']) ? $body['category_id'] : null;
     if (!$categoryId) {
-        $categoryId = AutoCategorizer::match($pdo, $body['name'], $body['merchant_name'] ?? null);
+        $categoryId = AutoCategorizer::match($pdo, $body['name'], $body['merchant_name'] ?? null, $userId);
     }
     
     $stmt = $pdo->prepare('

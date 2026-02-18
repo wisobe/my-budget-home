@@ -12,9 +12,6 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     Response::error('Method not allowed', 405);
 }
 
-// Manually verify auth (this endpoint is under /auth/ but requires authentication)
-requireAuthToken();
-
 try {
     $body = getJsonBody();
     validateRequired($body, ['current_password', 'new_password']);
@@ -23,19 +20,20 @@ try {
         Response::error('New password must be at least 6 characters');
     }
     
+    $userId = getCurrentUserId();
     $pdo = Database::getConnection();
     
-    $stmt = $pdo->prepare("SELECT setting_value FROM app_settings WHERE setting_key = 'password_hash'");
-    $stmt->execute();
-    $row = $stmt->fetch();
+    $stmt = $pdo->prepare("SELECT password_hash FROM users WHERE id = :id");
+    $stmt->execute(['id' => $userId]);
+    $user = $stmt->fetch();
     
-    if (!$row || !password_verify($body['current_password'], $row['setting_value'])) {
+    if (!$user || !password_verify($body['current_password'], $user['password_hash'])) {
         Response::error('Current password is incorrect', 401);
     }
     
     $newHash = password_hash($body['new_password'], PASSWORD_BCRYPT);
-    $pdo->prepare("UPDATE app_settings SET setting_value = :hash WHERE setting_key = 'password_hash'")
-        ->execute(['hash' => $newHash]);
+    $pdo->prepare("UPDATE users SET password_hash = :hash WHERE id = :id")
+        ->execute(['hash' => $newHash, 'id' => $userId]);
     
     Response::success(null, 'Password changed successfully');
 } catch (Exception $e) {

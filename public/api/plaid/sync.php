@@ -3,7 +3,7 @@
  * Plaid Transaction Sync Endpoint
  * POST /api/plaid/sync.php
  * 
- * Syncs transactions for a specific Plaid connection
+ * Syncs transactions for a specific Plaid connection (owned by authenticated user)
  */
 
 require_once __DIR__ . '/../includes/bootstrap.php';
@@ -14,26 +14,27 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 }
 
 try {
+    $userId = getCurrentUserId();
     $body = getJsonBody();
     validateRequired($body, ['connection_id']);
     
     $pdo = Database::getConnection();
     $plaid = getPlaidClient();
     
-    // Get connection with access token
+    // Get connection - verify ownership
     $stmt = $pdo->prepare('
         SELECT id, access_token_encrypted, sync_cursor 
         FROM plaid_connections 
-        WHERE id = :id
+        WHERE id = :id AND user_id = :user_id
     ');
-    $stmt->execute(['id' => $body['connection_id']]);
+    $stmt->execute(['id' => $body['connection_id'], 'user_id' => $userId]);
     $connection = $stmt->fetch();
     
     if (!$connection) {
         Response::notFound('Connection not found');
     }
     
-    $accessToken = $connection['access_token_encrypted']; // In production, decrypt this
+    $accessToken = $connection['access_token_encrypted'];
     $cursor = $connection['sync_cursor'];
     
     $added = 0;
@@ -41,21 +42,18 @@ try {
     $removed = 0;
     $hasMore = true;
     
-    // Sync loop - Plaid returns transactions in pages
     while ($hasMore) {
         $syncResult = $plaid->syncTransactions($accessToken, $cursor);
         
-        // Process added transactions
         foreach ($syncResult['added'] as $tx) {
             $accountStmt = $pdo->prepare('
-                SELECT id FROM accounts WHERE plaid_account_id = :plaid_account_id
+                SELECT id FROM accounts WHERE plaid_account_id = :plaid_account_id AND user_id = :user_id
             ');
-            $accountStmt->execute(['plaid_account_id' => $tx['account_id']]);
+            $accountStmt->execute(['plaid_account_id' => $tx['account_id'], 'user_id' => $userId]);
             $account = $accountStmt->fetch();
             
             if ($account) {
-                // Auto-categorize using rules
-                $autoCategoryId = AutoCategorizer::match($pdo, $tx['name'], $tx['merchant_name'] ?? null);
+                $autoCategoryId = AutoCategorizer::match($pdo, $tx['name'], $tx['merchant_name'] ?? null, $userId);
                 
                 $insertStmt = $pdo->prepare('
                     INSERT INTO transactions (
@@ -88,7 +86,6 @@ try {
             }
         }
         
-        // Process modified transactions
         foreach ($syncResult['modified'] as $tx) {
             $updateStmt = $pdo->prepare('
                 UPDATE transactions SET
@@ -107,7 +104,6 @@ try {
             $modified++;
         }
         
-        // Process removed transactions
         foreach ($syncResult['removed'] as $tx) {
             $deleteStmt = $pdo->prepare('
                 DELETE FROM transactions WHERE plaid_transaction_id = :plaid_tx_id
@@ -120,21 +116,22 @@ try {
         $hasMore = $syncResult['has_more'];
     }
     
-    // Update connection with new cursor and sync time
+    // Update connection
     $updateConnStmt = $pdo->prepare('
         UPDATE plaid_connections SET
             sync_cursor = :cursor,
             last_synced = NOW(),
             status = :status
-        WHERE id = :id
+        WHERE id = :id AND user_id = :user_id
     ');
     $updateConnStmt->execute([
         'cursor' => $cursor,
         'status' => 'active',
         'id' => $body['connection_id'],
+        'user_id' => $userId,
     ]);
     
-    // Also update account balances
+    // Update account balances
     $accountsResult = $plaid->getAccounts($accessToken);
     foreach ($accountsResult['accounts'] as $account) {
         $updateAccStmt = $pdo->prepare('
@@ -142,12 +139,13 @@ try {
                 current_balance = :current_balance,
                 available_balance = :available_balance,
                 last_synced = NOW()
-            WHERE plaid_account_id = :plaid_account_id
+            WHERE plaid_account_id = :plaid_account_id AND user_id = :user_id
         ');
         $updateAccStmt->execute([
             'current_balance' => $account['balances']['current'] ?? 0,
             'available_balance' => $account['balances']['available'] ?? null,
             'plaid_account_id' => $account['account_id'],
+            'user_id' => $userId,
         ]);
     }
     
@@ -158,7 +156,6 @@ try {
         'accounts_updated' => count($accountsResult['accounts']),
     ]);
 } catch (Exception $e) {
-    // Update connection status to error
     if (isset($body['connection_id'])) {
         try {
             $pdo = Database::getConnection();
@@ -170,9 +167,7 @@ try {
                 'error' => $e->getMessage(),
                 'id' => $body['connection_id'],
             ]);
-        } catch (Exception $innerEx) {
-            // Ignore inner exception
-        }
+        } catch (Exception $innerEx) {}
     }
     
     Response::error('Failed to sync transactions: ' . $e->getMessage(), 500);

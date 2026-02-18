@@ -13,13 +13,24 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 }
 
 try {
+    $userId = getCurrentUserId();
     $body = getJsonBody();
     validateRequired($body, ['transaction_id']);
     
-    // category_id can be null/empty to uncategorize
     $categoryId = !empty($body['category_id']) ? $body['category_id'] : null;
     
     $pdo = Database::getConnection();
+    
+    // Verify transaction belongs to user (through account)
+    $checkStmt = $pdo->prepare('
+        SELECT t.id FROM transactions t
+        INNER JOIN accounts a ON t.account_id = a.id
+        WHERE t.id = :id AND a.user_id = :user_id
+    ');
+    $checkStmt->execute(['id' => $body['transaction_id'], 'user_id' => $userId]);
+    if (!$checkStmt->fetch()) {
+        Response::notFound('Transaction not found');
+    }
     
     // Update transaction category
     $stmt = $pdo->prepare('
@@ -27,17 +38,12 @@ try {
         SET category_id = :category_id, updated_at = NOW()
         WHERE id = :id
     ');
-    
     $stmt->execute([
         'category_id' => $categoryId,
         'id' => $body['transaction_id'],
     ]);
     
-    if ($stmt->rowCount() === 0) {
-        Response::notFound('Transaction not found');
-    }
-    
-    // Clear any existing splits when re-categorizing the whole transaction
+    // Clear existing splits
     $pdo->prepare('DELETE FROM transaction_splits WHERE transaction_id = :id')
         ->execute(['id' => $body['transaction_id']]);
     
@@ -46,13 +52,14 @@ try {
     $fetchStmt->execute(['id' => $body['transaction_id']]);
     $transaction = $fetchStmt->fetch();
     
-    // Auto-learn: create/update a rule from this manual categorization
+    // Auto-learn rule
     if ($categoryId && $transaction) {
         AutoCategorizer::learnFromCategorization(
             $pdo,
             $transaction['name'],
             $transaction['merchant_name'] ?? null,
-            $categoryId
+            $categoryId,
+            $userId
         );
     }
     

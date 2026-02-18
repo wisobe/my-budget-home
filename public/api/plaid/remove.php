@@ -1,9 +1,9 @@
 <?php
 /**
  * Remove Plaid Connection Endpoint
- * DELETE /api/plaid/remove.php
+ * POST/DELETE /api/plaid/remove.php
  * 
- * Removes a Plaid connection and associated data
+ * Removes a Plaid connection owned by the authenticated user
  */
 
 require_once __DIR__ . '/../includes/bootstrap.php';
@@ -13,14 +13,15 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST' && $_SERVER['REQUEST_METHOD'] !== 'DEL
 }
 
 try {
+    $userId = getCurrentUserId();
     $body = getJsonBody();
     validateRequired($body, ['connection_id']);
     
     $pdo = Database::getConnection();
     
-    // Get connection with access token
-    $stmt = $pdo->prepare('SELECT access_token_encrypted FROM plaid_connections WHERE id = :id');
-    $stmt->execute(['id' => $body['connection_id']]);
+    // Get connection - verify ownership
+    $stmt = $pdo->prepare('SELECT access_token_encrypted FROM plaid_connections WHERE id = :id AND user_id = :user_id');
+    $stmt->execute(['id' => $body['connection_id'], 'user_id' => $userId]);
     $connection = $stmt->fetch();
     
     if (!$connection) {
@@ -32,7 +33,6 @@ try {
         $plaid = getPlaidClient();
         $plaid->removeItem($connection['access_token_encrypted']);
     } catch (Exception $e) {
-        // Log but don't fail if Plaid removal fails
         error_log('Failed to remove Plaid item: ' . $e->getMessage());
     }
     
@@ -50,8 +50,8 @@ try {
     
     // Delete the connection
     $pdo->prepare('
-        DELETE FROM plaid_connections WHERE id = :id
-    ')->execute(['id' => $body['connection_id']]);
+        DELETE FROM plaid_connections WHERE id = :id AND user_id = :user_id
+    ')->execute(['id' => $body['connection_id'], 'user_id' => $userId]);
     
     Response::success(null, 'Connection removed successfully');
 } catch (Exception $e) {
