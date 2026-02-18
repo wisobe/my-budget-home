@@ -2,7 +2,7 @@
 /**
  * Verify Auth Status Endpoint
  * GET /api/auth/verify.php
- * Returns: { auth_enabled: bool, token_valid: bool }
+ * Returns: { auth_enabled: bool, token_valid: bool, user?: {...} }
  */
 
 require_once __DIR__ . '/../includes/bootstrap.php';
@@ -14,24 +14,34 @@ if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
 try {
     $pdo = Database::getConnection();
     
-    // Check if auth is enabled (password_hash exists)
+    // Check if any users exist (auth is enabled when users exist)
     $authEnabled = false;
     try {
-        $stmt = $pdo->prepare("SELECT 1 FROM app_settings WHERE setting_key = 'password_hash' LIMIT 1");
+        $stmt = $pdo->prepare("SELECT COUNT(*) FROM users");
         $stmt->execute();
-        $authEnabled = (bool)$stmt->fetch();
+        $authEnabled = ((int)$stmt->fetchColumn()) > 0;
     } catch (Exception $e) {
         // Table doesn't exist
     }
     
-    // Check if provided token is valid
+    // Check if provided token is valid and get user info
     $tokenValid = false;
+    $user = null;
     $authHeader = getAuthorizationHeader();
     if (preg_match('/Bearer\s+(.+)/i', $authHeader, $matches)) {
         try {
-            $stmt = $pdo->prepare('SELECT 1 FROM auth_tokens WHERE token = :token AND expires_at > NOW()');
+            $stmt = $pdo->prepare('
+                SELECT u.id, u.email, u.name, u.role
+                FROM auth_tokens at
+                INNER JOIN users u ON at.user_id = u.id
+                WHERE at.token = :token AND at.expires_at > NOW()
+            ');
             $stmt->execute(['token' => $matches[1]]);
-            $tokenValid = (bool)$stmt->fetch();
+            $row = $stmt->fetch();
+            if ($row) {
+                $tokenValid = true;
+                $user = $row;
+            }
         } catch (Exception $e) {
             // Table doesn't exist
         }
@@ -40,6 +50,7 @@ try {
     Response::success([
         'auth_enabled' => $authEnabled,
         'token_valid' => $tokenValid,
+        'user' => $user,
     ]);
 } catch (Exception $e) {
     Response::error('Verify failed: ' . $e->getMessage(), 500);

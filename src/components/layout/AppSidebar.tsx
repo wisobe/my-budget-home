@@ -9,6 +9,7 @@ import {
   Link2,
   Wallet,
   LogOut,
+  Users,
 } from 'lucide-react';
 import {
   Sidebar,
@@ -20,6 +21,7 @@ import {
   SidebarMenuItem,
 } from '@/components/ui/sidebar';
 import { useAuth } from '@/contexts/AuthContext';
+import { Badge } from '@/components/ui/badge';
 
 const navigation = [
   { name: 'Dashboard', href: '/', icon: LayoutDashboard },
@@ -30,9 +32,13 @@ const navigation = [
   { name: 'Settings', href: '/settings', icon: Settings },
 ];
 
+const adminNavigation = [
+  { name: 'Users', href: '/admin/users', icon: Users },
+];
+
 export function AppSidebar() {
   const location = useLocation();
-  const { logout, authEnabled } = useAuth();
+  const { logout, authEnabled, user, isAdmin } = useAuth();
 
   return (
     <Sidebar>
@@ -68,9 +74,41 @@ export function AppSidebar() {
             );
           })}
         </SidebarMenu>
+
+        {/* Admin section */}
+        {isAdmin && (
+          <div className="mt-4 pt-4 border-t border-sidebar-border">
+            <p className="px-3 mb-2 text-xs font-medium text-sidebar-foreground/50 uppercase tracking-wider">Admin</p>
+            <SidebarMenu>
+              {adminNavigation.map((item) => {
+                const isActive = location.pathname === item.href;
+                return (
+                  <SidebarMenuItem key={item.name}>
+                    <SidebarMenuButton
+                      asChild
+                      isActive={isActive}
+                      tooltip={item.name}
+                    >
+                      <Link to={item.href}>
+                        <item.icon className="h-5 w-5" />
+                        <span>{item.name}</span>
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                );
+              })}
+            </SidebarMenu>
+          </div>
+        )}
       </SidebarContent>
 
       <SidebarFooter className="border-t border-sidebar-border px-3 py-3">
+        {user && (
+          <div className="px-3 pb-2">
+            <p className="text-sm font-medium text-sidebar-foreground truncate">{user.name}</p>
+            <p className="text-xs text-sidebar-foreground/60 truncate">{user.email}</p>
+          </div>
+        )}
         {authEnabled && (
           <SidebarMenu>
             <SidebarMenuItem>
@@ -81,9 +119,6 @@ export function AppSidebar() {
             </SidebarMenuItem>
           </SidebarMenu>
         )}
-        <p className="text-xs text-sidebar-foreground/50 px-3 pt-1">
-          Self-hosted budgeting
-        </p>
       </SidebarFooter>
     </Sidebar>
   );

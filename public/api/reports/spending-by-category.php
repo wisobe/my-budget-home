@@ -3,8 +3,7 @@
  * Spending by Category Report
  * GET /api/reports/spending-by-category.php?start_date=YYYY-MM-DD&end_date=YYYY-MM-DD&plaid_environment=sandbox
  *
- * Returns spending totals grouped by category with trend vs previous period.
- * Filters by plaid_environment via account → plaid_connections join.
+ * Returns spending totals grouped by category for the current user.
  */
 
 require_once __DIR__ . '/../includes/bootstrap.php';
@@ -14,6 +13,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
 }
 
 try {
+    $userId = getCurrentUserId();
     $startDate   = $_GET['start_date'] ?? null;
     $endDate     = $_GET['end_date']   ?? null;
     $environment = $_GET['plaid_environment'] ?? 'sandbox';
@@ -28,8 +28,9 @@ try {
     $pdo = Database::getConnection();
 
     $envFilter = '(c.plaid_environment = :environment OR a.plaid_connection_id IS NULL)';
+    $userFilter = 'a.user_id = :user_id';
 
-    // Current period spending by category
+    // Current period
     $stmt = $pdo->prepare("
         SELECT
             COALESCE(t.category_id, 'uncategorized') AS category_id,
@@ -45,16 +46,16 @@ try {
           AND t.excluded = 0
           AND t.amount > 0
           AND {$envFilter}
+          AND {$userFilter}
         GROUP BY t.category_id, cat.name
         ORDER BY total_amount DESC
     ");
-    $stmt->execute(['start_date' => $startDate, 'end_date' => $endDate, 'environment' => $environment]);
+    $stmt->execute(['start_date' => $startDate, 'end_date' => $endDate, 'environment' => $environment, 'user_id' => $userId]);
     $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-    // Grand total for percentage calculation
     $grandTotal = array_sum(array_column($rows, 'total_amount'));
 
-    // Previous period of the same length for trend comparison
+    // Previous period
     $start = new DateTime($startDate);
     $end   = new DateTime($endDate);
     $days  = (int) $start->diff($end)->days + 1;
@@ -73,15 +74,15 @@ try {
           AND t.excluded = 0
           AND t.amount > 0
           AND {$envFilter}
+          AND {$userFilter}
         GROUP BY t.category_id
     ");
-    $prevStmt->execute(['start_date' => $prevStart, 'end_date' => $prevEnd, 'environment' => $environment]);
+    $prevStmt->execute(['start_date' => $prevStart, 'end_date' => $prevEnd, 'environment' => $environment, 'user_id' => $userId]);
     $prevMap = [];
     foreach ($prevStmt->fetchAll(PDO::FETCH_ASSOC) as $p) {
         $prevMap[$p['category_id']] = (float) $p['total_amount'];
     }
 
-    // Build response
     $insights = [];
     foreach ($rows as $row) {
         $catId  = $row['category_id'];

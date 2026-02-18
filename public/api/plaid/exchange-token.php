@@ -4,7 +4,7 @@
  * POST /api/plaid/exchange-token.php
  * 
  * Exchanges a public token from Plaid Link for an access token
- * Accepts plaid_environment in POST body ('sandbox' or 'production')
+ * Associates connection with authenticated user
  */
 
 require_once __DIR__ . '/../includes/bootstrap.php';
@@ -14,6 +14,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 }
 
 try {
+    $userId = getCurrentUserId();
     $body = getJsonBody();
     validateRequired($body, ['public_token', 'institution_id']);
     
@@ -32,41 +33,39 @@ try {
     // Get accounts
     $accountsResult = $plaid->getAccounts($accessToken);
     
-    // Store connection in database
     $pdo = Database::getConnection();
     
-    // Insert plaid connection with environment tag
+    // Insert plaid connection with user_id
+    $connectionId = 'conn_' . uniqid();
     $stmt = $pdo->prepare('
         INSERT INTO plaid_connections (
-            id, institution_id, institution_name, access_token_encrypted, 
+            id, user_id, institution_id, institution_name, access_token_encrypted, 
             item_id, status, plaid_environment, created_at
         ) VALUES (
-            :id, :institution_id, :institution_name, :access_token,
+            :id, :user_id, :institution_id, :institution_name, :access_token,
             :item_id, :status, :plaid_environment, NOW()
         )
     ');
-    
-    $connectionId = 'conn_' . uniqid();
-    
     $stmt->execute([
         'id' => $connectionId,
+        'user_id' => $userId,
         'institution_id' => $body['institution_id'],
         'institution_name' => $institutionName,
-        'access_token' => $accessToken, // In production, encrypt this!
+        'access_token' => $accessToken,
         'item_id' => $itemId,
         'status' => 'active',
         'plaid_environment' => $environment,
     ]);
     
-    // Insert accounts
+    // Insert accounts with user_id
     foreach ($accountsResult['accounts'] as $account) {
         $accountStmt = $pdo->prepare('
             INSERT INTO accounts (
-                id, plaid_account_id, plaid_connection_id, name, official_name,
+                id, user_id, plaid_account_id, plaid_connection_id, name, official_name,
                 type, subtype, current_balance, available_balance, currency,
                 institution_name, created_at
             ) VALUES (
-                :id, :plaid_account_id, :plaid_connection_id, :name, :official_name,
+                :id, :user_id, :plaid_account_id, :plaid_connection_id, :name, :official_name,
                 :type, :subtype, :current_balance, :available_balance, :currency,
                 :institution_name, NOW()
             )
@@ -78,6 +77,7 @@ try {
         
         $accountStmt->execute([
             'id' => 'acc_' . uniqid(),
+            'user_id' => $userId,
             'plaid_account_id' => $account['account_id'],
             'plaid_connection_id' => $connectionId,
             'name' => $account['name'],

@@ -17,6 +17,7 @@ import type {
   PlaidLinkToken,
   PlaidSyncResult,
   AuthVerifyResponse,
+  User,
 } from '@/types';
 
 import { API_BASE_URL } from '@/lib/config';
@@ -47,7 +48,6 @@ async function request<T>(
   const response = await fetch(url, config);
 
   if (response.status === 401) {
-    // Only clear token and reload if this is NOT an auth endpoint
     if (!endpoint.includes('/auth/')) {
       sessionStorage.removeItem('auth_token');
       window.location.reload();
@@ -70,16 +70,32 @@ export const authApi = {
   verify: () =>
     request<ApiResponse<AuthVerifyResponse>>('/auth/verify.php'),
 
-  login: (password: string) =>
-    request<ApiResponse<{ token: string; expires_at: string }>>('/auth/login.php', {
+  login: (email: string, password: string) =>
+    request<ApiResponse<{ token: string; expires_at: string; user: User }>>('/auth/login.php', {
       method: 'POST',
-      body: JSON.stringify({ password }),
+      body: JSON.stringify({ email, password }),
     }),
 
   changePassword: (current_password: string, new_password: string) =>
     request<ApiResponse<null>>('/auth/change-password.php', {
       method: 'POST',
       body: JSON.stringify({ current_password, new_password }),
+    }),
+
+  // Admin: user management
+  listUsers: () =>
+    request<ApiResponse<User[]>>('/auth/users.php'),
+
+  createUser: (data: { email: string; name: string; password: string; role?: string }) =>
+    request<ApiResponse<User>>('/auth/users.php', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+
+  deleteUser: (id: string) =>
+    request<ApiResponse<null>>('/auth/users.php', {
+      method: 'DELETE',
+      body: JSON.stringify({ id }),
     }),
 };
 

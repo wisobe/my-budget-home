@@ -1,5 +1,13 @@
 // Core types for the budgeting application
 
+export interface User {
+  id: string;
+  email: string;
+  name: string;
+  role: 'admin' | 'user';
+  created_at?: string;
+}
+
 export interface Transaction {
   id: string;
   plaid_transaction_id?: string;
@@ -139,4 +147,5 @@ export interface PlaidSyncResult {
 export interface AuthVerifyResponse {
   auth_enabled: boolean;
   token_valid: boolean;
+  user?: User;
 }

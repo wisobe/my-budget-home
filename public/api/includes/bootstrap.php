@@ -104,39 +104,87 @@ function getAuthorizationHeader(): string {
 }
 
 /**
- * Verify auth token from Authorization header
+ * Verify auth token and return user_id
  */
-function requireAuthToken(): void {
+function requireAuthToken(): string {
     $authHeader = getAuthorizationHeader();
     if (!preg_match('/Bearer\s+(.+)/i', $authHeader, $matches)) {
         Response::unauthorized('Authentication required');
     }
     try {
         $pdo = Database::getConnection();
-        $stmt = $pdo->prepare('SELECT 1 FROM auth_tokens WHERE token = :token AND expires_at > NOW()');
+        $stmt = $pdo->prepare('
+            SELECT at.user_id FROM auth_tokens at
+            INNER JOIN users u ON at.user_id = u.id
+            WHERE at.token = :token AND at.expires_at > NOW()
+        ');
         $stmt->execute(['token' => $matches[1]]);
-        if (!$stmt->fetch()) {
+        $row = $stmt->fetch();
+        if (!$row) {
             Response::unauthorized('Invalid or expired token');
         }
+        return $row['user_id'];
     } catch (PDOException $e) {
-        // auth_tokens table may not exist yet - allow access
+        Response::unauthorized('Authentication failed');
     }
+    return ''; // unreachable but keeps static analysis happy
+}
+
+/**
+ * Get the current authenticated user's ID.
+ * Returns the user_id stored by the auto-auth middleware.
+ */
+function getCurrentUserId(): string {
+    global $_currentUserId;
+    if (empty($_currentUserId)) {
+        Response::unauthorized('Authentication required');
+    }
+    return $_currentUserId;
+}
+
+/**
+ * Get the current authenticated user's full record.
+ */
+function getCurrentUser(): array {
+    $userId = getCurrentUserId();
+    $pdo = Database::getConnection();
+    $stmt = $pdo->prepare('SELECT id, email, name, role, created_at FROM users WHERE id = :id');
+    $stmt->execute(['id' => $userId]);
+    $user = $stmt->fetch();
+    if (!$user) {
+        Response::unauthorized('User not found');
+    }
+    return $user;
+}
+
+/**
+ * Require the current user to be an admin.
+ */
+function requireAdmin(): array {
+    $user = getCurrentUser();
+    if ($user['role'] !== 'admin') {
+        Response::error('Admin access required', 403);
+    }
+    return $user;
 }
 
 // ============================================================
 // Auto-auth middleware: protect all endpoints except auth/login and auth/verify
 // ============================================================
+$_currentUserId = null;
 $_requestUri = $_SERVER['REQUEST_URI'] ?? '';
 $_isOpenAuthEndpoint = preg_match('#/auth/(login|verify)\.php#', $_requestUri);
 
 if (!$_isOpenAuthEndpoint && $_SERVER['REQUEST_METHOD'] !== 'OPTIONS') {
     try {
         $pdo = Database::getConnection();
-        $stmt = $pdo->prepare("SELECT 1 FROM app_settings WHERE setting_key = 'password_hash' LIMIT 1");
+        // Check if any users exist (if not, allow unauthenticated access for setup)
+        $stmt = $pdo->prepare("SELECT COUNT(*) FROM users");
         $stmt->execute();
-        if ($stmt->fetch()) {
-            // Password is configured, require auth token
-            requireAuthToken();
+        $userCount = (int)$stmt->fetchColumn();
+        
+        if ($userCount > 0) {
+            $_currentUserId = requireAuthToken();
         }
     } catch (Exception $e) {
         // Tables don't exist yet (first-time setup), skip auth

@@ -1,23 +1,33 @@
 -- BudgetWise Database Schema for MariaDB
 -- Run this SQL to create all required tables
 
--- App Settings (stores password hash, etc.)
-CREATE TABLE IF NOT EXISTS app_settings (
-    setting_key VARCHAR(100) PRIMARY KEY,
-    setting_value TEXT NOT NULL,
-    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+-- Users table (multi-user auth)
+CREATE TABLE IF NOT EXISTS users (
+    id VARCHAR(50) PRIMARY KEY,
+    email VARCHAR(255) NOT NULL UNIQUE,
+    name VARCHAR(255) NOT NULL,
+    password_hash VARCHAR(255) NOT NULL,
+    role ENUM('admin', 'user') NOT NULL DEFAULT 'user',
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX idx_email (email),
+    INDEX idx_role (role)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Auth Tokens (session tokens for login)
 CREATE TABLE IF NOT EXISTS auth_tokens (
     token VARCHAR(64) PRIMARY KEY,
+    user_id VARCHAR(50) NOT NULL,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    expires_at DATETIME NOT NULL
+    expires_at DATETIME NOT NULL,
+    INDEX idx_user (user_id),
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Plaid Connections (stores bank connections)
 CREATE TABLE IF NOT EXISTS plaid_connections (
     id VARCHAR(50) PRIMARY KEY,
+    user_id VARCHAR(50) NOT NULL,
     institution_id VARCHAR(100) NOT NULL,
     institution_name VARCHAR(255) NOT NULL,
     access_token_encrypted TEXT,
@@ -30,12 +40,15 @@ CREATE TABLE IF NOT EXISTS plaid_connections (
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     INDEX idx_status (status),
     INDEX idx_institution (institution_id),
-    INDEX idx_environment (plaid_environment)
+    INDEX idx_environment (plaid_environment),
+    INDEX idx_user (user_id),
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Accounts (bank accounts synced from Plaid)
 CREATE TABLE IF NOT EXISTS accounts (
     id VARCHAR(50) PRIMARY KEY,
+    user_id VARCHAR(50) NOT NULL,
     plaid_account_id VARCHAR(100),
     plaid_connection_id VARCHAR(50),
     name VARCHAR(255) NOT NULL,
@@ -51,10 +64,12 @@ CREATE TABLE IF NOT EXISTS accounts (
     UNIQUE KEY uk_plaid_account (plaid_account_id),
     INDEX idx_connection (plaid_connection_id),
     INDEX idx_type (type),
-    FOREIGN KEY (plaid_connection_id) REFERENCES plaid_connections(id) ON DELETE SET NULL
+    INDEX idx_user (user_id),
+    FOREIGN KEY (plaid_connection_id) REFERENCES plaid_connections(id) ON DELETE SET NULL,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Categories (transaction categories)
+-- Categories (transaction categories - shared across users)
 CREATE TABLE IF NOT EXISTS categories (
     id VARCHAR(50) PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
@@ -119,6 +134,24 @@ CREATE TABLE IF NOT EXISTS budgets (
     FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- Category Rules (for auto-categorization by keyword matching)
+CREATE TABLE IF NOT EXISTS category_rules (
+    id VARCHAR(50) PRIMARY KEY,
+    user_id VARCHAR(50) NOT NULL,
+    category_id VARCHAR(50) NOT NULL,
+    keyword VARCHAR(255) NOT NULL,
+    match_type ENUM('contains', 'exact', 'starts_with') DEFAULT 'contains',
+    priority INT DEFAULT 0,
+    auto_learned BOOLEAN DEFAULT FALSE,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_keyword (keyword),
+    INDEX idx_category (category_id),
+    INDEX idx_priority (priority),
+    INDEX idx_user (user_id),
+    FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE CASCADE,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 -- Insert default categories
 INSERT IGNORE INTO categories (id, name, color, is_income) VALUES
 ('cat_income', 'Income', '#10b981', TRUE),
@@ -132,57 +165,41 @@ INSERT IGNORE INTO categories (id, name, color, is_income) VALUES
 ('cat_housing', 'Housing', '#6366f1', FALSE),
 ('cat_other', 'Other', '#6b7280', FALSE);
 
--- Insert default password (budget2024) - bcrypt hash
-INSERT IGNORE INTO app_settings (setting_key, setting_value) VALUES
-('password_hash', '$2y$10$YourHashWillBeGeneratedOnFirstLogin');
-
--- Category Rules (for auto-categorization by keyword matching)
-CREATE TABLE IF NOT EXISTS category_rules (
-    id VARCHAR(50) PRIMARY KEY,
-    category_id VARCHAR(50) NOT NULL,
-    keyword VARCHAR(255) NOT NULL,
-    match_type ENUM('contains', 'exact', 'starts_with') DEFAULT 'contains',
-    priority INT DEFAULT 0,
-    auto_learned BOOLEAN DEFAULT FALSE,
-    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    INDEX idx_keyword (keyword),
-    INDEX idx_category (category_id),
-    INDEX idx_priority (priority),
-    FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
 -- ============================================================
--- MIGRATION: Run this if you already have the old schema
+-- MIGRATION: Run this if you already have the old single-user schema
 -- ============================================================
--- ALTER TABLE plaid_connections 
---   ADD COLUMN plaid_environment ENUM('sandbox', 'production') NOT NULL DEFAULT 'sandbox' AFTER status,
---   ADD INDEX idx_environment (plaid_environment);
---
--- ALTER TABLE accounts MODIFY COLUMN type ENUM('checking', 'savings', 'credit', 'investment', 'depository', 'loan', 'other') NOT NULL;
---
--- ALTER TABLE transactions ADD COLUMN excluded BOOLEAN DEFAULT FALSE;
--- ALTER TABLE transactions ADD INDEX idx_excluded (excluded);
---
--- CREATE TABLE IF NOT EXISTS app_settings (
---     setting_key VARCHAR(100) PRIMARY KEY,
---     setting_value TEXT NOT NULL,
---     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
--- ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
---
--- CREATE TABLE IF NOT EXISTS auth_tokens (
---     token VARCHAR(64) PRIMARY KEY,
---     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
---     expires_at DATETIME NOT NULL
--- ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
---
--- CREATE TABLE IF NOT EXISTS transaction_splits (
+-- Step 1: Create users table
+-- CREATE TABLE IF NOT EXISTS users (
 --     id VARCHAR(50) PRIMARY KEY,
---     transaction_id VARCHAR(50) NOT NULL,
---     category_id VARCHAR(50),
---     amount DECIMAL(15, 2) NOT NULL,
---     is_excluded BOOLEAN DEFAULT FALSE,
+--     email VARCHAR(255) NOT NULL UNIQUE,
+--     name VARCHAR(255) NOT NULL,
+--     password_hash VARCHAR(255) NOT NULL,
+--     role ENUM('admin', 'user') NOT NULL DEFAULT 'user',
 --     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
---     INDEX idx_transaction (transaction_id),
---     FOREIGN KEY (transaction_id) REFERENCES transactions(id) ON DELETE CASCADE,
---     FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE SET NULL
+--     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+--     INDEX idx_email (email),
+--     INDEX idx_role (role)
 -- ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+--
+-- Step 2: Create your admin user (replace email/password hash)
+-- INSERT INTO users (id, email, name, password_hash, role) VALUES
+-- ('user_admin', 'admin@example.com', 'Admin', '$2y$10$YOUR_BCRYPT_HASH', 'admin');
+--
+-- Step 3: Add user_id columns
+-- ALTER TABLE auth_tokens ADD COLUMN user_id VARCHAR(50) NOT NULL DEFAULT 'user_admin';
+-- ALTER TABLE auth_tokens ADD FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE;
+--
+-- ALTER TABLE plaid_connections ADD COLUMN user_id VARCHAR(50) NOT NULL DEFAULT 'user_admin';
+-- ALTER TABLE plaid_connections ADD INDEX idx_user (user_id);
+-- ALTER TABLE plaid_connections ADD FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE;
+--
+-- ALTER TABLE accounts ADD COLUMN user_id VARCHAR(50) NOT NULL DEFAULT 'user_admin';
+-- ALTER TABLE accounts ADD INDEX idx_user (user_id);
+-- ALTER TABLE accounts ADD FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE;
+--
+-- ALTER TABLE category_rules ADD COLUMN user_id VARCHAR(50) NOT NULL DEFAULT 'user_admin';
+-- ALTER TABLE category_rules ADD INDEX idx_user (user_id);
+-- ALTER TABLE category_rules ADD FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE;
+--
+-- Step 4: Clean up old app_settings password (optional)
+-- DELETE FROM app_settings WHERE setting_key = 'password_hash';

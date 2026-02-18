@@ -1,11 +1,14 @@
 import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from 'react';
 import { authApi } from '@/lib/api';
+import type { User } from '@/types';
 
 interface AuthContextType {
   isAuthenticated: boolean;
   isLoading: boolean;
   authEnabled: boolean;
-  login: (password: string) => Promise<void>;
+  user: User | null;
+  isAdmin: boolean;
+  login: (email: string, password: string) => Promise<void>;
   logout: () => void;
 }
 
@@ -15,6 +18,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [authEnabled, setAuthEnabled] = useState(false);
+  const [user, setUser] = useState<User | null>(null);
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -25,7 +29,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           setIsAuthenticated(true);
         } else {
           setIsAuthenticated(result.data.token_valid);
-          if (!result.data.token_valid) {
+          if (result.data.token_valid && result.data.user) {
+            setUser(result.data.user);
+          } else {
             sessionStorage.removeItem('auth_token');
           }
         }
@@ -39,20 +45,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     checkAuth();
   }, []);
 
-  const login = useCallback(async (password: string) => {
-    const result = await authApi.login(password);
+  const login = useCallback(async (email: string, password: string) => {
+    const result = await authApi.login(email, password);
     sessionStorage.setItem('auth_token', result.data.token);
+    setUser(result.data.user);
     setIsAuthenticated(true);
     setAuthEnabled(true);
   }, []);
 
   const logout = useCallback(() => {
     sessionStorage.removeItem('auth_token');
+    setUser(null);
     setIsAuthenticated(false);
   }, []);
 
+  const isAdmin = user?.role === 'admin';
+
   return (
-    <AuthContext.Provider value={{ isAuthenticated, isLoading, authEnabled, login, logout }}>
+    <AuthContext.Provider value={{ isAuthenticated, isLoading, authEnabled, user, isAdmin, login, logout }}>
       {children}
     </AuthContext.Provider>
   );

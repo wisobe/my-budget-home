@@ -2,6 +2,8 @@
 /**
  * Transactions List Endpoint
  * GET /api/transactions/index.php
+ * 
+ * Lists transactions for the authenticated user
  */
 
 require_once __DIR__ . '/../includes/bootstrap.php';
@@ -11,6 +13,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
 }
 
 try {
+    $userId = getCurrentUserId();
     $page = max(1, (int)($_GET['page'] ?? 1));
     $perPage = min(100, max(1, (int)($_GET['per_page'] ?? 20)));
     $accountId = $_GET['account_id'] ?? null;
@@ -30,9 +33,11 @@ try {
     $where = ['1=1'];
     $params = [];
     
-    // Filter by environment (join through account → connection)
-    // Use LEFT JOIN to also include manual transactions (no connection)
-    $joinType = 'LEFT';
+    // Filter by user
+    $where[] = 'a.user_id = :user_id';
+    $params['user_id'] = $userId;
+    
+    // Filter by environment
     $where[] = '(c.plaid_environment = :environment OR a.plaid_connection_id IS NULL)';
     $params['environment'] = $environment;
     
@@ -78,7 +83,7 @@ try {
     $countStmt->execute($params);
     $total = (int)$countStmt->fetchColumn();
     
-    // Get paginated results with split_count
+    // Get paginated results
     $offset = ($page - 1) * $perPage;
     $stmt = $pdo->prepare("
         SELECT 
@@ -103,9 +108,7 @@ try {
     $stmt->bindValue('offset', $offset, PDO::PARAM_INT);
     $stmt->execute();
     
-    $transactions = $stmt->fetchAll();
-    
-    Response::paginated($transactions, $total, $page, $perPage);
+    Response::paginated($stmt->fetchAll(), $total, $page, $perPage);
 } catch (Exception $e) {
     Response::error('Failed to fetch transactions: ' . $e->getMessage(), 500);
 }
