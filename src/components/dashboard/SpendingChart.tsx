@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useSpendingByCategory } from '@/hooks/use-reports';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
@@ -5,6 +6,7 @@ import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recha
 const FALLBACK_COLORS = ['#22c55e', '#f97316', '#3b82f6', '#8b5cf6', '#ec4899', '#14b8a6', '#ef4444', '#6366f1'];
 
 export function SpendingChart() {
+  const { t } = useTranslation();
   const today = new Date();
   const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1).toISOString().split('T')[0];
   const endOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0).toISOString().split('T')[0];
@@ -15,7 +17,7 @@ export function SpendingChart() {
     return (
       <Card>
         <CardHeader>
-          <CardTitle>Spending by Category</CardTitle>
+          <CardTitle>{t('dashboard.spendingByCategory')}</CardTitle>
         </CardHeader>
         <CardContent className="h-[300px] flex items-center justify-center">
           <div className="animate-pulse h-48 w-48 rounded-full bg-muted" />
@@ -37,12 +39,12 @@ export function SpendingChart() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Spending by Category</CardTitle>
+        <CardTitle>{t('dashboard.spendingByCategory')}</CardTitle>
       </CardHeader>
       <CardContent>
         {chartData.length === 0 ? (
           <div className="h-[300px] flex items-center justify-center text-muted-foreground">
-            No spending data for this month
+            {t('dashboard.noSpendingData')}
           </div>
         ) : (
           <ResponsiveContainer width="100%" height={300}>

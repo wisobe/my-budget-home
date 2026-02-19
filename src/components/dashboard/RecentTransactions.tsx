@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useTransactions } from '@/hooks/use-transactions';
 import { useCategories } from '@/hooks/use-transactions';
@@ -6,20 +7,21 @@ import { cn } from '@/lib/utils';
 import { ArrowUpRight, ArrowDownRight } from 'lucide-react';
 
 export function RecentTransactions() {
+  const { t } = useTranslation();
   const { data: transactionsData, isLoading } = useTransactions({ per_page: 5 });
   const { data: categoriesData } = useCategories();
 
   const categories = categoriesData?.data || [];
   const getCategoryName = (id?: string) => {
-    if (!id) return 'Uncategorized';
-    return categories.find(c => c.id === id)?.name || 'Unknown';
+    if (!id) return t('dashboard.uncategorized');
+    return categories.find(c => c.id === id)?.name || t('dashboard.unknown');
   };
 
   if (isLoading) {
     return (
       <Card>
         <CardHeader>
-          <CardTitle>Recent Transactions</CardTitle>
+          <CardTitle>{t('dashboard.recentTransactions')}</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="animate-pulse space-y-3">
@@ -38,7 +40,7 @@ export function RecentTransactions() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Recent Transactions</CardTitle>
+        <CardTitle>{t('dashboard.recentTransactions')}</CardTitle>
       </CardHeader>
       <CardContent className="space-y-2">
         {transactions.map(transaction => {

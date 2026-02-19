@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -16,6 +17,7 @@ import { Navigate } from 'react-router-dom';
 import type { User as UserType } from '@/types';
 
 const AdminUsers = () => {
+  const { t } = useTranslation();
   const { isAdmin } = useAuth();
   const queryClient = useQueryClient();
 
@@ -49,32 +51,32 @@ const AdminUsers = () => {
         role: newRole,
       });
       queryClient.invalidateQueries({ queryKey: ['admin-users'] });
-      toast.success('User created successfully');
+      toast.success(t('adminUsers.userCreated'));
       setNewEmail('');
       setNewName('');
       setNewPassword('');
       setNewRole('user');
       setAddOpen(false);
     } catch (err: any) {
-      toast.error(err.message || 'Failed to create user');
+      toast.error(err.message || t('adminUsers.failedCreateUser'));
     } finally {
       setCreating(false);
     }
   };
 
   const handleDeleteUser = async (user: UserType) => {
-    if (!confirm(`Delete user "${user.name}" (${user.email})? This will permanently delete all their data.`)) return;
+    if (!confirm(t('adminUsers.deleteUserConfirm', { name: user.name, email: user.email }))) return;
     try {
       await authApi.deleteUser(user.id);
       queryClient.invalidateQueries({ queryKey: ['admin-users'] });
-      toast.success(`User "${user.name}" deleted`);
+      toast.success(t('adminUsers.userDeleted', { name: user.name }));
     } catch (err: any) {
-      toast.error(err.message || 'Failed to delete user');
+      toast.error(err.message || t('adminUsers.failedDeleteUser'));
     }
   };
 
   return (
-    <AppLayout title="User Management">
+    <AppLayout title={t('adminUsers.title')}>
       <div className="space-y-6 max-w-2xl">
         <Card>
           <CardHeader>
@@ -82,36 +84,36 @@ const AdminUsers = () => {
               <div>
                 <CardTitle className="flex items-center gap-2">
                   <Users className="h-5 w-5" />
-                  Users
+                  {t('adminUsers.users')}
                 </CardTitle>
-                <CardDescription>Manage user accounts and roles</CardDescription>
+                <CardDescription>{t('adminUsers.manageUsers')}</CardDescription>
               </div>
               <Dialog open={addOpen} onOpenChange={setAddOpen}>
                 <DialogTrigger asChild>
                   <Button size="sm">
                     <Plus className="h-4 w-4 mr-2" />
-                    Add User
+                    {t('adminUsers.addUser')}
                   </Button>
                 </DialogTrigger>
                 <DialogContent>
                   <DialogHeader>
-                    <DialogTitle>Create New User</DialogTitle>
+                    <DialogTitle>{t('adminUsers.createNewUser')}</DialogTitle>
                   </DialogHeader>
                   <div className="space-y-4">
                     <div className="space-y-2">
-                      <Label>Name</Label>
+                      <Label>{t('adminUsers.name')}</Label>
                       <Input value={newName} onChange={e => setNewName(e.target.value)} placeholder="John Doe" />
                     </div>
                     <div className="space-y-2">
-                      <Label>Email</Label>
+                      <Label>{t('adminUsers.email')}</Label>
                       <Input type="email" value={newEmail} onChange={e => setNewEmail(e.target.value)} placeholder="john@example.com" />
                     </div>
                     <div className="space-y-2">
-                      <Label>Password</Label>
+                      <Label>{t('adminUsers.password')}</Label>
                       <Input type="password" value={newPassword} onChange={e => setNewPassword(e.target.value)} placeholder="Min. 6 characters" />
                     </div>
                     <div className="space-y-2">
-                      <Label>Role</Label>
+                      <Label>{t('adminUsers.role')}</Label>
                       <Select value={newRole} onValueChange={setNewRole}>
                         <SelectTrigger>
                           <SelectValue />
@@ -120,19 +122,19 @@ const AdminUsers = () => {
                           <SelectItem value="user">
                             <div className="flex items-center gap-2">
                               <User className="h-4 w-4" />
-                              User
+                              {t('adminUsers.userRole')}
                             </div>
                           </SelectItem>
                           <SelectItem value="admin">
                             <div className="flex items-center gap-2">
                               <Shield className="h-4 w-4" />
-                              Admin
+                              {t('adminUsers.adminRole')}
                             </div>
                           </SelectItem>
                         </SelectContent>
                       </Select>
                       <p className="text-xs text-muted-foreground">
-                        Admins can manage users, access sandbox environment, and configure system settings.
+                        {t('adminUsers.roleDescription')}
                       </p>
                     </div>
                     <Button
@@ -141,7 +143,7 @@ const AdminUsers = () => {
                       onClick={handleCreateUser}
                     >
                       {creating && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-                      Create User
+                      {t('adminUsers.createUser')}
                     </Button>
                   </div>
                 </DialogContent>
@@ -155,7 +157,7 @@ const AdminUsers = () => {
               </div>
             ) : users.length === 0 ? (
               <p className="text-sm text-muted-foreground text-center py-4">
-                No users found. Create the first user to get started.
+                {t('adminUsers.noUsersFound')}
               </p>
             ) : (
               <div className="space-y-2">

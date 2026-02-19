@@ -1,23 +1,23 @@
+import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { RefreshCw, Loader2 } from 'lucide-react';
 import { useSyncAllConnections } from '@/hooks/use-plaid';
 import { toast } from '@/components/ui/sonner';
 
 export function SyncButton() {
+  const { t } = useTranslation();
   const syncAll = useSyncAllConnections();
 
   const handleSync = async () => {
     try {
       const result = await syncAll.mutateAsync();
       if (result.added === 0 && result.modified === 0 && result.removed === 0) {
-        toast.info('Already up to date — no new transactions.');
+        toast.info(t('sync.upToDate'));
       } else {
-        toast.success(
-          `Synced: ${result.added} added, ${result.modified} modified, ${result.removed} removed.`
-        );
+        toast.success(t('sync.synced', { added: result.added, modified: result.modified, removed: result.removed }));
       }
     } catch (error: any) {
-      toast.error(error.message || 'Failed to sync transactions');
+      toast.error(error.message || t('sync.failedSync'));
     }
   };
 
@@ -28,7 +28,7 @@ export function SyncButton() {
       ) : (
         <RefreshCw className="h-4 w-4 mr-2" />
       )}
-      {syncAll.isPending ? 'Syncing...' : 'Sync'}
+      {syncAll.isPending ? t('sync.syncing') : t('sync.sync')}
     </Button>
   );
 }

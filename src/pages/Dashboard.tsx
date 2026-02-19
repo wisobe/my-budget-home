@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { StatCard } from '@/components/dashboard/StatCard';
 import { AccountsList } from '@/components/dashboard/AccountsList';
@@ -12,21 +13,20 @@ import { usePreferences } from '@/contexts/PreferencesContext';
 import { Wallet, TrendingUp, TrendingDown, PiggyBank } from 'lucide-react';
 
 const Dashboard = () => {
+  const { t } = useTranslation();
   const totalBalance = useTotalBalance();
   const { data: transactionsData } = useTransactions({ per_page: 100 });
   const { autoSync, showPending } = usePreferences();
   const syncAll = useSyncAllConnections();
   const hasSynced = useRef(false);
 
-  // Auto-sync on first load if enabled
   useEffect(() => {
     if (autoSync && !hasSynced.current) {
       hasSynced.current = true;
-      syncAll.mutate(undefined, { onError: () => {} }); // silent
+      syncAll.mutate(undefined, { onError: () => {} });
     }
   }, [autoSync]);
 
-  // Calculate this month's income and expenses
   const now = new Date();
   const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
   
@@ -46,48 +46,45 @@ const Dashboard = () => {
 
   return (
     <AppLayout 
-      title="Dashboard"
+      title={t('dashboard.title')}
       actions={<SyncButton />}
     >
       <div className="space-y-6">
-        {/* Stats Grid */}
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           <StatCard
-            title="Total Balance"
+            title={t('dashboard.totalBalance')}
             value={totalBalance}
             icon={Wallet}
-            description="Across all accounts"
+            description={t('dashboard.acrossAllAccounts')}
           />
           <StatCard
-            title="Monthly Income"
+            title={t('dashboard.monthlyIncome')}
             value={monthlyIncome}
             icon={TrendingUp}
             variant="income"
-            description="This month"
+            description={t('dashboard.thisMonth')}
           />
           <StatCard
-            title="Monthly Expenses"
+            title={t('dashboard.monthlyExpenses')}
             value={monthlyExpenses}
             icon={TrendingDown}
             variant="expense"
-            description="This month"
+            description={t('dashboard.thisMonth')}
           />
           <StatCard
-            title="Net Savings"
+            title={t('dashboard.netSavings')}
             value={netSavings}
             icon={PiggyBank}
             variant={netSavings >= 0 ? 'income' : 'expense'}
-            description="This month"
+            description={t('dashboard.thisMonth')}
           />
         </div>
 
-        {/* Main Content Grid */}
         <div className="grid gap-6 lg:grid-cols-2">
           <SpendingChart />
           <AccountsList />
         </div>
 
-        {/* Recent Transactions */}
         <RecentTransactions />
       </div>
     </AppLayout>
