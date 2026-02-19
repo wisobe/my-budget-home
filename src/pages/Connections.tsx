@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -29,6 +30,7 @@ function PlaidLinkButton({ linkToken, onSuccess, onExit }: {
 }
 
 const Connections = () => {
+  const { t } = useTranslation();
   const { data: connectionsData, isLoading } = usePlaidConnections();
   const createLinkTokenMutation = useCreateLinkToken();
   const exchangeTokenMutation = useExchangePlaidToken();
@@ -44,19 +46,19 @@ const Connections = () => {
   const handleSync = async (connectionId: string) => {
     try {
       const result = await syncMutation.mutateAsync(connectionId);
-      toast.success(`Synced ${result.data.added} new transactions`);
+      toast.success(t('connections.syncedTransactions', { count: result.data.added }));
     } catch (error) {
-      toast.error('Failed to sync transactions');
+      toast.error(t('connections.failedSync'));
     }
   };
 
   const handleRemove = async (connectionId: string) => {
-    if (!confirm('Are you sure you want to remove this bank connection?')) return;
+    if (!confirm(t('connections.confirmRemove'))) return;
     try {
       await removeMutation.mutateAsync(connectionId);
-      toast.success('Bank connection removed');
+      toast.success(t('connections.bankRemoved'));
     } catch (error) {
-      toast.error('Failed to remove connection');
+      toast.error(t('connections.failedRemove'));
     }
   };
 
@@ -66,7 +68,7 @@ const Connections = () => {
       const result = await createLinkTokenMutation.mutateAsync();
       setLinkToken(result.data.link_token);
     } catch (error: any) {
-      toast.error(`Failed to initialize bank connection: ${error.message}`);
+      toast.error(t('connections.failedInit', { message: error.message }));
       setIsConnecting(false);
     }
   };
@@ -76,22 +78,22 @@ const Connections = () => {
     try {
       const institutionId = metadata?.institution?.institution_id || 'unknown';
       const result = await exchangeTokenMutation.mutateAsync({ publicToken, institutionId });
-      toast.success('Bank connected! Syncing transactions...');
+      toast.success(t('connections.bankConnected'));
       try {
         const connectionId = result.data?.id;
         if (connectionId) {
           const syncResult = await syncMutation.mutateAsync(connectionId);
-          toast.success(`Initial sync complete: ${syncResult.data.added} transactions imported.`);
+          toast.success(t('connections.initialSyncComplete', { count: syncResult.data.added }));
         }
       } catch {
-        toast.warning('Bank connected, but initial sync failed. Try the Sync button manually.');
+        toast.warning(t('connections.initialSyncFailed'));
       }
     } catch (error: any) {
-      toast.error(`Failed to connect bank: ${error.message}`);
+      toast.error(t('connections.failedConnect', { message: error.message }));
     } finally {
       setIsConnecting(false);
     }
-  }, [exchangeTokenMutation, syncMutation]);
+  }, [exchangeTokenMutation, syncMutation, t]);
 
   const handlePlaidExit = useCallback(() => {
     setLinkToken(null);
@@ -100,18 +102,17 @@ const Connections = () => {
 
   return (
     <AppLayout
-      title="Bank Connections"
+      title={t('connections.title')}
       actions={
         <Button size="sm" onClick={handleConnectBank} disabled={isConnecting}>
           {isConnecting ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Plus className="h-4 w-4 mr-2" />}
-          Connect Bank
+          {t('connections.connectBank')}
         </Button>
       }
     >
       {linkToken && <PlaidLinkButton linkToken={linkToken} onSuccess={handlePlaidSuccess} onExit={handlePlaidExit} />}
 
       <div className="space-y-6">
-        {/* Environment Indicator */}
         <Card className="border-primary/20 bg-primary/5">
           <CardContent className="pt-6">
             <div className="flex gap-4">
@@ -120,30 +121,27 @@ const Connections = () => {
               </div>
               <div>
                 <div className="flex items-center gap-2 mb-1">
-                  <h3 className="font-semibold">Plaid Integration</h3>
+                  <h3 className="font-semibold">{t('connections.plaidIntegration')}</h3>
                   <Badge variant="outline" className={cn(
                     plaidEnvironment === 'sandbox' ? "border-amber-500 text-amber-600" : "border-emerald-500 text-emerald-600"
                   )}>
-                    {plaidEnvironment === 'sandbox' ? 'Sandbox' : 'Production'}
+                    {plaidEnvironment === 'sandbox' ? t('connections.sandbox') : t('connections.production')}
                   </Badge>
                 </div>
                 <p className="text-sm text-muted-foreground">
-                  {plaidEnvironment === 'sandbox'
-                    ? 'You are using sandbox mode with test bank data. Switch to production in Settings when ready for real banks.'
-                    : 'You are using production mode with real bank connections.'}
+                  {plaidEnvironment === 'sandbox' ? t('connections.sandboxDescription') : t('connections.productionDescription')}
                 </p>
               </div>
             </div>
           </CardContent>
         </Card>
 
-        {/* Connected Banks */}
         <Card>
           <CardHeader>
-            <CardTitle>Connected Banks</CardTitle>
+            <CardTitle>{t('connections.connectedBanks')}</CardTitle>
             <CardDescription>
-              Manage your bank connections and sync status
-              {plaidEnvironment === 'sandbox' && ' (sandbox environment)'}
+              {t('connections.manageBankConnections')}
+              {plaidEnvironment === 'sandbox' && ` ${t('connections.sandboxEnv')}`}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -156,15 +154,13 @@ const Connections = () => {
                 <div className="h-12 w-12 rounded-full bg-muted flex items-center justify-center mx-auto mb-4">
                   <ExternalLink className="h-6 w-6 text-muted-foreground" />
                 </div>
-                <h3 className="font-semibold mb-2">No banks connected</h3>
+                <h3 className="font-semibold mb-2">{t('connections.noBanksConnected')}</h3>
                 <p className="text-sm text-muted-foreground mb-4">
-                  {plaidEnvironment === 'sandbox'
-                    ? 'Connect a test bank to try out the transaction sync flow'
-                    : 'Connect your bank accounts to automatically sync transactions'}
+                  {plaidEnvironment === 'sandbox' ? t('connections.connectTestBank') : t('connections.connectRealBank')}
                 </p>
                 <Button onClick={handleConnectBank} disabled={isConnecting}>
                   {isConnecting ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Plus className="h-4 w-4 mr-2" />}
-                  Connect Your First Bank
+                  {t('connections.connectFirstBank')}
                 </Button>
               </div>
             ) : (
@@ -178,18 +174,20 @@ const Connections = () => {
                       <div className="flex items-center gap-2">
                         <p className="font-semibold">{connection.institution_name}</p>
                         <Badge variant={connection.status === 'active' ? 'default' : 'destructive'} className={cn(connection.status === 'active' && "bg-income")}>
-                          {connection.status === 'active' ? <><CheckCircle2 className="h-3 w-3 mr-1" /> Active</> : <><AlertCircle className="h-3 w-3 mr-1" /> Error</>}
+                          {connection.status === 'active' ? <><CheckCircle2 className="h-3 w-3 mr-1" /> {t('connections.active')}</> : <><AlertCircle className="h-3 w-3 mr-1" /> {t('connections.error')}</>}
                         </Badge>
                       </div>
                       <p className="text-sm text-muted-foreground">
-                        Last synced {connection.last_synced ? new Date(connection.last_synced).toLocaleString() : 'Never'}
+                        {connection.last_synced
+                          ? t('connections.lastSynced', { date: new Date(connection.last_synced).toLocaleString() })
+                          : t('connections.lastSynced', { date: t('connections.never') })}
                       </p>
                     </div>
                   </div>
                   <div className="flex gap-2">
                     <Button variant="outline" size="sm" onClick={() => handleSync(connection.id)} disabled={syncMutation.isPending}>
                       {syncMutation.isPending ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <RefreshCw className="h-4 w-4 mr-2" />}
-                      Sync
+                      {t('sync.sync')}
                     </Button>
                     <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive" onClick={() => handleRemove(connection.id)} disabled={removeMutation.isPending}>
                       <Trash2 className="h-4 w-4" />

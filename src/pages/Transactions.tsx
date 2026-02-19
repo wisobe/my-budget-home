@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { TransactionList } from '@/components/transactions/TransactionList';
 import { SyncButton } from '@/components/transactions/SyncButton';
@@ -7,20 +8,21 @@ import { Button } from '@/components/ui/button';
 import { Download, Plus } from 'lucide-react';
 
 const Transactions = () => {
+  const { t } = useTranslation();
   const [addOpen, setAddOpen] = useState(false);
 
   return (
     <AppLayout
-      title="Transactions"
+      title={t('transactions.title')}
       actions={
         <div className="flex gap-2">
           <Button variant="outline" size="sm">
             <Download className="h-4 w-4 mr-2" />
-            Export
+            {t('transactions.export')}
           </Button>
           <Button size="sm" onClick={() => setAddOpen(true)}>
             <Plus className="h-4 w-4 mr-2" />
-            Add Transaction
+            {t('transactions.addTransaction')}
           </Button>
           <SyncButton />
         </div>

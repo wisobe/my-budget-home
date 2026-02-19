@@ -1,5 +1,5 @@
+import { useTranslation } from 'react-i18next';
 import { AppLayout } from '@/components/layout/AppLayout';
-import { AccountsList } from '@/components/dashboard/AccountsList';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useAccounts, useTotalBalance } from '@/hooks/use-accounts';
@@ -28,12 +28,12 @@ const accountIcons: Record<string, typeof Wallet> = {
 };
 
 const Accounts = () => {
+  const { t } = useTranslation();
   const { data: accountsData, isLoading } = useAccounts();
   const totalBalance = useTotalBalance();
 
   const accounts = accountsData?.data || [];
 
-  // Group by type
   const groupedAccounts = accounts.reduce((acc, account) => {
     if (!acc[account.type]) acc[account.type] = [];
     acc[account.type].push(account);
@@ -42,32 +42,27 @@ const Accounts = () => {
 
   return (
     <AppLayout
-      title="Accounts"
+      title={t('accounts.title')}
       actions={
         <div className="flex gap-2">
           <SyncButton />
           <Button size="sm">
             <Plus className="h-4 w-4 mr-2" />
-            Add Account
+            {t('accounts.addAccount')}
           </Button>
         </div>
       }
     >
       <div className="space-y-6">
-        {/* Total Balance */}
         <Card>
           <CardHeader>
-            <CardDescription>Total Balance</CardDescription>
+            <CardDescription>{t('accounts.totalBalance')}</CardDescription>
             <CardTitle className="text-4xl">
-              {new Intl.NumberFormat('en-CA', { 
-                style: 'currency', 
-                currency: 'CAD' 
-              }).format(totalBalance)}
+              {new Intl.NumberFormat('en-CA', { style: 'currency', currency: 'CAD' }).format(totalBalance)}
             </CardTitle>
           </CardHeader>
         </Card>
 
-        {/* Accounts by Type */}
         {Object.entries(groupedAccounts).map(([type, typeAccounts]) => {
           const Icon = accountIcons[type] || Wallet;
           const colorClass = accountTypeColors[type] || accountTypeColors.other;
@@ -82,18 +77,12 @@ const Accounts = () => {
                       <Icon className="h-5 w-5" />
                     </div>
                     <div>
-                      <CardTitle className="capitalize">{type} Accounts</CardTitle>
-                      <CardDescription>{typeAccounts.length} account(s)</CardDescription>
+                      <CardTitle className="capitalize">{t('accounts.accounts', { type })}</CardTitle>
+                      <CardDescription>{t('accounts.accountCount', { count: typeAccounts.length })}</CardDescription>
                     </div>
                   </div>
-                  <p className={cn(
-                    "text-xl font-bold",
-                    typeTotal < 0 && "text-expense"
-                  )}>
-                    {new Intl.NumberFormat('en-CA', { 
-                      style: 'currency', 
-                      currency: 'CAD' 
-                    }).format(typeTotal)}
+                  <p className={cn("text-xl font-bold", typeTotal < 0 && "text-expense")}>
+                    {new Intl.NumberFormat('en-CA', { style: 'currency', currency: 'CAD' }).format(typeTotal)}
                   </p>
                 </div>
               </CardHeader>
@@ -108,26 +97,19 @@ const Accounts = () => {
                       <p className="text-sm text-muted-foreground">
                         {account.institution_name}
                         {account.last_synced && (
-                          <> • Last synced {new Date(account.last_synced).toLocaleDateString()}</>
+                          <> • {t('accounts.lastSynced', { date: new Date(account.last_synced).toLocaleDateString() })}</>
                         )}
                       </p>
                     </div>
                     <div className="text-right">
-                      <p className={cn(
-                        "font-semibold",
-                        Number(account.current_balance) < 0 && "text-expense"
-                      )}>
-                        {new Intl.NumberFormat('en-CA', { 
-                          style: 'currency', 
-                          currency: account.currency 
-                        }).format(Number(account.current_balance))}
+                      <p className={cn("font-semibold", Number(account.current_balance) < 0 && "text-expense")}>
+                        {new Intl.NumberFormat('en-CA', { style: 'currency', currency: account.currency }).format(Number(account.current_balance))}
                       </p>
                       {account.available_balance !== undefined && (
                         <p className="text-xs text-muted-foreground">
-                          Available: {new Intl.NumberFormat('en-CA', { 
-                            style: 'currency', 
-                            currency: account.currency 
-                          }).format(account.available_balance)}
+                          {t('accounts.available', {
+                            amount: new Intl.NumberFormat('en-CA', { style: 'currency', currency: account.currency }).format(account.available_balance)
+                          })}
                         </p>
                       )}
                     </div>

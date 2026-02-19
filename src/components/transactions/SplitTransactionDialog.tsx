@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -23,6 +24,7 @@ interface Props {
 }
 
 export function SplitTransactionDialog({ open, onOpenChange, transaction }: Props) {
+  const { t } = useTranslation();
   const { data: categoriesData } = useCategories();
   const { data: splitsData } = useTransactionSplits(open && transaction ? transaction.id : null);
   const saveMutation = useSaveTransactionSplits();
@@ -36,7 +38,6 @@ export function SplitTransactionDialog({ open, onOpenChange, transaction }: Prop
     { category_id: '', amount: '', is_excluded: false },
   ]);
 
-  // Load existing splits when dialog opens
   useEffect(() => {
     if (splitsData?.data && splitsData.data.length > 0) {
       setLines(splitsData.data.map(s => ({
@@ -72,18 +73,17 @@ export function SplitTransactionDialog({ open, onOpenChange, transaction }: Prop
 
   const handleSave = async () => {
     if (Math.abs(remaining) > 0.01) {
-      toast.error(`Split amounts must equal $${totalAmount.toFixed(2)}. Remaining: $${remaining.toFixed(2)}`);
+      toast.error(t('splitDialog.mustEqual', { total: totalAmount.toFixed(2), remaining: remaining.toFixed(2) }));
       return;
     }
 
     const validLines = lines.filter(l => parseFloat(l.amount) > 0);
     if (validLines.length < 2) {
-      toast.error('At least 2 split lines are required');
+      toast.error(t('splitDialog.atLeast2'));
       return;
     }
 
     try {
-      // Use the same sign as the original transaction
       const sign = transaction!.amount >= 0 ? 1 : -1;
       await saveMutation.mutateAsync({
         transaction_id: transaction!.id,
@@ -93,10 +93,10 @@ export function SplitTransactionDialog({ open, onOpenChange, transaction }: Prop
           is_excluded: l.is_excluded,
         })),
       });
-      toast.success('Split saved');
+      toast.success(t('splitDialog.splitSaved'));
       onOpenChange(false);
     } catch (err: any) {
-      toast.error(err.message || 'Failed to save split');
+      toast.error(err.message || t('splitDialog.failedSave'));
     }
   };
 
@@ -104,10 +104,10 @@ export function SplitTransactionDialog({ open, onOpenChange, transaction }: Prop
     if (!transaction) return;
     try {
       await deleteMutation.mutateAsync(transaction.id);
-      toast.success('Split removed');
+      toast.success(t('splitDialog.splitRemoved'));
       onOpenChange(false);
     } catch (err: any) {
-      toast.error(err.message || 'Failed to remove split');
+      toast.error(err.message || t('splitDialog.failedRemove'));
     }
   };
 
@@ -117,12 +117,12 @@ export function SplitTransactionDialog({ open, onOpenChange, transaction }: Prop
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-lg">
         <DialogHeader>
-          <DialogTitle>Split Transaction</DialogTitle>
+          <DialogTitle>{t('splitDialog.title')}</DialogTitle>
         </DialogHeader>
 
         <div className="space-y-1 text-sm">
           <p className="font-medium">{transaction.name}</p>
-          <p className="text-muted-foreground">Total: ${totalAmount.toFixed(2)}</p>
+          <p className="text-muted-foreground">{t('splitDialog.total', { amount: totalAmount.toFixed(2) })}</p>
         </div>
 
         <div className="space-y-3 max-h-[300px] overflow-y-auto">
@@ -130,12 +130,12 @@ export function SplitTransactionDialog({ open, onOpenChange, transaction }: Prop
             <div key={idx} className="flex items-end gap-2 p-3 rounded-lg border bg-card">
               <div className="flex-1 space-y-1">
                 <Label className="text-xs">
-                  {line.is_excluded ? 'Excluded' : 'Category'}
+                  {line.is_excluded ? t('splitDialog.excluded') : t('splitDialog.category')}
                 </Label>
                 {!line.is_excluded && (
                   <Select value={line.category_id} onValueChange={v => updateLine(idx, 'category_id', v)}>
                     <SelectTrigger className="h-8 text-sm">
-                      <SelectValue placeholder="Select..." />
+                      <SelectValue placeholder={t('transactions.select')} />
                     </SelectTrigger>
                     <SelectContent>
                       {categories.map(c => (
@@ -151,7 +151,7 @@ export function SplitTransactionDialog({ open, onOpenChange, transaction }: Prop
                 )}
               </div>
               <div className="w-24 space-y-1">
-                <Label className="text-xs">Amount</Label>
+                <Label className="text-xs">{t('transactions.amount')}</Label>
                 <Input
                   type="number"
                   step="0.01"
@@ -162,7 +162,7 @@ export function SplitTransactionDialog({ open, onOpenChange, transaction }: Prop
                 />
               </div>
               <div className="flex flex-col items-center gap-1 pb-1">
-                <Label className="text-xs">Excl.</Label>
+                <Label className="text-xs">{t('splitDialog.excl')}</Label>
                 <Switch
                   checked={line.is_excluded}
                   onCheckedChange={v => updateLine(idx, 'is_excluded', v)}
@@ -184,22 +184,22 @@ export function SplitTransactionDialog({ open, onOpenChange, transaction }: Prop
 
         <div className="flex items-center justify-between text-sm">
           <Button variant="outline" size="sm" onClick={addLine}>
-            <Plus className="h-3.5 w-3.5 mr-1" /> Add Line
+            <Plus className="h-3.5 w-3.5 mr-1" /> {t('splitDialog.addLine')}
           </Button>
           <p className={Math.abs(remaining) > 0.01 ? 'text-destructive font-medium' : 'text-muted-foreground'}>
-            Remaining: ${remaining.toFixed(2)}
+            {t('splitDialog.remaining', { amount: remaining.toFixed(2) })}
           </p>
         </div>
 
         <div className="flex gap-2">
           {(splitsData?.data?.length ?? 0) > 0 && (
             <Button variant="outline" onClick={handleRemoveSplit} disabled={deleteMutation.isPending} className="text-destructive">
-              Remove Split
+              {t('splitDialog.removeSplit')}
             </Button>
           )}
           <Button className="flex-1" onClick={handleSave} disabled={saveMutation.isPending || Math.abs(remaining) > 0.01}>
             {saveMutation.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-            Save Split
+            {t('splitDialog.saveSplit')}
           </Button>
         </div>
       </DialogContent>

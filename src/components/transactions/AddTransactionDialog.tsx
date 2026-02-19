@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -15,6 +16,7 @@ interface Props {
 }
 
 export function AddTransactionDialog({ open, onOpenChange }: Props) {
+  const { t } = useTranslation();
   const [name, setName] = useState('');
   const [amount, setAmount] = useState('');
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
@@ -34,7 +36,7 @@ export function AddTransactionDialog({ open, onOpenChange }: Props) {
     e.preventDefault();
     const numAmount = parseFloat(amount);
     if (isNaN(numAmount) || numAmount === 0) {
-      toast.error('Please enter a valid amount');
+      toast.error(t('transactions.invalidAmount'));
       return;
     }
 
@@ -47,36 +49,36 @@ export function AddTransactionDialog({ open, onOpenChange }: Props) {
         category_id: categoryId && categoryId !== 'none' ? categoryId : undefined,
         notes: notes || undefined,
       });
-      toast.success('Transaction created');
+      toast.success(t('transactions.transactionCreated'));
       onOpenChange(false);
       setName(''); setAmount(''); setCategoryId(''); setNotes('');
     } catch (err: any) {
-      toast.error(err.message || 'Failed to create transaction');
+      toast.error(err.message || t('transactions.failedCreate'));
     }
   };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
-        <DialogHeader><DialogTitle>Add Transaction</DialogTitle></DialogHeader>
+        <DialogHeader><DialogTitle>{t('transactions.addTransaction')}</DialogTitle></DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label>Description</Label>
-            <Input value={name} onChange={e => setName(e.target.value)} placeholder="e.g. Grocery store" required />
+            <Label>{t('transactions.description')}</Label>
+            <Input value={name} onChange={e => setName(e.target.value)} placeholder={t('transactions.descriptionPlaceholder')} required />
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label>Amount</Label>
+              <Label>{t('transactions.amount')}</Label>
               <Input type="number" step="0.01" min="0.01" value={amount} onChange={e => setAmount(e.target.value)} placeholder="0.00" required />
             </div>
             <div className="space-y-2">
-              <Label>Type</Label>
+              <Label>{t('transactions.type')}</Label>
               <Select value={isExpense ? 'expense' : 'income'} onValueChange={v => setIsExpense(v === 'expense')}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="expense">Expense</SelectItem>
-                  <SelectItem value="income">Income</SelectItem>
+                  <SelectItem value="expense">{t('transactions.expense')}</SelectItem>
+                  <SelectItem value="income">{t('transactions.income')}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -84,13 +86,13 @@ export function AddTransactionDialog({ open, onOpenChange }: Props) {
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label>Date</Label>
+              <Label>{t('transactions.date')}</Label>
               <Input type="date" value={date} onChange={e => setDate(e.target.value)} required />
             </div>
             <div className="space-y-2">
-              <Label>Account</Label>
+              <Label>{t('transactions.account')}</Label>
               <Select value={accountId} onValueChange={setAccountId} required>
-                <SelectTrigger><SelectValue placeholder="Select account" /></SelectTrigger>
+                <SelectTrigger><SelectValue placeholder={t('transactions.selectAccount')} /></SelectTrigger>
                 <SelectContent>
                   {accounts.map(a => (
                     <SelectItem key={a.id} value={a.id}>{a.name}</SelectItem>
@@ -101,11 +103,11 @@ export function AddTransactionDialog({ open, onOpenChange }: Props) {
           </div>
 
           <div className="space-y-2">
-            <Label>Category (optional)</Label>
+            <Label>{t('transactions.categoryOptional')}</Label>
             <Select value={categoryId} onValueChange={setCategoryId}>
-              <SelectTrigger><SelectValue placeholder="No category" /></SelectTrigger>
+              <SelectTrigger><SelectValue placeholder={t('transactions.noCategory')} /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="none">No category</SelectItem>
+                <SelectItem value="none">{t('transactions.noCategory')}</SelectItem>
                 {categories.map(c => (
                   <SelectItem key={c.id} value={c.id}>
                     <div className="flex items-center gap-2">
@@ -119,13 +121,13 @@ export function AddTransactionDialog({ open, onOpenChange }: Props) {
           </div>
 
           <div className="space-y-2">
-            <Label>Notes (optional)</Label>
-            <Input value={notes} onChange={e => setNotes(e.target.value)} placeholder="Optional notes" />
+            <Label>{t('transactions.notesOptional')}</Label>
+            <Input value={notes} onChange={e => setNotes(e.target.value)} placeholder={t('transactions.optionalNotes')} />
           </div>
 
           <Button type="submit" className="w-full" disabled={createMutation.isPending || !name || !amount || !accountId}>
             {createMutation.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-            Create Transaction
+            {t('transactions.createTransaction')}
           </Button>
         </form>
       </DialogContent>

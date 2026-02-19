@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -9,7 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useCategories, useDeleteCategory, useCategoryRules, useCreateCategoryRule, useDeleteCategoryRule } from '@/hooks/use-transactions';
 import { useAuth } from '@/contexts/AuthContext';
-import { Plus, Trash2, CheckCircle2, XCircle, Loader2, Key, ExternalLink, FlaskConical, Building2, Lock, LogOut, Sparkles } from 'lucide-react';
+import { Plus, Trash2, CheckCircle2, XCircle, Loader2, Key, ExternalLink, FlaskConical, Building2, Lock, LogOut, Sparkles, Globe } from 'lucide-react';
 import { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { API_BASE_URL } from '@/lib/config';
@@ -21,11 +22,12 @@ import { useQueryClient } from '@tanstack/react-query';
 import { toast } from '@/components/ui/sonner';
 
 const Settings = () => {
+  const { t } = useTranslation();
   const { data: categoriesData } = useCategories();
   const categories = categoriesData?.data || [];
   const { plaidEnvironment, setPlaidEnvironment, canUseSandbox } = usePlaidEnvironment();
   const { logout, user, isAdmin } = useAuth();
-  const { darkMode, setDarkMode, autoSync, setAutoSync, showPending, setShowPending } = usePreferences();
+  const { darkMode, setDarkMode, autoSync, setAutoSync, showPending, setShowPending, language, setLanguage } = usePreferences();
   const deleteCategoryMutation = useDeleteCategory();
   const { data: rulesData } = useCategoryRules();
   const createRuleMutation = useCreateCategoryRule();
@@ -40,13 +42,11 @@ const Settings = () => {
   const [addCatOpen, setAddCatOpen] = useState(false);
   const [addingCat, setAddingCat] = useState(false);
 
-  // Category rules state
   const [addRuleOpen, setAddRuleOpen] = useState(false);
   const [newRuleKeyword, setNewRuleKeyword] = useState('');
   const [newRuleCategoryId, setNewRuleCategoryId] = useState('');
   const [newRuleMatchType, setNewRuleMatchType] = useState('contains');
 
-  // Change password state
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -66,53 +66,53 @@ const Settings = () => {
       const result = await response.json();
       if (result.data?.success) {
         setDbTestStatus('success');
-        setDbTestMessage(`Connected! MariaDB ${result.data.version}`);
+        setDbTestMessage(t('settings.connected', { version: result.data.version }));
       } else {
         setDbTestStatus('error');
-        setDbTestMessage(result.data?.message || 'Connection failed');
+        setDbTestMessage(result.data?.message || t('settings.connectionFailed'));
       }
     } catch {
       setDbTestStatus('error');
-      setDbTestMessage('Could not reach API endpoint');
+      setDbTestMessage(t('settings.couldNotReach'));
     }
   };
 
   const handleDeleteCategory = async (id: string, name: string) => {
-    if (!confirm(`Delete "${name}"? Transactions using this category will be moved to "Other".`)) return;
+    if (!confirm(t('settings.deleteCategoryConfirm', { name }))) return;
     try {
       await deleteCategoryMutation.mutateAsync(id);
-      toast.success(`Category "${name}" deleted`);
+      toast.success(t('settings.categoryDeleted', { name }));
     } catch (err: any) {
-      toast.error(err.message || 'Failed to delete category');
+      toast.error(err.message || t('settings.failedDeleteCategory'));
     }
   };
 
   const handleChangePassword = async (e: React.FormEvent) => {
     e.preventDefault();
     if (newPassword !== confirmPassword) {
-      toast.error('New passwords do not match');
+      toast.error(t('settings.passwordsDontMatch'));
       return;
     }
     if (newPassword.length < 6) {
-      toast.error('Password must be at least 6 characters');
+      toast.error(t('settings.passwordTooShort'));
       return;
     }
     setChangingPassword(true);
     try {
       await authApi.changePassword(currentPassword, newPassword);
-      toast.success('Password changed successfully');
+      toast.success(t('settings.passwordChanged'));
       setCurrentPassword('');
       setNewPassword('');
       setConfirmPassword('');
     } catch (err: any) {
-      toast.error(err.message || 'Failed to change password');
+      toast.error(err.message || t('settings.failedChangePassword'));
     } finally {
       setChangingPassword(false);
     }
   };
 
   return (
-    <AppLayout title="Settings">
+    <AppLayout title={t('settings.title')}>
       <div className="space-y-6 max-w-2xl">
         {/* Account & Security */}
         <Card>
@@ -121,21 +121,21 @@ const Settings = () => {
               <div>
                 <CardTitle className="flex items-center gap-2">
                   <Lock className="h-5 w-5" />
-                  Account
+                  {t('settings.account')}
                 </CardTitle>
                 <CardDescription>
-                  {user ? `Signed in as ${user.email}` : 'Manage your account'}
+                  {user ? t('settings.signedInAs', { email: user.email }) : t('settings.manageAccount')}
                 </CardDescription>
               </div>
               <div className="flex items-center gap-2">
                 {user && (
                   <Badge variant={isAdmin ? 'default' : 'secondary'}>
-                    {isAdmin ? 'Admin' : 'User'}
+                    {isAdmin ? t('settings.admin') : t('settings.user')}
                   </Badge>
                 )}
                 <Button variant="outline" size="sm" onClick={logout}>
                   <LogOut className="h-4 w-4 mr-2" />
-                  Logout
+                  {t('nav.logout')}
                 </Button>
               </div>
             </div>
@@ -143,22 +143,22 @@ const Settings = () => {
           <CardContent>
             <form onSubmit={handleChangePassword} className="space-y-4">
               <div className="space-y-2">
-                <Label>Current Password</Label>
+                <Label>{t('settings.currentPassword')}</Label>
                 <Input type="password" value={currentPassword} onChange={e => setCurrentPassword(e.target.value)} required />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label>New Password</Label>
+                  <Label>{t('settings.newPassword')}</Label>
                   <Input type="password" value={newPassword} onChange={e => setNewPassword(e.target.value)} required />
                 </div>
                 <div className="space-y-2">
-                  <Label>Confirm New Password</Label>
+                  <Label>{t('settings.confirmNewPassword')}</Label>
                   <Input type="password" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} required />
                 </div>
               </div>
               <Button type="submit" disabled={changingPassword || !currentPassword || !newPassword}>
                 {changingPassword && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-                Change Password
+                {t('settings.changePassword')}
               </Button>
             </form>
           </CardContent>
@@ -170,14 +170,14 @@ const Settings = () => {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Key className="h-5 w-5" />
-                Plaid Environment
-                <Badge variant="outline" className="text-xs">Admin</Badge>
+                {t('settings.plaidEnvironment')}
+                <Badge variant="outline" className="text-xs">{t('settings.admin')}</Badge>
               </CardTitle>
-              <CardDescription>Switch between sandbox (test) and production (real bank) environments</CardDescription>
+              <CardDescription>{t('settings.plaidEnvDescription')}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-3">
-                <Label>Active Environment</Label>
+                <Label>{t('settings.activeEnvironment')}</Label>
                 <div className="grid grid-cols-2 gap-3">
                   <button
                     onClick={() => setPlaidEnvironment('sandbox')}
@@ -188,8 +188,8 @@ const Settings = () => {
                   >
                     <FlaskConical className={cn("h-5 w-5", plaidEnvironment === 'sandbox' ? "text-primary" : "text-muted-foreground")} />
                     <div>
-                      <p className="font-medium">Sandbox</p>
-                      <p className="text-xs text-muted-foreground">Test with fake bank data</p>
+                      <p className="font-medium">{t('settings.sandboxLabel')}</p>
+                      <p className="text-xs text-muted-foreground">{t('settings.sandboxDesc')}</p>
                     </div>
                   </button>
                   <button
@@ -201,24 +201,22 @@ const Settings = () => {
                   >
                     <Building2 className={cn("h-5 w-5", plaidEnvironment === 'production' ? "text-primary" : "text-muted-foreground")} />
                     <div>
-                      <p className="font-medium">Production</p>
-                      <p className="text-xs text-muted-foreground">Real bank connections</p>
+                      <p className="font-medium">{t('settings.productionLabel')}</p>
+                      <p className="text-xs text-muted-foreground">{t('settings.productionDesc')}</p>
                     </div>
                   </button>
                 </div>
-                <p className="text-xs text-muted-foreground">
-                  Each environment uses separate Plaid credentials and stores connections independently.
-                </p>
+                <p className="text-xs text-muted-foreground">{t('settings.envSeparate')}</p>
               </div>
               <Separator />
               <div className="space-y-2">
-                <Label>Country</Label>
+                <Label>{t('settings.country')}</Label>
                 <Input value="Canada (CA)" readOnly className="bg-muted" />
               </div>
               <p className="text-xs text-muted-foreground">
-                Configure credentials in <code className="bg-muted px-1 rounded">config.php</code>.{' '}
+                {t('settings.configureCredentials')} <code className="bg-muted px-1 rounded">config.php</code>.{' '}
                 <a href="https://dashboard.plaid.com/developers/keys" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
-                  Plaid Dashboard
+                  {t('settings.plaidDashboard')}
                 </a>
               </p>
             </CardContent>
@@ -231,51 +229,51 @@ const Settings = () => {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <ExternalLink className="h-5 w-5" />
-                Backend Setup Guide
-                <Badge variant="outline" className="text-xs">Admin</Badge>
+                {t('settings.backendSetupGuide')}
+                <Badge variant="outline" className="text-xs">{t('settings.admin')}</Badge>
               </CardTitle>
-              <CardDescription>Follow these steps to connect your self-hosted backend</CardDescription>
+              <CardDescription>{t('settings.backendSetupDesc')}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-3 text-sm">
                 <div className="flex gap-3">
                   <Badge variant="outline" className="shrink-0">1</Badge>
                   <div>
-                    <p className="font-medium">Upload PHP API files to your Apache server</p>
-                    <p className="text-muted-foreground">Copy the <code className="bg-muted px-1 rounded">/api</code> folder to your server's public directory</p>
+                    <p className="font-medium">{t('settings.step1Title')}</p>
+                    <p className="text-muted-foreground">{t('settings.step1Desc')}</p>
                   </div>
                 </div>
                 <div className="flex gap-3">
                   <Badge variant="outline" className="shrink-0">2</Badge>
                   <div>
-                    <p className="font-medium">Create the database schema</p>
-                    <p className="text-muted-foreground">Run <code className="bg-muted px-1 rounded">schema.sql</code> in your MariaDB database</p>
+                    <p className="font-medium">{t('settings.step2Title')}</p>
+                    <p className="text-muted-foreground">{t('settings.step2Desc')}</p>
                   </div>
                 </div>
                 <div className="flex gap-3">
                   <Badge variant="outline" className="shrink-0">3</Badge>
                   <div>
-                    <p className="font-medium">Configure your credentials</p>
-                    <p className="text-muted-foreground">Copy <code className="bg-muted px-1 rounded">config.sample.php</code> to <code className="bg-muted px-1 rounded">config.php</code> and fill in your database and Plaid credentials</p>
+                    <p className="font-medium">{t('settings.step3Title')}</p>
+                    <p className="text-muted-foreground">{t('settings.step3Desc')}</p>
                   </div>
                 </div>
                 <div className="flex gap-3">
                   <Badge variant="outline" className="shrink-0">4</Badge>
                   <div>
-                    <p className="font-medium">Set the API URL</p>
-                    <p className="text-muted-foreground">Set <code className="bg-muted px-1 rounded">VITE_API_URL</code> in your .env file</p>
+                    <p className="font-medium">{t('settings.step4Title')}</p>
+                    <p className="text-muted-foreground">{t('settings.step4Desc')}</p>
                   </div>
                 </div>
               </div>
               <Separator />
               <div className="space-y-2">
-                <Label>Database Connection</Label>
+                <Label>{t('settings.dbConnection')}</Label>
                 <div className="flex gap-2">
                   <Button variant="outline" onClick={testDatabaseConnection} disabled={dbTestStatus === 'testing'}>
                     {dbTestStatus === 'testing' && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
                     {dbTestStatus === 'success' && <CheckCircle2 className="h-4 w-4 mr-2 text-income" />}
                     {dbTestStatus === 'error' && <XCircle className="h-4 w-4 mr-2 text-destructive" />}
-                    Test Connection
+                    {t('settings.testConnection')}
                   </Button>
                   {dbTestMessage && (
                     <p className={`text-sm self-center ${dbTestStatus === 'success' ? 'text-income' : 'text-destructive'}`}>{dbTestMessage}</p>
@@ -291,22 +289,22 @@ const Settings = () => {
           <CardHeader>
             <div className="flex items-center justify-between">
               <div>
-                <CardTitle>Categories</CardTitle>
-                <CardDescription>Manage your transaction categories</CardDescription>
+                <CardTitle>{t('settings.categories')}</CardTitle>
+                <CardDescription>{t('settings.manageCategories')}</CardDescription>
               </div>
               <Dialog open={addCatOpen} onOpenChange={setAddCatOpen}>
                 <DialogTrigger asChild>
-                  <Button size="sm"><Plus className="h-4 w-4 mr-2" />Add Category</Button>
+                  <Button size="sm"><Plus className="h-4 w-4 mr-2" />{t('settings.addCategory')}</Button>
                 </DialogTrigger>
                 <DialogContent>
-                  <DialogHeader><DialogTitle>Add Category</DialogTitle></DialogHeader>
+                  <DialogHeader><DialogTitle>{t('settings.addCategory')}</DialogTitle></DialogHeader>
                   <div className="space-y-4">
                     <div className="space-y-2">
-                      <Label>Name</Label>
-                      <Input value={newCatName} onChange={e => setNewCatName(e.target.value)} placeholder="e.g. Subscriptions" />
+                      <Label>{t('settings.categoryName')}</Label>
+                      <Input value={newCatName} onChange={e => setNewCatName(e.target.value)} placeholder={t('settings.categoryNamePlaceholder')} />
                     </div>
                     <div className="space-y-2">
-                      <Label>Color</Label>
+                      <Label>{t('settings.color')}</Label>
                       <div className="flex items-center gap-2">
                         <input type="color" value={newCatColor} onChange={e => setNewCatColor(e.target.value)} className="h-9 w-12 rounded border cursor-pointer" />
                         <Input value={newCatColor} onChange={e => setNewCatColor(e.target.value)} className="flex-1" />
@@ -314,21 +312,21 @@ const Settings = () => {
                     </div>
                     <div className="flex items-center gap-2">
                       <Switch checked={newCatIsIncome} onCheckedChange={setNewCatIsIncome} />
-                      <Label>Income category</Label>
+                      <Label>{t('settings.incomeCategory')}</Label>
                     </div>
                     <Button className="w-full" disabled={!newCatName.trim() || addingCat} onClick={async () => {
                       setAddingCat(true);
                       try {
                         await categoriesApi.create({ name: newCatName.trim(), color: newCatColor, is_income: newCatIsIncome });
                         queryClient.invalidateQueries({ queryKey: ['categories'] });
-                        toast.success('Category created');
+                        toast.success(t('settings.categoryCreated'));
                         setNewCatName(''); setNewCatColor('#6b7280'); setNewCatIsIncome(false); setAddCatOpen(false);
                       } catch (e: any) {
-                        toast.error(e.message || 'Failed to create category');
+                        toast.error(e.message || t('settings.failedCreateCategory'));
                       } finally { setAddingCat(false); }
                     }}>
                       {addingCat ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : null}
-                      Create Category
+                      {t('settings.createCategory')}
                     </Button>
                   </div>
                 </DialogContent>
@@ -342,7 +340,7 @@ const Settings = () => {
                   <div className="flex items-center gap-3">
                     <div className="h-4 w-4 rounded-full" style={{ backgroundColor: category.color }} />
                     <span className="font-medium">{category.name}</span>
-                    {!!category.is_income && <Badge variant="secondary" className="text-xs">Income</Badge>}
+                    {!!category.is_income && <Badge variant="secondary" className="text-xs">{t('transactions.income')}</Badge>}
                   </div>
                   <Button
                     variant="ghost"
@@ -366,28 +364,26 @@ const Settings = () => {
               <div>
                 <CardTitle className="flex items-center gap-2">
                   <Sparkles className="h-5 w-5" />
-                  Auto-Categorization Rules
+                  {t('settings.autoCategorization')}
                 </CardTitle>
-                <CardDescription>
-                  Rules are auto-learned when you categorize transactions. You can also add manual rules.
-                </CardDescription>
+                <CardDescription>{t('settings.autoCategorizationDesc')}</CardDescription>
               </div>
               <Dialog open={addRuleOpen} onOpenChange={setAddRuleOpen}>
                 <DialogTrigger asChild>
-                  <Button size="sm"><Plus className="h-4 w-4 mr-2" />Add Rule</Button>
+                  <Button size="sm"><Plus className="h-4 w-4 mr-2" />{t('settings.addRule')}</Button>
                 </DialogTrigger>
                 <DialogContent>
-                  <DialogHeader><DialogTitle>Add Categorization Rule</DialogTitle></DialogHeader>
+                  <DialogHeader><DialogTitle>{t('settings.addCategorizationRule')}</DialogTitle></DialogHeader>
                   <div className="space-y-4">
                     <div className="space-y-2">
-                      <Label>Keyword</Label>
-                      <Input value={newRuleKeyword} onChange={e => setNewRuleKeyword(e.target.value)} placeholder="e.g. STARBUCKS" />
-                      <p className="text-xs text-muted-foreground">Matched against transaction name and merchant name (case-insensitive)</p>
+                      <Label>{t('settings.keyword')}</Label>
+                      <Input value={newRuleKeyword} onChange={e => setNewRuleKeyword(e.target.value)} placeholder={t('settings.keywordPlaceholder')} />
+                      <p className="text-xs text-muted-foreground">{t('settings.keywordDesc')}</p>
                     </div>
                     <div className="space-y-2">
-                      <Label>Category</Label>
+                      <Label>{t('transactions.category')}</Label>
                       <Select value={newRuleCategoryId} onValueChange={setNewRuleCategoryId}>
-                        <SelectTrigger><SelectValue placeholder="Select category" /></SelectTrigger>
+                        <SelectTrigger><SelectValue placeholder={t('settings.selectCategory')} /></SelectTrigger>
                         <SelectContent>
                           {categories.map(c => (
                             <SelectItem key={c.id} value={c.id}>
@@ -401,13 +397,13 @@ const Settings = () => {
                       </Select>
                     </div>
                     <div className="space-y-2">
-                      <Label>Match Type</Label>
+                      <Label>{t('settings.matchType')}</Label>
                       <Select value={newRuleMatchType} onValueChange={setNewRuleMatchType}>
                         <SelectTrigger><SelectValue /></SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="contains">Contains</SelectItem>
-                          <SelectItem value="exact">Exact Match</SelectItem>
-                          <SelectItem value="starts_with">Starts With</SelectItem>
+                          <SelectItem value="contains">{t('settings.contains')}</SelectItem>
+                          <SelectItem value="exact">{t('settings.exactMatch')}</SelectItem>
+                          <SelectItem value="starts_with">{t('settings.startsWith')}</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
@@ -421,18 +417,18 @@ const Settings = () => {
                             keyword: newRuleKeyword.trim(),
                             match_type: newRuleMatchType,
                           });
-                          toast.success('Rule created');
+                          toast.success(t('settings.ruleCreated'));
                           setNewRuleKeyword('');
                           setNewRuleCategoryId('');
                           setNewRuleMatchType('contains');
                           setAddRuleOpen(false);
                         } catch (e: any) {
-                          toast.error(e.message || 'Failed to create rule');
+                          toast.error(e.message || t('settings.failedCreateRule'));
                         }
                       }}
                     >
                       {createRuleMutation.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-                      Create Rule
+                      {t('settings.createRule')}
                     </Button>
                   </div>
                 </DialogContent>
@@ -441,9 +437,7 @@ const Settings = () => {
           </CardHeader>
           <CardContent>
             {rules.length === 0 ? (
-              <p className="text-sm text-muted-foreground text-center py-4">
-                No rules yet. Categorize a transaction and a rule will be auto-learned, or add one manually.
-              </p>
+              <p className="text-sm text-muted-foreground text-center py-4">{t('settings.noRulesYet')}</p>
             ) : (
               <div className="space-y-2">
                 {rules.map(rule => (
@@ -454,9 +448,9 @@ const Settings = () => {
                         <div className="flex items-center gap-2">
                           <span className="font-medium font-mono text-sm">{rule.keyword}</span>
                           <Badge variant="outline" className="text-xs shrink-0">{rule.match_type}</Badge>
-                          {!!rule.auto_learned && <Badge variant="secondary" className="text-xs shrink-0">Auto</Badge>}
+                          {!!rule.auto_learned && <Badge variant="secondary" className="text-xs shrink-0">{t('common.auto')}</Badge>}
                         </div>
-                        <p className="text-xs text-muted-foreground truncate">→ {rule.category_name || 'Unknown'}</p>
+                        <p className="text-xs text-muted-foreground truncate">→ {rule.category_name || t('dashboard.unknown')}</p>
                       </div>
                     </div>
                     <Button
@@ -464,12 +458,12 @@ const Settings = () => {
                       size="sm"
                       className="text-muted-foreground hover:text-destructive shrink-0"
                       onClick={async () => {
-                        if (!confirm(`Delete rule "${rule.keyword}"?`)) return;
+                        if (!confirm(t('settings.deleteRuleConfirm', { keyword: rule.keyword }))) return;
                         try {
                           await deleteRuleMutation.mutateAsync(rule.id);
-                          toast.success('Rule deleted');
+                          toast.success(t('settings.ruleDeleted'));
                         } catch (e: any) {
-                          toast.error(e.message || 'Failed to delete rule');
+                          toast.error(e.message || t('settings.failedDeleteRule'));
                         }
                       }}
                       disabled={deleteRuleMutation.isPending}
@@ -486,32 +480,51 @@ const Settings = () => {
         {/* Preferences */}
         <Card>
           <CardHeader>
-            <CardTitle>Preferences</CardTitle>
-            <CardDescription>Customize your app experience</CardDescription>
+            <CardTitle>{t('settings.preferences')}</CardTitle>
+            <CardDescription>{t('settings.customizeExperience')}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="font-medium">Dark Mode</p>
-                <p className="text-sm text-muted-foreground">Toggle dark theme</p>
+                <p className="font-medium">{t('settings.darkMode')}</p>
+                <p className="text-sm text-muted-foreground">{t('settings.toggleDarkTheme')}</p>
               </div>
               <Switch checked={darkMode} onCheckedChange={setDarkMode} />
             </div>
             <Separator />
             <div className="flex items-center justify-between">
               <div>
-                <p className="font-medium">Auto-sync Transactions</p>
-                <p className="text-sm text-muted-foreground">Sync on app load</p>
+                <p className="font-medium">{t('settings.autoSyncTransactions')}</p>
+                <p className="text-sm text-muted-foreground">{t('settings.syncOnLoad')}</p>
               </div>
               <Switch checked={autoSync} onCheckedChange={setAutoSync} />
             </div>
             <Separator />
             <div className="flex items-center justify-between">
               <div>
-                <p className="font-medium">Show Pending Transactions</p>
-                <p className="text-sm text-muted-foreground">Include pending in totals</p>
+                <p className="font-medium">{t('settings.showPendingTransactions')}</p>
+                <p className="text-sm text-muted-foreground">{t('settings.includePending')}</p>
               </div>
               <Switch checked={showPending} onCheckedChange={setShowPending} />
+            </div>
+            <Separator />
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Globe className="h-4 w-4 text-muted-foreground" />
+                <div>
+                  <p className="font-medium">{t('settings.language')}</p>
+                  <p className="text-sm text-muted-foreground">{t('settings.languageDesc')}</p>
+                </div>
+              </div>
+              <Select value={language} onValueChange={setLanguage}>
+                <SelectTrigger className="w-[140px]">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="en">English</SelectItem>
+                  <SelectItem value="fr">Français</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </CardContent>
         </Card>
@@ -519,13 +532,13 @@ const Settings = () => {
         {/* Data Export */}
         <Card>
           <CardHeader>
-            <CardTitle>Data Export</CardTitle>
-            <CardDescription>Export your financial data</CardDescription>
+            <CardTitle>{t('settings.dataExport')}</CardTitle>
+            <CardDescription>{t('settings.exportData')}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex gap-4">
-              <Button variant="outline">Export Transactions (CSV)</Button>
-              <Button variant="outline">Export All Data (JSON)</Button>
+              <Button variant="outline">{t('settings.exportCSV')}</Button>
+              <Button variant="outline">{t('settings.exportJSON')}</Button>
             </div>
           </CardContent>
         </Card>

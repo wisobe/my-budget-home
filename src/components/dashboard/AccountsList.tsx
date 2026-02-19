@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAccounts } from '@/hooks/use-accounts';
 import { CreditCard, Wallet, PiggyBank, TrendingUp } from 'lucide-react';
@@ -14,13 +15,14 @@ const accountIcons: Record<string, typeof Wallet> = {
 };
 
 export function AccountsList() {
+  const { t } = useTranslation();
   const { data: accountsData, isLoading } = useAccounts();
 
   if (isLoading) {
     return (
       <Card>
         <CardHeader>
-          <CardTitle>Accounts</CardTitle>
+          <CardTitle>{t('accounts.title')}</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="animate-pulse space-y-3">
@@ -38,7 +40,7 @@ export function AccountsList() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Connected Accounts</CardTitle>
+        <CardTitle>{t('dashboard.connectedAccounts')}</CardTitle>
       </CardHeader>
       <CardContent className="space-y-3">
         {accounts.map(account => {

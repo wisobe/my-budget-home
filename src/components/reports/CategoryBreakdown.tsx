@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useSpendingByCategory } from '@/hooks/use-reports';
 import { useCategories } from '@/hooks/use-transactions';
@@ -10,6 +11,7 @@ interface CategoryBreakdownProps {
 }
 
 export function CategoryBreakdown({ startDate, endDate }: CategoryBreakdownProps) {
+  const { t } = useTranslation();
   const { data: spendingData, isLoading } = useSpendingByCategory(startDate, endDate);
   const { data: categoriesData } = useCategories();
   const categories = categoriesData?.data || [];
@@ -17,7 +19,7 @@ export function CategoryBreakdown({ startDate, endDate }: CategoryBreakdownProps
   if (isLoading) {
     return (
       <Card>
-        <CardHeader><CardTitle>Category Breakdown</CardTitle></CardHeader>
+        <CardHeader><CardTitle>{t('reports.categoryBreakdown')}</CardTitle></CardHeader>
         <CardContent>
           <div className="animate-pulse space-y-4">
             {[1, 2, 3, 4, 5].map(i => <div key={i} className="h-12 bg-muted rounded" />)}
@@ -37,7 +39,7 @@ export function CategoryBreakdown({ startDate, endDate }: CategoryBreakdownProps
 
   return (
     <Card>
-      <CardHeader><CardTitle>Category Breakdown</CardTitle></CardHeader>
+      <CardHeader><CardTitle>{t('reports.categoryBreakdown')}</CardTitle></CardHeader>
       <CardContent className="space-y-4">
         {expenseCategories.map(insight => {
           const category = categories.find(c => c.id === insight.category_id);
@@ -69,7 +71,7 @@ export function CategoryBreakdown({ startDate, endDate }: CategoryBreakdownProps
               </div>
               <Progress value={percentage} className="h-2" style={{ '--progress-foreground': category?.color } as React.CSSProperties} />
               <p className="text-xs text-muted-foreground">
-                {insight.transaction_count} transactions • {insight.percentage_of_total}% of total
+                {t('reports.transactions_count', { count: insight.transaction_count })} • {t('reports.ofTotal', { percentage: insight.percentage_of_total })}
               </p>
             </div>
           );

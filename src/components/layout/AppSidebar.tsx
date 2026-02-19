@@ -1,4 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
 import {
   LayoutDashboard,
@@ -23,20 +24,21 @@ import {
 import { useAuth } from '@/contexts/AuthContext';
 import { Badge } from '@/components/ui/badge';
 
-const navigation = [
-  { name: 'Dashboard', href: '/', icon: LayoutDashboard },
-  { name: 'Transactions', href: '/transactions', icon: ArrowLeftRight },
-  { name: 'Reports', href: '/reports', icon: PieChart },
-  { name: 'Accounts', href: '/accounts', icon: CreditCard },
-  { name: 'Connections', href: '/connections', icon: Link2 },
-  { name: 'Settings', href: '/settings', icon: Settings },
+const navigationKeys = [
+  { key: 'nav.dashboard', href: '/', icon: LayoutDashboard },
+  { key: 'nav.transactions', href: '/transactions', icon: ArrowLeftRight },
+  { key: 'nav.reports', href: '/reports', icon: PieChart },
+  { key: 'nav.accounts', href: '/accounts', icon: CreditCard },
+  { key: 'nav.connections', href: '/connections', icon: Link2 },
+  { key: 'nav.settings', href: '/settings', icon: Settings },
 ];
 
-const adminNavigation = [
-  { name: 'Users', href: '/admin/users', icon: Users },
+const adminNavigationKeys = [
+  { key: 'nav.users', href: '/admin/users', icon: Users },
 ];
 
 export function AppSidebar() {
+  const { t } = useTranslation();
   const location = useLocation();
   const { logout, authEnabled, user, isAdmin } = useAuth();
 
@@ -48,26 +50,27 @@ export function AppSidebar() {
             <Wallet className="h-5 w-5 text-sidebar-primary-foreground" />
           </div>
           <div>
-            <h1 className="text-lg font-bold text-sidebar-foreground">BudgetWise</h1>
-            <p className="text-xs text-sidebar-foreground/60">Personal Finance</p>
+            <h1 className="text-lg font-bold text-sidebar-foreground">{t('app.name')}</h1>
+            <p className="text-xs text-sidebar-foreground/60">{t('app.tagline')}</p>
           </div>
         </Link>
       </SidebarHeader>
 
       <SidebarContent className="px-3 py-4">
         <SidebarMenu>
-          {navigation.map((item) => {
+          {navigationKeys.map((item) => {
             const isActive = location.pathname === item.href;
+            const name = t(item.key);
             return (
-              <SidebarMenuItem key={item.name}>
+              <SidebarMenuItem key={item.key}>
                 <SidebarMenuButton
                   asChild
                   isActive={isActive}
-                  tooltip={item.name}
+                  tooltip={name}
                 >
                   <Link to={item.href}>
                     <item.icon className="h-5 w-5" />
-                    <span>{item.name}</span>
+                    <span>{name}</span>
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
@@ -75,23 +78,23 @@ export function AppSidebar() {
           })}
         </SidebarMenu>
 
-        {/* Admin section */}
         {isAdmin && (
           <div className="mt-4 pt-4 border-t border-sidebar-border">
-            <p className="px-3 mb-2 text-xs font-medium text-sidebar-foreground/50 uppercase tracking-wider">Admin</p>
+            <p className="px-3 mb-2 text-xs font-medium text-sidebar-foreground/50 uppercase tracking-wider">{t('nav.admin')}</p>
             <SidebarMenu>
-              {adminNavigation.map((item) => {
+              {adminNavigationKeys.map((item) => {
                 const isActive = location.pathname === item.href;
+                const name = t(item.key);
                 return (
-                  <SidebarMenuItem key={item.name}>
+                  <SidebarMenuItem key={item.key}>
                     <SidebarMenuButton
                       asChild
                       isActive={isActive}
-                      tooltip={item.name}
+                      tooltip={name}
                     >
                       <Link to={item.href}>
                         <item.icon className="h-5 w-5" />
-                        <span>{item.name}</span>
+                        <span>{name}</span>
                       </Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
@@ -112,9 +115,9 @@ export function AppSidebar() {
         {authEnabled && (
           <SidebarMenu>
             <SidebarMenuItem>
-              <SidebarMenuButton onClick={logout} tooltip="Logout">
+              <SidebarMenuButton onClick={logout} tooltip={t('nav.logout')}>
                 <LogOut className="h-5 w-5" />
-                <span>Logout</span>
+                <span>{t('nav.logout')}</span>
               </SidebarMenuButton>
             </SidebarMenuItem>
           </SidebarMenu>

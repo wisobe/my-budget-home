@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   useTransactions,
   useCategories,
@@ -29,6 +30,7 @@ import { usePreferences } from '@/contexts/PreferencesContext';
 import type { Transaction } from '@/types';
 
 export function TransactionList() {
+  const { t } = useTranslation();
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
@@ -75,7 +77,7 @@ export function TransactionList() {
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
-            placeholder="Search transactions..."
+            placeholder={t('transactions.searchPlaceholder')}
             value={search}
             onChange={(e) => { setSearch(e.target.value); setPage(1); }}
             className="pl-9"
@@ -83,10 +85,10 @@ export function TransactionList() {
         </div>
         <Select value={categoryFilter} onValueChange={(v) => { setCategoryFilter(v); setPage(1); }}>
           <SelectTrigger className="w-full sm:w-[200px]">
-            <SelectValue placeholder="All Categories" />
+            <SelectValue placeholder={t('transactions.allCategories')} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All Categories</SelectItem>
+            <SelectItem value="all">{t('transactions.allCategories')}</SelectItem>
             {categories.map(category => (
               <SelectItem key={category.id} value={category.id}>{category.name}</SelectItem>
             ))}
@@ -94,7 +96,7 @@ export function TransactionList() {
         </Select>
         <div className="flex items-center gap-2">
           <Switch id="show-excluded" checked={showExcluded} onCheckedChange={setShowExcluded} />
-          <Label htmlFor="show-excluded" className="text-sm whitespace-nowrap">Show excluded</Label>
+          <Label htmlFor="show-excluded" className="text-sm whitespace-nowrap">{t('transactions.showExcluded')}</Label>
         </div>
       </div>
 
@@ -103,10 +105,10 @@ export function TransactionList() {
           <TableHeader>
             <TableRow>
               <TableHead className="w-12"></TableHead>
-              <TableHead>Description</TableHead>
-              <TableHead>Category</TableHead>
-              <TableHead>Date</TableHead>
-              <TableHead className="text-right">Amount</TableHead>
+              <TableHead>{t('transactions.description')}</TableHead>
+              <TableHead>{t('transactions.category')}</TableHead>
+              <TableHead>{t('transactions.date')}</TableHead>
+              <TableHead className="text-right">{t('transactions.amount')}</TableHead>
               <TableHead className="w-12"></TableHead>
             </TableRow>
           </TableHeader>
@@ -122,7 +124,7 @@ export function TransactionList() {
             ) : transactions.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
-                  No transactions found
+                  {t('transactions.noTransactions')}
                 </TableCell>
               </TableRow>
             ) : (
@@ -152,16 +154,16 @@ export function TransactionList() {
                           <p className="text-sm text-muted-foreground">{transaction.merchant_name}</p>
                         )}
                         <div className="flex gap-1 mt-1">
-                          {!!transaction.pending && <Badge variant="outline" className="text-xs">Pending</Badge>}
-                          {hasSplits && <Badge variant="secondary" className="text-xs">Split</Badge>}
-                          {isExcluded && <Badge variant="destructive" className="text-xs">Excluded</Badge>}
+                          {!!transaction.pending && <Badge variant="outline" className="text-xs">{t('transactions.pending')}</Badge>}
+                          {hasSplits && <Badge variant="secondary" className="text-xs">{t('transactions.split')}</Badge>}
+                          {isExcluded && <Badge variant="destructive" className="text-xs">{t('transactions.excluded')}</Badge>}
                         </div>
                       </div>
                     </TableCell>
                     <TableCell>
                       {hasSplits ? (
                         <Badge variant="secondary" className="cursor-pointer" onClick={() => handleSplit(transaction)}>
-                          Split — Edit
+                          {t('transactions.splitEdit')}
                         </Badge>
                       ) : (
                         <Select
@@ -176,13 +178,13 @@ export function TransactionList() {
                                   {transaction.category_name}
                                 </div>
                               ) : (
-                                <span className="text-muted-foreground">Select...</span>
+                                <span className="text-muted-foreground">{t('transactions.select')}</span>
                               )}
                             </SelectValue>
                           </SelectTrigger>
                           <SelectContent>
                             <SelectItem value="none">
-                              <span className="text-muted-foreground">None (remove)</span>
+                              <span className="text-muted-foreground">{t('transactions.noneRemove')}</span>
                             </SelectItem>
                             {categories.map(cat => (
                               <SelectItem key={cat.id} value={cat.id}>
@@ -216,13 +218,13 @@ export function TransactionList() {
                         <DropdownMenuContent align="end">
                           <DropdownMenuItem onClick={() => handleSplit(transaction)}>
                             <Split className="h-4 w-4 mr-2" />
-                            {hasSplits ? 'Edit Split' : 'Split'}
+                            {hasSplits ? t('transactions.editSplit') : t('transactions.split')}
                           </DropdownMenuItem>
                           <DropdownMenuItem onClick={() => handleExclude(transaction)}>
                             {isExcluded ? (
-                              <><Eye className="h-4 w-4 mr-2" /> Include</>
+                              <><Eye className="h-4 w-4 mr-2" /> {t('transactions.include')}</>
                             ) : (
-                              <><EyeOff className="h-4 w-4 mr-2" /> Exclude</>
+                              <><EyeOff className="h-4 w-4 mr-2" /> {t('transactions.exclude')}</>
                             )}
                           </DropdownMenuItem>
                         </DropdownMenuContent>
@@ -238,13 +240,13 @@ export function TransactionList() {
 
       {/* Pagination */}
       <div className="flex items-center justify-between">
-        <p className="text-sm text-muted-foreground">Page {page} of {totalPages}</p>
+        <p className="text-sm text-muted-foreground">{t('transactions.pageOf', { page, total: totalPages })}</p>
         <div className="flex gap-2">
           <Button variant="outline" size="sm" onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1}>
-            <ChevronLeft className="h-4 w-4" /> Previous
+            <ChevronLeft className="h-4 w-4" /> {t('transactions.previous')}
           </Button>
           <Button variant="outline" size="sm" onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page === totalPages}>
-            Next <ChevronRight className="h-4 w-4" />
+            {t('transactions.next')} <ChevronRight className="h-4 w-4" />
           </Button>
         </div>
       </div>
