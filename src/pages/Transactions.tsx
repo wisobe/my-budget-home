@@ -4,6 +4,7 @@ import { AppLayout } from '@/components/layout/AppLayout';
 import { TransactionList } from '@/components/transactions/TransactionList';
 import { SyncButton } from '@/components/transactions/SyncButton';
 import { AddTransactionDialog } from '@/components/transactions/AddTransactionDialog';
+import { ExportDialog } from '@/components/export/ExportDialog';
 import { Button } from '@/components/ui/button';
 import { Download, Plus } from 'lucide-react';
 
@@ -16,10 +17,15 @@ const Transactions = () => {
       title={t('transactions.title')}
       actions={
         <div className="flex gap-2">
-          <Button variant="outline" size="sm">
-            <Download className="h-4 w-4 mr-2" />
-            {t('transactions.export')}
-          </Button>
+          <ExportDialog
+            format="csv"
+            trigger={
+              <Button variant="outline" size="sm">
+                <Download className="h-4 w-4 mr-2" />
+                {t('transactions.export')}
+              </Button>
+            }
+          />
           <Button size="sm" onClick={() => setAddOpen(true)}>
             <Plus className="h-4 w-4 mr-2" />
             {t('transactions.addTransaction')}

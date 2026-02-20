@@ -251,16 +251,22 @@
     "manageUsers": "Manage user accounts and roles",
     "addUser": "Add User",
     "createNewUser": "Create New User",
+    "editUser": "Edit User",
     "name": "Name",
     "email": "Email",
     "password": "Password",
+    "newPassword": "New Password",
+    "newPasswordPlaceholder": "Leave blank to keep current",
     "role": "Role",
     "userRole": "User",
     "adminRole": "Admin",
     "roleDescription": "Admins can manage users, access sandbox environment, and configure system settings.",
     "createUser": "Create User",
+    "saveChanges": "Save Changes",
     "userCreated": "User created successfully",
+    "userUpdated": "User updated successfully",
     "failedCreateUser": "Failed to create user",
+    "failedUpdateUser": "Failed to update user",
     "noUsersFound": "No users found. Create the first user to get started.",
     "deleteUserConfirm": "Delete user \"{{name}}\" ({{email}})? This will permanently delete all their data.",
     "userDeleted": "User \"{{name}}\" deleted",
@@ -278,5 +284,19 @@
     "delete": "Delete",
     "edit": "Edit",
     "auto": "Auto"
+  },
+  "export": {
+    "success": "Export completed",
+    "failed": "Export failed",
+    "dateRangeDesc": "Optionally select a date range to export specific transactions.",
+    "startDate": "Start Date",
+    "endDate": "End Date",
+    "leaveEmpty": "Leave dates empty to export all transactions.",
+    "exportNow": "Export"
+  },
+  "settings_categories": {
+    "parentCategory": "Parent Category",
+    "noParent": "None (top-level)",
+    "subcategory": "Sub"
   }
 }

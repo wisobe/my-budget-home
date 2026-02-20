@@ -89,9 +89,17 @@ export function TransactionList() {
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">{t('transactions.allCategories')}</SelectItem>
-            {categories.map(category => (
-              <SelectItem key={category.id} value={category.id}>{category.name}</SelectItem>
-            ))}
+            {categories.filter(c => !c.parent_id).map(category => {
+              const children = categories.filter(c => c.parent_id === category.id);
+              return [
+                <SelectItem key={category.id} value={category.id}>{category.name}</SelectItem>,
+                ...children.map(child => (
+                  <SelectItem key={child.id} value={child.id}>
+                    <span className="pl-3 text-muted-foreground">↳ {child.name}</span>
+                  </SelectItem>
+                )),
+              ];
+            })}
           </SelectContent>
         </Select>
         <div className="flex items-center gap-2">
@@ -186,14 +194,25 @@ export function TransactionList() {
                             <SelectItem value="none">
                               <span className="text-muted-foreground">{t('transactions.noneRemove')}</span>
                             </SelectItem>
-                            {categories.map(cat => (
-                              <SelectItem key={cat.id} value={cat.id}>
-                                <div className="flex items-center gap-2">
-                                  <div className="h-3 w-3 rounded-full" style={{ backgroundColor: cat.color }} />
-                                  {cat.name}
-                                </div>
-                              </SelectItem>
-                            ))}
+                            {categories.filter(cat => !cat.parent_id).map(cat => {
+                              const children = categories.filter(c => c.parent_id === cat.id);
+                              return [
+                                <SelectItem key={cat.id} value={cat.id}>
+                                  <div className="flex items-center gap-2">
+                                    <div className="h-3 w-3 rounded-full" style={{ backgroundColor: cat.color }} />
+                                    {cat.name}
+                                  </div>
+                                </SelectItem>,
+                                ...children.map(child => (
+                                  <SelectItem key={child.id} value={child.id}>
+                                    <div className="flex items-center gap-2 pl-3">
+                                      <div className="h-3 w-3 rounded-full" style={{ backgroundColor: child.color }} />
+                                      {child.name}
+                                    </div>
+                                  </SelectItem>
+                                )),
+                              ];
+                            })}
                           </SelectContent>
                         </Select>
                       )}
