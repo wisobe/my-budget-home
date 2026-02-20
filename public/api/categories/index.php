@@ -20,9 +20,24 @@ try {
         
         $pdo = Database::getConnection();
         
+        // Validate parent_id if provided
+        $parentId = $body['parent_id'] ?? null;
+        if ($parentId) {
+            // Ensure parent exists and is not itself a child
+            $parentStmt = $pdo->prepare('SELECT id, parent_id FROM categories WHERE id = :id');
+            $parentStmt->execute(['id' => $parentId]);
+            $parent = $parentStmt->fetch();
+            if (!$parent) {
+                Response::error('Parent category not found');
+            }
+            if ($parent['parent_id']) {
+                Response::error('Cannot nest more than one level deep');
+            }
+        }
+        
         $stmt = $pdo->prepare('
-            INSERT INTO categories (id, name, color, icon, is_income, created_at)
-            VALUES (:id, :name, :color, :icon, :is_income, NOW())
+            INSERT INTO categories (id, name, color, icon, parent_id, is_income, created_at)
+            VALUES (:id, :name, :color, :icon, :parent_id, :is_income, NOW())
         ');
         
         $id = 'cat_' . uniqid();
@@ -31,6 +46,7 @@ try {
             'name' => $body['name'],
             'color' => $body['color'],
             'icon' => $body['icon'] ?? null,
+            'parent_id' => $parentId,
             'is_income' => ($body['is_income'] ?? false) ? 1 : 0,
         ]);
         

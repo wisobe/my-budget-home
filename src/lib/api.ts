@@ -92,6 +92,12 @@ export const authApi = {
       body: JSON.stringify(data),
     }),
 
+  updateUser: (data: { id: string; email?: string; name?: string; password?: string; role?: string }) =>
+    request<ApiResponse<User>>('/auth/users.php', {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    }),
+
   deleteUser: (id: string) =>
     request<ApiResponse<null>>('/auth/users.php', {
       method: 'DELETE',

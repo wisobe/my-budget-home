@@ -251,16 +251,22 @@
     "manageUsers": "Gérer les comptes utilisateurs et les rôles",
     "addUser": "Ajouter un utilisateur",
     "createNewUser": "Créer un nouvel utilisateur",
+    "editUser": "Modifier l'utilisateur",
     "name": "Nom",
     "email": "Courriel",
     "password": "Mot de passe",
+    "newPassword": "Nouveau mot de passe",
+    "newPasswordPlaceholder": "Laisser vide pour garder l'actuel",
     "role": "Rôle",
     "userRole": "Utilisateur",
     "adminRole": "Admin",
     "roleDescription": "Les admins peuvent gérer les utilisateurs, accéder au bac à sable et configurer les paramètres système.",
     "createUser": "Créer l'utilisateur",
+    "saveChanges": "Enregistrer les modifications",
     "userCreated": "Utilisateur créé avec succès",
+    "userUpdated": "Utilisateur mis à jour avec succès",
     "failedCreateUser": "Échec de la création de l'utilisateur",
+    "failedUpdateUser": "Échec de la mise à jour de l'utilisateur",
     "noUsersFound": "Aucun utilisateur trouvé. Créez le premier utilisateur pour commencer.",
     "deleteUserConfirm": "Supprimer l'utilisateur « {{name}} » ({{email}}) ? Toutes ses données seront définitivement supprimées.",
     "userDeleted": "Utilisateur « {{name}} » supprimé",
@@ -278,5 +284,19 @@
     "delete": "Supprimer",
     "edit": "Modifier",
     "auto": "Auto"
+  },
+  "export": {
+    "success": "Exportation terminée",
+    "failed": "Échec de l'exportation",
+    "dateRangeDesc": "Sélectionnez optionnellement une plage de dates pour exporter des transactions spécifiques.",
+    "startDate": "Date de début",
+    "endDate": "Date de fin",
+    "leaveEmpty": "Laissez les dates vides pour exporter toutes les transactions.",
+    "exportNow": "Exporter"
+  },
+  "settings_categories": {
+    "parentCategory": "Catégorie parente",
+    "noParent": "Aucune (niveau supérieur)",
+    "subcategory": "Sous"
   }
 }

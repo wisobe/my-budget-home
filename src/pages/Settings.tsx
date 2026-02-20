@@ -10,7 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useCategories, useDeleteCategory, useCategoryRules, useCreateCategoryRule, useDeleteCategoryRule } from '@/hooks/use-transactions';
 import { useAuth } from '@/contexts/AuthContext';
-import { Plus, Trash2, CheckCircle2, XCircle, Loader2, Key, ExternalLink, FlaskConical, Building2, Lock, LogOut, Sparkles, Globe } from 'lucide-react';
+import { Plus, Trash2, CheckCircle2, XCircle, Loader2, Key, ExternalLink, FlaskConical, Building2, Lock, LogOut, Sparkles, Globe, ChevronRight } from 'lucide-react';
 import { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { API_BASE_URL } from '@/lib/config';
@@ -18,6 +18,7 @@ import { usePlaidEnvironment } from '@/contexts/PlaidEnvironmentContext';
 import { usePreferences } from '@/contexts/PreferencesContext';
 import { cn } from '@/lib/utils';
 import { categoriesApi, authApi } from '@/lib/api';
+import { ExportDialog } from '@/components/export/ExportDialog';
 import { useQueryClient } from '@tanstack/react-query';
 import { toast } from '@/components/ui/sonner';
 
@@ -39,6 +40,7 @@ const Settings = () => {
   const [newCatName, setNewCatName] = useState('');
   const [newCatColor, setNewCatColor] = useState('#6b7280');
   const [newCatIsIncome, setNewCatIsIncome] = useState(false);
+  const [newCatParentId, setNewCatParentId] = useState('');
   const [addCatOpen, setAddCatOpen] = useState(false);
   const [addingCat, setAddingCat] = useState(false);
 
@@ -314,13 +316,35 @@ const Settings = () => {
                       <Switch checked={newCatIsIncome} onCheckedChange={setNewCatIsIncome} />
                       <Label>{t('settings.incomeCategory')}</Label>
                     </div>
+                    <div className="space-y-2">
+                      <Label>{t('settings_categories.parentCategory')}</Label>
+                      <Select value={newCatParentId} onValueChange={setNewCatParentId}>
+                        <SelectTrigger><SelectValue placeholder={t('settings_categories.noParent')} /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="none">{t('settings_categories.noParent')}</SelectItem>
+                          {categories.filter(c => !c.parent_id).map(c => (
+                            <SelectItem key={c.id} value={c.id}>
+                              <div className="flex items-center gap-2">
+                                <div className="h-3 w-3 rounded-full" style={{ backgroundColor: c.color }} />
+                                {c.name}
+                              </div>
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
                     <Button className="w-full" disabled={!newCatName.trim() || addingCat} onClick={async () => {
                       setAddingCat(true);
                       try {
-                        await categoriesApi.create({ name: newCatName.trim(), color: newCatColor, is_income: newCatIsIncome });
+                        await categoriesApi.create({
+                          name: newCatName.trim(),
+                          color: newCatColor,
+                          is_income: newCatIsIncome,
+                          parent_id: newCatParentId && newCatParentId !== 'none' ? newCatParentId : undefined,
+                        } as any);
                         queryClient.invalidateQueries({ queryKey: ['categories'] });
                         toast.success(t('settings.categoryCreated'));
-                        setNewCatName(''); setNewCatColor('#6b7280'); setNewCatIsIncome(false); setAddCatOpen(false);
+                        setNewCatName(''); setNewCatColor('#6b7280'); setNewCatIsIncome(false); setNewCatParentId(''); setAddCatOpen(false);
                       } catch (e: any) {
                         toast.error(e.message || t('settings.failedCreateCategory'));
                       } finally { setAddingCat(false); }
@@ -334,25 +358,48 @@ const Settings = () => {
             </div>
           </CardHeader>
           <CardContent>
-            <div className="space-y-2">
-              {categories.map(category => (
-                <div key={category.id} className="flex items-center justify-between p-3 rounded-lg hover:bg-muted/50 transition-colors">
-                  <div className="flex items-center gap-3">
-                    <div className="h-4 w-4 rounded-full" style={{ backgroundColor: category.color }} />
-                    <span className="font-medium">{category.name}</span>
-                    {!!category.is_income && <Badge variant="secondary" className="text-xs">{t('transactions.income')}</Badge>}
+            <div className="space-y-1">
+              {categories.filter(c => !c.parent_id).map(category => {
+                const children = categories.filter(c => c.parent_id === category.id);
+                return (
+                  <div key={category.id}>
+                    <div className="flex items-center justify-between p-3 rounded-lg hover:bg-muted/50 transition-colors">
+                      <div className="flex items-center gap-3">
+                        <div className="h-4 w-4 rounded-full" style={{ backgroundColor: category.color }} />
+                        <span className="font-medium">{category.name}</span>
+                        {!!category.is_income && <Badge variant="secondary" className="text-xs">{t('transactions.income')}</Badge>}
+                        {children.length > 0 && <Badge variant="outline" className="text-xs">{children.length}</Badge>}
+                      </div>
+                      <Button
+                        variant="ghost" size="sm"
+                        className="text-muted-foreground hover:text-destructive"
+                        onClick={() => handleDeleteCategory(category.id, category.name)}
+                        disabled={deleteCategoryMutation.isPending}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                    {children.map(child => (
+                      <div key={child.id} className="flex items-center justify-between p-3 pl-10 rounded-lg hover:bg-muted/50 transition-colors">
+                        <div className="flex items-center gap-3">
+                          <ChevronRight className="h-3 w-3 text-muted-foreground" />
+                          <div className="h-3 w-3 rounded-full" style={{ backgroundColor: child.color }} />
+                          <span className="text-sm">{child.name}</span>
+                          {!!child.is_income && <Badge variant="secondary" className="text-xs">{t('transactions.income')}</Badge>}
+                        </div>
+                        <Button
+                          variant="ghost" size="sm"
+                          className="text-muted-foreground hover:text-destructive"
+                          onClick={() => handleDeleteCategory(child.id, child.name)}
+                          disabled={deleteCategoryMutation.isPending}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    ))}
                   </div>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="text-muted-foreground hover:text-destructive"
-                    onClick={() => handleDeleteCategory(category.id, category.name)}
-                    disabled={deleteCategoryMutation.isPending}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </CardContent>
         </Card>
@@ -537,8 +584,8 @@ const Settings = () => {
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex gap-4">
-              <Button variant="outline">{t('settings.exportCSV')}</Button>
-              <Button variant="outline">{t('settings.exportJSON')}</Button>
+              <ExportDialog format="csv" />
+              <ExportDialog format="json" />
             </div>
           </CardContent>
         </Card>

@@ -64,6 +64,68 @@ try {
             'role' => $role,
         ], 'User created');
 
+    } elseif ($_SERVER['REQUEST_METHOD'] === 'PUT') {
+        requireAdmin();
+        
+        $body = getJsonBody();
+        validateRequired($body, ['id']);
+        
+        $updates = [];
+        $params = ['id' => $body['id']];
+        
+        // Update email
+        if (!empty($body['email'])) {
+            $email = strtolower(trim($body['email']));
+            if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                Response::error('Invalid email address');
+            }
+            // Check for conflict
+            $checkStmt = $pdo->prepare("SELECT 1 FROM users WHERE email = :email AND id != :uid");
+            $checkStmt->execute(['email' => $email, 'uid' => $body['id']]);
+            if ($checkStmt->fetch()) {
+                Response::error('A user with this email already exists');
+            }
+            $updates[] = 'email = :email';
+            $params['email'] = $email;
+        }
+        
+        // Update password
+        if (!empty($body['password'])) {
+            if (strlen($body['password']) < 6) {
+                Response::error('Password must be at least 6 characters');
+            }
+            $updates[] = 'password_hash = :hash';
+            $params['hash'] = password_hash($body['password'], PASSWORD_BCRYPT);
+        }
+        
+        // Update name
+        if (!empty($body['name'])) {
+            $updates[] = 'name = :name';
+            $params['name'] = trim($body['name']);
+        }
+        
+        // Update role
+        if (isset($body['role']) && in_array($body['role'], ['admin', 'user'])) {
+            $updates[] = 'role = :role';
+            $params['role'] = $body['role'];
+        }
+        
+        if (empty($updates)) {
+            Response::error('No fields to update');
+        }
+        
+        $sql = 'UPDATE users SET ' . implode(', ', $updates) . ' WHERE id = :id';
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute($params);
+        
+        if ($stmt->rowCount() === 0) {
+            Response::notFound('User not found');
+        }
+        
+        $fetchStmt = $pdo->prepare('SELECT id, email, name, role, created_at FROM users WHERE id = :id');
+        $fetchStmt->execute(['id' => $body['id']]);
+        Response::success($fetchStmt->fetch(), 'User updated');
+
     } elseif ($_SERVER['REQUEST_METHOD'] === 'DELETE') {
         $admin = requireAdmin();
         
