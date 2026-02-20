@@ -101,6 +101,18 @@ export function useCategories() {
   });
 }
 
+export function useUpdateCategory() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (data: { id: string; name?: string; color?: string; parent_id?: string | null; is_income?: boolean }) =>
+      categoriesApi.update(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['categories'] });
+      queryClient.invalidateQueries({ queryKey: ['transactions'] });
+    },
+  });
+}
+
 export function useDeleteCategory() {
   const queryClient = useQueryClient();
   return useMutation({

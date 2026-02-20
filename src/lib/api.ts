@@ -189,6 +189,12 @@ export const categoriesApi = {
       body: JSON.stringify(data),
     }),
 
+  update: (data: { id: string; name?: string; color?: string; parent_id?: string | null; is_income?: boolean }) =>
+    request<ApiResponse<Category>>('/categories/', {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    }),
+
   delete: (id: string) =>
     request<ApiResponse<void>>('/categories/delete.php', {
       method: 'POST',

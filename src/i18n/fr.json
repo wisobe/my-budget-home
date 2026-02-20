@@ -297,6 +297,12 @@
   "settings_categories": {
     "parentCategory": "Catégorie parente",
     "noParent": "Aucune (niveau supérieur)",
-    "subcategory": "Sous"
+    "subcategory": "Sous",
+    "editCategory": "Modifier la catégorie",
+    "categoryUpdated": "Catégorie mise à jour",
+    "failedUpdateCategory": "Échec de la mise à jour de la catégorie",
+    "subcategories": "sous-catégories",
+    "clickToExpand": "Cliquez pour voir les sous-catégories",
+    "backToParents": "Retour aux catégories"
   }
 }
