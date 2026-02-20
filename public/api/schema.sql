@@ -69,9 +69,10 @@ CREATE TABLE IF NOT EXISTS accounts (
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Categories (transaction categories - shared across users)
+-- Categories (transaction categories - per user)
 CREATE TABLE IF NOT EXISTS categories (
     id VARCHAR(50) PRIMARY KEY,
+    user_id VARCHAR(50),
     name VARCHAR(100) NOT NULL,
     color VARCHAR(7) NOT NULL DEFAULT '#6b7280',
     icon VARCHAR(50),
@@ -80,7 +81,9 @@ CREATE TABLE IF NOT EXISTS categories (
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     INDEX idx_parent (parent_id),
     INDEX idx_income (is_income),
-    FOREIGN KEY (parent_id) REFERENCES categories(id) ON DELETE SET NULL
+    INDEX idx_user (user_id),
+    FOREIGN KEY (parent_id) REFERENCES categories(id) ON DELETE SET NULL,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Transactions
@@ -152,18 +155,8 @@ CREATE TABLE IF NOT EXISTS category_rules (
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Insert default categories
-INSERT IGNORE INTO categories (id, name, color, is_income) VALUES
-('cat_income', 'Income', '#10b981', TRUE),
-('cat_groceries', 'Groceries', '#f59e0b', FALSE),
-('cat_transport', 'Transportation', '#3b82f6', FALSE),
-('cat_utilities', 'Utilities', '#8b5cf6', FALSE),
-('cat_entertainment', 'Entertainment', '#ec4899', FALSE),
-('cat_dining', 'Dining Out', '#ef4444', FALSE),
-('cat_shopping', 'Shopping', '#14b8a6', FALSE),
-('cat_health', 'Health', '#f97316', FALSE),
-('cat_housing', 'Housing', '#6366f1', FALSE),
-('cat_other', 'Other', '#6b7280', FALSE);
+-- Default categories are now seeded per-user on first login (see categories/index.php)
+-- No global INSERT needed.
 
 -- ============================================================
 -- MIGRATION: Run this if you already have the old single-user schema
