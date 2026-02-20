@@ -26,6 +26,7 @@ import {
   MoreHorizontal, Split, EyeOff, Eye,
 } from 'lucide-react';
 import { SplitTransactionDialog } from './SplitTransactionDialog';
+import { CategoryPicker } from './CategoryPicker';
 import { usePreferences } from '@/contexts/PreferencesContext';
 import type { Transaction } from '@/types';
 
@@ -174,47 +175,12 @@ export function TransactionList() {
                           {t('transactions.splitEdit')}
                         </Badge>
                       ) : (
-                        <Select
-                          value={transaction.category_id || 'none'}
-                          onValueChange={(value) => handleCategorize(transaction.id, value)}
-                        >
-                          <SelectTrigger className="w-[150px]">
-                            <SelectValue>
-                              {transaction.category_id && transaction.category_name ? (
-                                <div className="flex items-center gap-2">
-                                  <div className="h-3 w-3 rounded-full" style={{ backgroundColor: transaction.category_color || '#6b7280' }} />
-                                  {transaction.category_name}
-                                </div>
-                              ) : (
-                                <span className="text-muted-foreground">{t('transactions.select')}</span>
-                              )}
-                            </SelectValue>
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="none">
-                              <span className="text-muted-foreground">{t('transactions.noneRemove')}</span>
-                            </SelectItem>
-                            {categories.filter(cat => !cat.parent_id).map(cat => {
-                              const children = categories.filter(c => c.parent_id === cat.id);
-                              return [
-                                <SelectItem key={cat.id} value={cat.id}>
-                                  <div className="flex items-center gap-2">
-                                    <div className="h-3 w-3 rounded-full" style={{ backgroundColor: cat.color }} />
-                                    {cat.name}
-                                  </div>
-                                </SelectItem>,
-                                ...children.map(child => (
-                                  <SelectItem key={child.id} value={child.id}>
-                                    <div className="flex items-center gap-2 pl-3">
-                                      <div className="h-3 w-3 rounded-full" style={{ backgroundColor: child.color }} />
-                                      {child.name}
-                                    </div>
-                                  </SelectItem>
-                                )),
-                              ];
-                            })}
-                          </SelectContent>
-                        </Select>
+                        <CategoryPicker
+                          value={transaction.category_id}
+                          categoryName={transaction.category_name}
+                          categoryColor={transaction.category_color}
+                          onSelect={(value) => handleCategorize(transaction.id, value)}
+                        />
                       )}
                     </TableCell>
                     <TableCell className="text-muted-foreground">

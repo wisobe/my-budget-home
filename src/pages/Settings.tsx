@@ -8,9 +8,9 @@ import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { useCategories, useDeleteCategory, useCategoryRules, useCreateCategoryRule, useDeleteCategoryRule } from '@/hooks/use-transactions';
+import { useCategories, useDeleteCategory, useUpdateCategory, useCategoryRules, useCreateCategoryRule, useDeleteCategoryRule } from '@/hooks/use-transactions';
 import { useAuth } from '@/contexts/AuthContext';
-import { Plus, Trash2, CheckCircle2, XCircle, Loader2, Key, ExternalLink, FlaskConical, Building2, Lock, LogOut, Sparkles, Globe, ChevronRight } from 'lucide-react';
+import { Plus, Trash2, CheckCircle2, XCircle, Loader2, Key, ExternalLink, FlaskConical, Building2, Lock, LogOut, Sparkles, Globe, ChevronRight, Pencil, ArrowLeft } from 'lucide-react';
 import { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { API_BASE_URL } from '@/lib/config';
@@ -19,8 +19,10 @@ import { usePreferences } from '@/contexts/PreferencesContext';
 import { cn } from '@/lib/utils';
 import { categoriesApi, authApi } from '@/lib/api';
 import { ExportDialog } from '@/components/export/ExportDialog';
+import { EditCategoryDialog } from '@/components/categories/EditCategoryDialog';
 import { useQueryClient } from '@tanstack/react-query';
 import { toast } from '@/components/ui/sonner';
+import type { Category } from '@/types';
 
 const Settings = () => {
   const { t } = useTranslation();
@@ -53,6 +55,11 @@ const Settings = () => {
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [changingPassword, setChangingPassword] = useState(false);
+
+  // Category drill-down state
+  const [expandedParentId, setExpandedParentId] = useState<string | null>(null);
+  const [editCategory, setEditCategory] = useState<Category | null>(null);
+  const [editCatOpen, setEditCatOpen] = useState(false);
 
   const queryClient = useQueryClient();
 
@@ -358,49 +365,126 @@ const Settings = () => {
             </div>
           </CardHeader>
           <CardContent>
-            <div className="space-y-1">
-              {categories.filter(c => !c.parent_id).map(category => {
-                const children = categories.filter(c => c.parent_id === category.id);
-                return (
-                  <div key={category.id}>
-                    <div className="flex items-center justify-between p-3 rounded-lg hover:bg-muted/50 transition-colors">
-                      <div className="flex items-center gap-3">
-                        <div className="h-4 w-4 rounded-full" style={{ backgroundColor: category.color }} />
-                        <span className="font-medium">{category.name}</span>
-                        {!!category.is_income && <Badge variant="secondary" className="text-xs">{t('transactions.income')}</Badge>}
-                        {children.length > 0 && <Badge variant="outline" className="text-xs">{children.length}</Badge>}
-                      </div>
-                      <Button
-                        variant="ghost" size="sm"
-                        className="text-muted-foreground hover:text-destructive"
-                        onClick={() => handleDeleteCategory(category.id, category.name)}
-                        disabled={deleteCategoryMutation.isPending}
+            <div className="relative overflow-hidden">
+              {/* Parent categories view */}
+              <div
+                className={cn(
+                  "transition-all duration-300 ease-in-out",
+                  expandedParentId ? "-translate-x-full opacity-0 absolute inset-0" : "translate-x-0 opacity-100"
+                )}
+              >
+                <div className="space-y-1">
+                  {categories.filter(c => !c.parent_id).map(category => {
+                    const children = categories.filter(c => c.parent_id === category.id);
+                    return (
+                      <div
+                        key={category.id}
+                        className="flex items-center justify-between p-3 rounded-lg hover:bg-muted/50 transition-colors cursor-pointer group"
+                        onClick={() => children.length > 0 ? setExpandedParentId(category.id) : undefined}
                       >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                    {children.map(child => (
-                      <div key={child.id} className="flex items-center justify-between p-3 pl-10 rounded-lg hover:bg-muted/50 transition-colors">
                         <div className="flex items-center gap-3">
-                          <ChevronRight className="h-3 w-3 text-muted-foreground" />
-                          <div className="h-3 w-3 rounded-full" style={{ backgroundColor: child.color }} />
-                          <span className="text-sm">{child.name}</span>
-                          {!!child.is_income && <Badge variant="secondary" className="text-xs">{t('transactions.income')}</Badge>}
+                          <div className="h-4 w-4 rounded-full" style={{ backgroundColor: category.color }} />
+                          <span className="font-medium">{category.name}</span>
+                          {!!category.is_income && <Badge variant="secondary" className="text-xs">{t('transactions.income')}</Badge>}
+                          {children.length > 0 && (
+                            <Badge variant="outline" className="text-xs">
+                              {children.length} {t('settings_categories.subcategories')}
+                            </Badge>
+                          )}
                         </div>
-                        <Button
-                          variant="ghost" size="sm"
-                          className="text-muted-foreground hover:text-destructive"
-                          onClick={() => handleDeleteCategory(child.id, child.name)}
-                          disabled={deleteCategoryMutation.isPending}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
+                        <div className="flex items-center gap-1">
+                          <Button
+                            variant="ghost" size="sm"
+                            className="text-muted-foreground hover:text-foreground opacity-0 group-hover:opacity-100 transition-opacity"
+                            onClick={(e) => { e.stopPropagation(); setEditCategory(category); setEditCatOpen(true); }}
+                          >
+                            <Pencil className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="ghost" size="sm"
+                            className="text-muted-foreground hover:text-destructive opacity-0 group-hover:opacity-100 transition-opacity"
+                            onClick={(e) => { e.stopPropagation(); handleDeleteCategory(category.id, category.name); }}
+                            disabled={deleteCategoryMutation.isPending}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                          {children.length > 0 && (
+                            <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                          )}
+                        </div>
                       </div>
-                    ))}
-                  </div>
-                );
-              })}
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Children view (slides in from right) */}
+              <div
+                className={cn(
+                  "transition-all duration-300 ease-in-out",
+                  expandedParentId ? "translate-x-0 opacity-100" : "translate-x-full opacity-0 absolute inset-0"
+                )}
+              >
+                {expandedParentId && (() => {
+                  const parent = categories.find(c => c.id === expandedParentId);
+                  const children = categories.filter(c => c.parent_id === expandedParentId);
+                  if (!parent) return null;
+                  return (
+                    <div className="space-y-1">
+                      <button
+                        onClick={() => setExpandedParentId(null)}
+                        className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-3 transition-colors"
+                      >
+                        <ArrowLeft className="h-4 w-4" />
+                        {t('settings_categories.backToParents')}
+                      </button>
+                      <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/30 mb-2">
+                        <div className="h-5 w-5 rounded-full" style={{ backgroundColor: parent.color }} />
+                        <span className="font-semibold text-lg">{parent.name}</span>
+                      </div>
+                      {children.length === 0 ? (
+                        <p className="text-sm text-muted-foreground text-center py-4">
+                          {t('settings_categories.noParent')}
+                        </p>
+                      ) : (
+                        children.map(child => (
+                          <div key={child.id} className="flex items-center justify-between p-3 pl-6 rounded-lg hover:bg-muted/50 transition-colors group">
+                            <div className="flex items-center gap-3">
+                              <div className="h-3 w-3 rounded-full" style={{ backgroundColor: child.color }} />
+                              <span className="text-sm">{child.name}</span>
+                              {!!child.is_income && <Badge variant="secondary" className="text-xs">{t('transactions.income')}</Badge>}
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <Button
+                                variant="ghost" size="sm"
+                                className="text-muted-foreground hover:text-foreground opacity-0 group-hover:opacity-100 transition-opacity"
+                                onClick={() => { setEditCategory(child); setEditCatOpen(true); }}
+                              >
+                                <Pencil className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                variant="ghost" size="sm"
+                                className="text-muted-foreground hover:text-destructive opacity-0 group-hover:opacity-100 transition-opacity"
+                                onClick={() => handleDeleteCategory(child.id, child.name)}
+                                disabled={deleteCategoryMutation.isPending}
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  );
+                })()}
+              </div>
             </div>
+
+            <EditCategoryDialog
+              open={editCatOpen}
+              onOpenChange={setEditCatOpen}
+              category={editCategory}
+            />
           </CardContent>
         </Card>
 

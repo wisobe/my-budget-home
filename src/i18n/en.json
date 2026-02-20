@@ -297,6 +297,12 @@
   "settings_categories": {
     "parentCategory": "Parent Category",
     "noParent": "None (top-level)",
-    "subcategory": "Sub"
+    "subcategory": "Sub",
+    "editCategory": "Edit Category",
+    "categoryUpdated": "Category updated",
+    "failedUpdateCategory": "Failed to update category",
+    "subcategories": "subcategories",
+    "clickToExpand": "Click to see subcategories",
+    "backToParents": "Back to categories"
   }
 }
