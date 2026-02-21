@@ -90,7 +90,7 @@ try {
         header('Content-Disposition: attachment; filename="transactions_export.csv"');
         
         $output = fopen('php://output', 'w');
-        fputcsv($output, ['Date', 'Description', 'Merchant', 'Amount', 'Category', 'Account', 'Excluded', 'Pending', 'Notes']);
+        fputcsv($output, ['Date', 'Description', 'Merchant', 'Amount', 'Category', 'Account', 'Excluded', 'Pending', 'Notes'], ',', '"', '\\');
         foreach ($rows as $row) {
             fputcsv($output, [
                 $row['date'],
@@ -102,7 +102,7 @@ try {
                 $row['excluded'] ? 'Yes' : 'No',
                 $row['pending'] ? 'Yes' : 'No',
                 $row['notes'] ?? '',
-            ]);
+            ], ',', '"', '\\');
         }
         fclose($output);
         exit;
