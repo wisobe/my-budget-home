@@ -2,10 +2,12 @@ import { useTranslation } from 'react-i18next';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { useAccounts, useTotalBalance } from '@/hooks/use-accounts';
+import { Switch } from '@/components/ui/switch';
+import { useAccounts, useTotalBalance, useUpdateAccount } from '@/hooks/use-accounts';
 import { SyncButton } from '@/components/transactions/SyncButton';
 import { Plus, CreditCard, Wallet, PiggyBank, TrendingUp } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { toast } from '@/components/ui/sonner';
 
 const accountTypeColors: Record<string, string> = {
   checking: 'bg-primary/10 text-primary',
@@ -31,6 +33,7 @@ const Accounts = () => {
   const { t } = useTranslation();
   const { data: accountsData, isLoading } = useAccounts();
   const totalBalance = useTotalBalance();
+  const updateAccountMutation = useUpdateAccount();
 
   const accounts = accountsData?.data || [];
 
@@ -39,6 +42,15 @@ const Accounts = () => {
     acc[account.type].push(account);
     return acc;
   }, {} as Record<string, typeof accounts>);
+
+  const handleToggleExcluded = async (accountId: string, currentExcluded: boolean) => {
+    try {
+      await updateAccountMutation.mutateAsync({ id: accountId, excluded: !currentExcluded });
+      toast.success(t(!currentExcluded ? 'accounts.accountExcluded' : 'accounts.accountIncluded'));
+    } catch (err: any) {
+      toast.error(err.message || t('accounts.failedUpdate'));
+    }
+  };
 
   return (
     <AppLayout
@@ -66,7 +78,9 @@ const Accounts = () => {
         {Object.entries(groupedAccounts).map(([type, typeAccounts]) => {
           const Icon = accountIcons[type] || Wallet;
           const colorClass = accountTypeColors[type] || accountTypeColors.other;
-          const typeTotal = typeAccounts.reduce((sum, a) => sum + Number(a.current_balance || 0), 0);
+          const typeTotal = typeAccounts
+            .filter(a => !a.excluded)
+            .reduce((sum, a) => sum + Number(a.current_balance || 0), 0);
 
           return (
             <Card key={type}>
@@ -90,16 +104,32 @@ const Accounts = () => {
                 {typeAccounts.map(account => (
                   <div
                     key={account.id}
-                    className="flex items-center justify-between p-4 rounded-lg bg-muted/50 hover:bg-muted transition-colors cursor-pointer"
+                    className={cn(
+                      "flex items-center justify-between p-4 rounded-lg transition-colors",
+                      account.excluded
+                        ? "bg-muted/30 opacity-60"
+                        : "bg-muted/50 hover:bg-muted"
+                    )}
                   >
-                    <div>
-                      <p className="font-medium">{account.name}</p>
-                      <p className="text-sm text-muted-foreground">
-                        {account.institution_name}
-                        {account.last_synced && (
-                          <> • {t('accounts.lastSynced', { date: new Date(account.last_synced).toLocaleDateString() })}</>
-                        )}
-                      </p>
+                    <div className="flex items-center gap-4">
+                      <Switch
+                        checked={!account.excluded}
+                        onCheckedChange={() => handleToggleExcluded(account.id, !!account.excluded)}
+                        disabled={updateAccountMutation.isPending}
+                        aria-label={t('accounts.toggleInclude')}
+                      />
+                      <div>
+                        <p className="font-medium">{account.name}</p>
+                        <p className="text-sm text-muted-foreground">
+                          {account.institution_name}
+                          {account.last_synced && (
+                            <> • {t('accounts.lastSynced', { date: new Date(account.last_synced).toLocaleDateString() })}</>
+                          )}
+                          {account.excluded && (
+                            <> • <span className="text-muted-foreground italic">{t('accounts.excludedLabel')}</span></>
+                          )}
+                        </p>
+                      </div>
                     </div>
                     <div className="text-right">
                       <p className={cn("font-semibold", Number(account.current_balance) < 0 && "text-expense")}>

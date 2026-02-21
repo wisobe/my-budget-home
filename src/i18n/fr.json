@@ -125,7 +125,12 @@
     "accounts": "Comptes {{type}}",
     "accountCount": "{{count}} compte(s)",
     "lastSynced": "Dernière synchro. {{date}}",
-    "available": "Disponible : {{amount}}"
+    "available": "Disponible : {{amount}}",
+    "toggleInclude": "Inclure dans les rapports",
+    "excludedLabel": "Exclu des rapports",
+    "accountExcluded": "Compte exclu des rapports",
+    "accountIncluded": "Compte inclus dans les rapports",
+    "failedUpdate": "Échec de la mise à jour du compte"
   },
   "connections": {
     "title": "Connexions bancaires",

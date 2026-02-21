@@ -72,6 +72,7 @@ export interface Account {
   available_balance?: number;
   currency: string;
   institution_name?: string;
+  excluded: boolean;
   last_synced?: string;
   created_at: string;
 }

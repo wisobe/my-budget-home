@@ -39,6 +39,7 @@ try {
             WHERE t.date >= :start_date
               AND t.date <= :end_date
               AND t.excluded = 0
+              AND a.excluded = 0
               AND {$envFilter}
               AND {$userFilter}
             GROUP BY DATE_FORMAT(t.date, '%Y-%m')
@@ -57,6 +58,7 @@ try {
             LEFT JOIN plaid_connections c ON a.plaid_connection_id = c.id
             WHERE YEAR(t.date) = :year
               AND t.excluded = 0
+              AND a.excluded = 0
               AND {$envFilter}
               AND {$userFilter}
             GROUP BY DATE_FORMAT(t.date, '%Y-%m')
