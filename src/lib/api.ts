@@ -209,6 +209,12 @@ export const categoriesApi = {
       body: JSON.stringify(data),
     }),
 
+  updateRule: (data: { id: string; keyword?: string; category_id?: string; match_type?: string; priority?: number }) =>
+    request<ApiResponse<CategoryRule>>('/categories/rules.php', {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    }),
+
   deleteRule: (id: string) =>
     request<ApiResponse<void>>('/categories/rules.php', {
       method: 'DELETE',

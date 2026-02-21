@@ -142,6 +142,17 @@ export function useCreateCategoryRule() {
   });
 }
 
+export function useUpdateCategoryRule() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (data: { id: string; keyword?: string; category_id?: string; match_type?: string; priority?: number }) =>
+      categoriesApi.updateRule(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['category-rules'] });
+    },
+  });
+}
+
 export function useDeleteCategoryRule() {
   const queryClient = useQueryClient();
   return useMutation({

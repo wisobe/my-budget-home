@@ -4,10 +4,10 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { Loader2, Plus, Trash2 } from 'lucide-react';
 import { useCategories, useTransactionSplits, useSaveTransactionSplits, useDeleteTransactionSplits } from '@/hooks/use-transactions';
+import { CategoryPicker } from '@/components/transactions/CategoryPicker';
 import { toast } from '@/components/ui/sonner';
 import type { Transaction } from '@/types';
 
@@ -132,23 +132,17 @@ export function SplitTransactionDialog({ open, onOpenChange, transaction }: Prop
                 <Label className="text-xs">
                   {line.is_excluded ? t('splitDialog.excluded') : t('splitDialog.category')}
                 </Label>
-                {!line.is_excluded && (
-                  <Select value={line.category_id} onValueChange={v => updateLine(idx, 'category_id', v)}>
-                    <SelectTrigger className="h-8 text-sm">
-                      <SelectValue placeholder={t('transactions.select')} />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {categories.map(c => (
-                        <SelectItem key={c.id} value={c.id}>
-                          <div className="flex items-center gap-2">
-                            <div className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: c.color }} />
-                            {c.name}
-                          </div>
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                )}
+                {!line.is_excluded && (() => {
+                  const selectedCat = categories.find(c => c.id === line.category_id);
+                  return (
+                    <CategoryPicker
+                      value={line.category_id || null}
+                      categoryName={selectedCat?.name}
+                      categoryColor={selectedCat?.color}
+                      onSelect={(catId) => updateLine(idx, 'category_id', catId === 'none' ? '' : catId)}
+                    />
+                  );
+                })()}
               </div>
               <div className="w-24 space-y-1">
                 <Label className="text-xs">{t('transactions.amount')}</Label>

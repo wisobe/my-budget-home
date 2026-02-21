@@ -52,6 +52,39 @@ try {
         $fetchStmt->execute(['id' => $id]);
         Response::success($fetchStmt->fetch());
 
+    } elseif ($_SERVER['REQUEST_METHOD'] === 'PUT') {
+        $body = getJsonBody();
+        validateRequired($body, ['id']);
+
+        // Verify ownership
+        $checkStmt = $pdo->prepare('SELECT id FROM category_rules WHERE id = :id AND user_id = :user_id');
+        $checkStmt->execute(['id' => $body['id'], 'user_id' => $userId]);
+        if (!$checkStmt->fetch()) {
+            Response::notFound('Rule not found');
+        }
+
+        $sets = [];
+        $params = ['id' => $body['id']];
+        if (isset($body['keyword'])) { $sets[] = 'keyword = :keyword'; $params['keyword'] = strtoupper(trim($body['keyword'])); }
+        if (isset($body['category_id'])) { $sets[] = 'category_id = :category_id'; $params['category_id'] = $body['category_id']; }
+        if (isset($body['match_type'])) { $sets[] = 'match_type = :match_type'; $params['match_type'] = $body['match_type']; }
+        if (isset($body['priority'])) { $sets[] = 'priority = :priority'; $params['priority'] = (int)$body['priority']; }
+
+        if (empty($sets)) {
+            Response::error('Nothing to update');
+        }
+
+        $pdo->prepare('UPDATE category_rules SET ' . implode(', ', $sets) . ' WHERE id = :id')->execute($params);
+
+        $fetchStmt = $pdo->prepare('
+            SELECT r.*, c.name as category_name, c.color as category_color
+            FROM category_rules r
+            LEFT JOIN categories c ON r.category_id = c.id
+            WHERE r.id = :id
+        ');
+        $fetchStmt->execute(['id' => $body['id']]);
+        Response::success($fetchStmt->fetch());
+
     } elseif ($_SERVER['REQUEST_METHOD'] === 'DELETE') {
         $body = getJsonBody();
         validateRequired($body, ['id']);

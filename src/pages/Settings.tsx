@@ -8,7 +8,7 @@ import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { useCategories, useDeleteCategory, useUpdateCategory, useCategoryRules, useCreateCategoryRule, useDeleteCategoryRule } from '@/hooks/use-transactions';
+import { useCategories, useDeleteCategory, useUpdateCategory, useCategoryRules, useCreateCategoryRule, useDeleteCategoryRule, useUpdateCategoryRule } from '@/hooks/use-transactions';
 import { useAuth } from '@/contexts/AuthContext';
 import { Plus, Trash2, CheckCircle2, XCircle, Loader2, Key, ExternalLink, FlaskConical, Building2, Lock, LogOut, Sparkles, Globe, ChevronRight, Pencil, ArrowLeft } from 'lucide-react';
 import { useState } from 'react';
@@ -35,6 +35,7 @@ const Settings = () => {
   const { data: rulesData } = useCategoryRules();
   const createRuleMutation = useCreateCategoryRule();
   const deleteRuleMutation = useDeleteCategoryRule();
+  const updateRuleMutation = useUpdateCategoryRule();
   const rules = rulesData?.data || [];
 
   const [dbTestStatus, setDbTestStatus] = useState<'idle' | 'testing' | 'success' | 'error'>('idle');
@@ -60,6 +61,10 @@ const Settings = () => {
   const [expandedParentId, setExpandedParentId] = useState<string | null>(null);
   const [editCategory, setEditCategory] = useState<Category | null>(null);
   const [editCatOpen, setEditCatOpen] = useState(false);
+  const [editRuleId, setEditRuleId] = useState<string | null>(null);
+  const [editRuleKeyword, setEditRuleKeyword] = useState('');
+  const [editRuleCategoryId, setEditRuleCategoryId] = useState('');
+  const [editRuleMatchType, setEditRuleMatchType] = useState('contains');
 
   const queryClient = useQueryClient();
 
@@ -572,7 +577,7 @@ const Settings = () => {
             ) : (
               <div className="space-y-2">
                 {rules.map(rule => (
-                  <div key={rule.id} className="flex items-center justify-between p-3 rounded-lg hover:bg-muted/50 transition-colors">
+                  <div key={rule.id} className="flex items-center justify-between p-3 rounded-lg hover:bg-muted/50 transition-colors group">
                     <div className="flex items-center gap-3 min-w-0">
                       <div className="h-3 w-3 rounded-full shrink-0" style={{ backgroundColor: rule.category_color || '#6b7280' }} />
                       <div className="min-w-0">
@@ -584,29 +589,105 @@ const Settings = () => {
                         <p className="text-xs text-muted-foreground truncate">→ {rule.category_name || t('dashboard.unknown')}</p>
                       </div>
                     </div>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="text-muted-foreground hover:text-destructive shrink-0"
-                      onClick={async () => {
-                        if (!confirm(t('settings.deleteRuleConfirm', { keyword: rule.keyword }))) return;
-                        try {
-                          await deleteRuleMutation.mutateAsync(rule.id);
-                          toast.success(t('settings.ruleDeleted'));
-                        } catch (e: any) {
-                          toast.error(e.message || t('settings.failedDeleteRule'));
-                        }
-                      }}
-                      disabled={deleteRuleMutation.isPending}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
+                    <div className="flex items-center gap-1">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="text-muted-foreground hover:text-foreground opacity-0 group-hover:opacity-100 transition-opacity"
+                        onClick={() => {
+                          setEditRuleId(rule.id);
+                          setEditRuleKeyword(rule.keyword);
+                          setEditRuleCategoryId(rule.category_id);
+                          setEditRuleMatchType(rule.match_type);
+                        }}
+                      >
+                        <Pencil className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="text-muted-foreground hover:text-destructive opacity-0 group-hover:opacity-100 transition-opacity"
+                        onClick={async () => {
+                          if (!confirm(t('settings.deleteRuleConfirm', { keyword: rule.keyword }))) return;
+                          try {
+                            await deleteRuleMutation.mutateAsync(rule.id);
+                            toast.success(t('settings.ruleDeleted'));
+                          } catch (e: any) {
+                            toast.error(e.message || t('settings.failedDeleteRule'));
+                          }
+                        }}
+                        disabled={deleteRuleMutation.isPending}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </div>
                 ))}
               </div>
             )}
           </CardContent>
         </Card>
+
+        {/* Edit Rule Dialog */}
+        <Dialog open={!!editRuleId} onOpenChange={(open) => { if (!open) setEditRuleId(null); }}>
+          <DialogContent>
+            <DialogHeader><DialogTitle>{t('settings.editRule')}</DialogTitle></DialogHeader>
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label>{t('settings.keyword')}</Label>
+                <Input value={editRuleKeyword} onChange={e => setEditRuleKeyword(e.target.value)} />
+              </div>
+              <div className="space-y-2">
+                <Label>{t('transactions.category')}</Label>
+                <Select value={editRuleCategoryId} onValueChange={setEditRuleCategoryId}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {categories.map(c => (
+                      <SelectItem key={c.id} value={c.id}>
+                        <div className="flex items-center gap-2">
+                          <div className="h-3 w-3 rounded-full" style={{ backgroundColor: c.color }} />
+                          {c.name}
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label>{t('settings.matchType')}</Label>
+                <Select value={editRuleMatchType} onValueChange={setEditRuleMatchType}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="contains">{t('settings.contains')}</SelectItem>
+                    <SelectItem value="exact">{t('settings.exactMatch')}</SelectItem>
+                    <SelectItem value="starts_with">{t('settings.startsWith')}</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <Button
+                className="w-full"
+                disabled={!editRuleKeyword.trim() || !editRuleCategoryId || updateRuleMutation.isPending}
+                onClick={async () => {
+                  try {
+                    await updateRuleMutation.mutateAsync({
+                      id: editRuleId!,
+                      keyword: editRuleKeyword.trim(),
+                      category_id: editRuleCategoryId,
+                      match_type: editRuleMatchType,
+                    });
+                    toast.success(t('settings.ruleUpdated'));
+                    setEditRuleId(null);
+                  } catch (e: any) {
+                    toast.error(e.message || t('settings.failedUpdateRule'));
+                  }
+                }}
+              >
+                {updateRuleMutation.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                {t('settings.saveRule')}
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
 
         {/* Preferences */}
         <Card>
