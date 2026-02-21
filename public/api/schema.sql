@@ -59,12 +59,14 @@ CREATE TABLE IF NOT EXISTS accounts (
     available_balance DECIMAL(15, 2),
     currency VARCHAR(3) DEFAULT 'CAD',
     institution_name VARCHAR(255),
+    excluded BOOLEAN DEFAULT FALSE,
     last_synced DATETIME,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     UNIQUE KEY uk_plaid_account (plaid_account_id),
     INDEX idx_connection (plaid_connection_id),
     INDEX idx_type (type),
     INDEX idx_user (user_id),
+    INDEX idx_excluded (excluded),
     FOREIGN KEY (plaid_connection_id) REFERENCES plaid_connections(id) ON DELETE SET NULL,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

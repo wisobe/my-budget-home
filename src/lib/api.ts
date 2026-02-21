@@ -234,6 +234,12 @@ export const accountsApi = {
   },
 
   get: (id: string) => request<ApiResponse<Account>>(`/accounts/${id}`),
+
+  update: (data: { id: string; excluded?: boolean }) =>
+    request<ApiResponse<Account>>('/accounts/', {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    }),
 };
 
 // ============ Plaid Integration API ============

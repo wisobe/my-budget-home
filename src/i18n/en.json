@@ -125,7 +125,12 @@
     "accounts": "{{type}} Accounts",
     "accountCount": "{{count}} account(s)",
     "lastSynced": "Last synced {{date}}",
-    "available": "Available: {{amount}}"
+    "available": "Available: {{amount}}",
+    "toggleInclude": "Include in reports",
+    "excludedLabel": "Excluded from reports",
+    "accountExcluded": "Account excluded from reports",
+    "accountIncluded": "Account included in reports",
+    "failedUpdate": "Failed to update account"
   },
   "connections": {
     "title": "Bank Connections",

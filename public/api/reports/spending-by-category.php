@@ -44,6 +44,7 @@ try {
         WHERE t.date >= :start_date
           AND t.date <= :end_date
           AND t.excluded = 0
+          AND a.excluded = 0
           AND t.amount > 0
           AND {$envFilter}
           AND {$userFilter}
@@ -72,6 +73,7 @@ try {
         WHERE t.date >= :start_date
           AND t.date <= :end_date
           AND t.excluded = 0
+          AND a.excluded = 0
           AND t.amount > 0
           AND {$envFilter}
           AND {$userFilter}
