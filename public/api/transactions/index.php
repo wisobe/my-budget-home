@@ -66,9 +66,19 @@ try {
     }
     
     if ($search) {
-        $where[] = '(t.name LIKE :search OR t.merchant_name LIKE :search2)';
-        $params['search'] = "%{$search}%";
-        $params['search2'] = "%{$search}%";
+        // Check if search looks like a number (amount search)
+        $numericSearch = str_replace([',', '$', '€', ' '], '', $search);
+        if (is_numeric($numericSearch)) {
+            $where[] = '(t.name LIKE :search OR t.merchant_name LIKE :search2 OR ABS(t.amount) = :search_amount OR CAST(ABS(t.amount) AS CHAR) LIKE :search_amount_like)';
+            $params['search'] = "%{$search}%";
+            $params['search2'] = "%{$search}%";
+            $params['search_amount'] = abs((float)$numericSearch);
+            $params['search_amount_like'] = "%{$numericSearch}%";
+        } else {
+            $where[] = '(t.name LIKE :search OR t.merchant_name LIKE :search2)';
+            $params['search'] = "%{$search}%";
+            $params['search2'] = "%{$search}%";
+        }
     }
     
     $whereClause = implode(' AND ', $where);
