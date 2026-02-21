@@ -116,6 +116,7 @@
     "netSavingsByMonth": "Épargne nette par mois",
     "categoryBreakdown": "Répartition par catégorie",
     "transactions_count": "{{count}} transactions",
+    "backToCategories": "Retour aux catégories",
     "ofTotal": "{{percentage}} % du total"
   },
   "accounts": {

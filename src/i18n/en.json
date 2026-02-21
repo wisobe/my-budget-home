@@ -116,6 +116,7 @@
     "netSavingsByMonth": "Net Savings by Month",
     "categoryBreakdown": "Category Breakdown",
     "transactions_count": "{{count}} transactions",
+    "backToCategories": "Back to all categories",
     "ofTotal": "{{percentage}}% of total"
   },
   "accounts": {
