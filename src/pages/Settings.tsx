@@ -791,8 +791,7 @@ function RuleCategoryPicker({ categories, value, onChange }: { categories: Categ
           <ChevronDown className="h-4 w-4 opacity-50" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-[220px] p-0" align="start" collisionPadding={8}>
-        <ScrollArea className="max-h-[300px]">
+      <PopoverContent className="w-[220px] p-0 max-h-[300px] overflow-y-auto" align="start" collisionPadding={8}>
           <div className="p-1">
             {parentCategories.map(cat => {
               const children = getChildren(cat.id);
@@ -848,7 +847,7 @@ function RuleCategoryPicker({ categories, value, onChange }: { categories: Categ
               );
             })}
           </div>
-        </ScrollArea>
+        
       </PopoverContent>
     </Popover>
   );
