@@ -761,94 +761,48 @@ const Settings = () => {
 
 function RuleCategoryPicker({ categories, value, onChange }: { categories: Category[]; value: string; onChange: (id: string) => void }) {
   const { t } = useTranslation();
-  const [open, setOpen] = useState(false);
-  const [expandedParent, setExpandedParent] = useState<string | null>(null);
 
   const parentCategories = categories.filter(c => !c.parent_id);
   const getChildren = (parentId: string) => categories.filter(c => c.parent_id === parentId);
 
   const selectedCat = categories.find(c => c.id === value);
 
-  const handleSelect = (id: string) => {
-    onChange(id);
-    setOpen(false);
-    setExpandedParent(null);
-  };
-
-  const toggleExpand = (parentId: string) => {
-    setExpandedParent(prev => prev === parentId ? null : parentId);
-  };
-
   return (
-    <Popover open={open} onOpenChange={(v) => { setOpen(v); if (!v) setExpandedParent(null); }}>
-      <PopoverTrigger asChild>
-        <Button variant="outline" className="w-full justify-start font-normal">
+    <Select value={value} onValueChange={onChange}>
+      <SelectTrigger>
+        <SelectValue placeholder={t('settings.selectCategory')}>
           {selectedCat ? (
             <div className="flex items-center gap-2">
               <div className="h-3 w-3 rounded-full shrink-0" style={{ backgroundColor: selectedCat.color }} />
               <span>{selectedCat.name}</span>
             </div>
-          ) : (
-            <span className="text-muted-foreground">{t('settings.selectCategory')}</span>
-          )}
-        </Button>
-      </PopoverTrigger>
-      <PopoverContent className="w-[220px] p-1 max-h-[var(--radix-popover-content-available-height,400px)] overflow-y-auto" align="start" collisionPadding={8}>
+          ) : undefined}
+        </SelectValue>
+      </SelectTrigger>
+      <SelectContent>
         {parentCategories.map(cat => {
           const children = getChildren(cat.id);
-          const hasChildren = children.length > 0;
-          const isExpanded = expandedParent === cat.id;
-
           return (
             <div key={cat.id}>
-              <button
-                className={cn(
-                  "w-full flex items-center justify-between px-3 py-2 text-sm rounded-sm hover:bg-muted transition-colors text-left",
-                  isExpanded && hasChildren && "bg-muted"
-                )}
-                onClick={() => {
-                  if (hasChildren) {
-                    toggleExpand(cat.id);
-                  } else {
-                    handleSelect(cat.id);
-                  }
-                }}
-              >
+              <SelectItem value={cat.id}>
                 <div className="flex items-center gap-2">
                   <div className="h-3 w-3 rounded-full shrink-0" style={{ backgroundColor: cat.color }} />
-                  <span>{cat.name}</span>
+                  {cat.name}
                 </div>
-                {hasChildren && (
-                  <ChevronRight className={cn("h-3 w-3 text-muted-foreground transition-transform", isExpanded && "rotate-90")} />
-                )}
-              </button>
-
-              {hasChildren && isExpanded && (
-                <div className="ml-3 border-l pl-1">
-                  <button
-                    className="w-full flex items-center gap-2 px-3 py-1.5 text-sm rounded-sm hover:bg-muted transition-colors text-left font-medium"
-                    onClick={() => handleSelect(cat.id)}
-                  >
-                    <div className="h-3 w-3 rounded-full shrink-0" style={{ backgroundColor: cat.color }} />
-                    {cat.name}
-                  </button>
-                  {children.map(child => (
-                    <button
-                      key={child.id}
-                      className="w-full flex items-center gap-2 px-3 py-1.5 text-sm rounded-sm hover:bg-muted transition-colors text-left"
-                      onClick={() => handleSelect(child.id)}
-                    >
-                      <div className="h-3 w-3 rounded-full shrink-0" style={{ backgroundColor: child.color }} />
-                      {child.name}
-                    </button>
-                  ))}
-                </div>
-              )}
+              </SelectItem>
+              {children.map(child => (
+                <SelectItem key={child.id} value={child.id}>
+                  <div className="flex items-center gap-2 pl-4">
+                    <div className="h-3 w-3 rounded-full shrink-0" style={{ backgroundColor: child.color }} />
+                    {child.name}
+                  </div>
+                </SelectItem>
+              ))}
             </div>
           );
         })}
-      </PopoverContent>
-    </Popover>
+      </SelectContent>
+    </Select>
   );
 }
 
