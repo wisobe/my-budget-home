@@ -28,6 +28,11 @@ try {
         validateRequired($body, ['category_id', 'keyword']);
 
         $id = 'rule_' . uniqid();
+        $keyword = strtoupper(trim($body['keyword']));
+        $matchType = $body['match_type'] ?? 'contains';
+        $categoryId = $body['category_id'];
+        $applyToExisting = !empty($body['apply_to_existing']);
+
         $stmt = $pdo->prepare('
             INSERT INTO category_rules (id, user_id, category_id, keyword, match_type, priority, auto_learned, created_at)
             VALUES (:id, :user_id, :category_id, :keyword, :match_type, :priority, :auto_learned, NOW())
@@ -36,12 +41,17 @@ try {
         $stmt->execute([
             'id' => $id,
             'user_id' => $userId,
-            'category_id' => $body['category_id'],
-            'keyword' => strtoupper(trim($body['keyword'])),
-            'match_type' => $body['match_type'] ?? 'contains',
+            'category_id' => $categoryId,
+            'keyword' => $keyword,
+            'match_type' => $matchType,
             'priority' => $body['priority'] ?? 0,
             'auto_learned' => ($body['auto_learned'] ?? false) ? 1 : 0,
         ]);
+
+        $affected = 0;
+        if ($applyToExisting) {
+            $affected = applyRuleToExistingTransactions($pdo, $userId, $keyword, $matchType, $categoryId);
+        }
 
         $fetchStmt = $pdo->prepare('
             SELECT r.*, c.name as category_name, c.color as category_color
@@ -50,16 +60,19 @@ try {
             WHERE r.id = :id
         ');
         $fetchStmt->execute(['id' => $id]);
-        Response::success($fetchStmt->fetch());
+        $rule = $fetchStmt->fetch();
+        $rule['applied_count'] = $affected;
+        Response::success($rule);
 
     } elseif ($_SERVER['REQUEST_METHOD'] === 'PUT') {
         $body = getJsonBody();
         validateRequired($body, ['id']);
 
         // Verify ownership
-        $checkStmt = $pdo->prepare('SELECT id FROM category_rules WHERE id = :id AND user_id = :user_id');
+        $checkStmt = $pdo->prepare('SELECT id, keyword, match_type, category_id FROM category_rules WHERE id = :id AND user_id = :user_id');
         $checkStmt->execute(['id' => $body['id'], 'user_id' => $userId]);
-        if (!$checkStmt->fetch()) {
+        $existingRule = $checkStmt->fetch();
+        if (!$existingRule) {
             Response::notFound('Rule not found');
         }
 
@@ -76,6 +89,15 @@ try {
 
         $pdo->prepare('UPDATE category_rules SET ' . implode(', ', $sets) . ' WHERE id = :id')->execute($params);
 
+        $applyToExisting = !empty($body['apply_to_existing']);
+        $affected = 0;
+        if ($applyToExisting) {
+            $keyword = isset($body['keyword']) ? strtoupper(trim($body['keyword'])) : $existingRule['keyword'];
+            $matchType = $body['match_type'] ?? $existingRule['match_type'];
+            $categoryId = $body['category_id'] ?? $existingRule['category_id'];
+            $affected = applyRuleToExistingTransactions($pdo, $userId, $keyword, $matchType, $categoryId);
+        }
+
         $fetchStmt = $pdo->prepare('
             SELECT r.*, c.name as category_name, c.color as category_color
             FROM category_rules r
@@ -83,7 +105,9 @@ try {
             WHERE r.id = :id
         ');
         $fetchStmt->execute(['id' => $body['id']]);
-        Response::success($fetchStmt->fetch());
+        $rule = $fetchStmt->fetch();
+        $rule['applied_count'] = $affected;
+        Response::success($rule);
 
     } elseif ($_SERVER['REQUEST_METHOD'] === 'DELETE') {
         $body = getJsonBody();
@@ -103,4 +127,40 @@ try {
     }
 } catch (Exception $e) {
     Response::error('Failed: ' . $e->getMessage(), 500);
+}
+
+/**
+ * Apply a rule to all existing matching transactions for a user.
+ * Returns the number of transactions updated.
+ */
+function applyRuleToExistingTransactions(PDO $pdo, string $userId, string $keyword, string $matchType, string $categoryId): int {
+    switch ($matchType) {
+        case 'exact':
+            $condition = '(UPPER(t.name) = :kw OR UPPER(t.merchant_name) = :kw2)';
+            break;
+        case 'starts_with':
+            $condition = '(UPPER(t.name) LIKE :kw OR UPPER(t.merchant_name) LIKE :kw2)';
+            $keyword = $keyword . '%';
+            break;
+        case 'contains':
+        default:
+            $condition = '(UPPER(t.name) LIKE :kw OR UPPER(t.merchant_name) LIKE :kw2)';
+            $keyword = '%' . $keyword . '%';
+            break;
+    }
+
+    $stmt = $pdo->prepare("
+        UPDATE transactions t
+        INNER JOIN accounts a ON t.account_id = a.id
+        SET t.category_id = :category_id
+        WHERE a.user_id = :user_id
+          AND {$condition}
+    ");
+    $stmt->execute([
+        'category_id' => $categoryId,
+        'user_id' => $userId,
+        'kw' => $keyword,
+        'kw2' => $keyword,
+    ]);
+    return $stmt->rowCount();
 }

@@ -203,13 +203,13 @@ export const categoriesApi = {
 
   listRules: () => request<ApiResponse<CategoryRule[]>>('/categories/rules.php'),
 
-  createRule: (data: { category_id: string; keyword: string; match_type?: string; priority?: number }) =>
+  createRule: (data: { category_id: string; keyword: string; match_type?: string; priority?: number; apply_to_existing?: boolean }) =>
     request<ApiResponse<CategoryRule>>('/categories/rules.php', {
       method: 'POST',
       body: JSON.stringify(data),
     }),
 
-  updateRule: (data: { id: string; keyword?: string; category_id?: string; match_type?: string; priority?: number }) =>
+  updateRule: (data: { id: string; keyword?: string; category_id?: string; match_type?: string; priority?: number; apply_to_existing?: boolean }) =>
     request<ApiResponse<CategoryRule>>('/categories/rules.php', {
       method: 'PUT',
       body: JSON.stringify(data),

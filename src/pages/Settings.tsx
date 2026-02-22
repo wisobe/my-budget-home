@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -52,6 +53,7 @@ const Settings = () => {
   const [newRuleKeyword, setNewRuleKeyword] = useState('');
   const [newRuleCategoryId, setNewRuleCategoryId] = useState('');
   const [newRuleMatchType, setNewRuleMatchType] = useState('contains');
+  const [newRuleApplyExisting, setNewRuleApplyExisting] = useState(false);
 
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
@@ -66,6 +68,7 @@ const Settings = () => {
   const [editRuleKeyword, setEditRuleKeyword] = useState('');
   const [editRuleCategoryId, setEditRuleCategoryId] = useState('');
   const [editRuleMatchType, setEditRuleMatchType] = useState('contains');
+  const [editRuleApplyExisting, setEditRuleApplyExisting] = useState(false);
 
   const queryClient = useQueryClient();
 
@@ -536,6 +539,10 @@ const Settings = () => {
                         </SelectContent>
                       </Select>
                     </div>
+                    <div className="flex items-center gap-2">
+                      <Checkbox id="new-rule-apply" checked={newRuleApplyExisting} onCheckedChange={(v) => setNewRuleApplyExisting(!!v)} />
+                      <Label htmlFor="new-rule-apply" className="text-sm font-normal cursor-pointer">{t('settings.applyToExisting')}</Label>
+                    </div>
                     <Button
                       className="w-full"
                       disabled={!newRuleKeyword.trim() || !newRuleCategoryId || createRuleMutation.isPending}
@@ -545,11 +552,13 @@ const Settings = () => {
                             category_id: newRuleCategoryId,
                             keyword: newRuleKeyword.trim(),
                             match_type: newRuleMatchType,
+                            apply_to_existing: newRuleApplyExisting,
                           });
                           toast.success(t('settings.ruleCreated'));
                           setNewRuleKeyword('');
                           setNewRuleCategoryId('');
                           setNewRuleMatchType('contains');
+                          setNewRuleApplyExisting(false);
                           setAddRuleOpen(false);
                         } catch (e: any) {
                           toast.error(e.message || t('settings.failedCreateRule'));
@@ -649,6 +658,10 @@ const Settings = () => {
                   </SelectContent>
                 </Select>
               </div>
+              <div className="flex items-center gap-2">
+                <Checkbox id="edit-rule-apply" checked={editRuleApplyExisting} onCheckedChange={(v) => setEditRuleApplyExisting(!!v)} />
+                <Label htmlFor="edit-rule-apply" className="text-sm font-normal cursor-pointer">{t('settings.applyToExisting')}</Label>
+              </div>
               <Button
                 className="w-full"
                 disabled={!editRuleKeyword.trim() || !editRuleCategoryId || updateRuleMutation.isPending}
@@ -659,9 +672,11 @@ const Settings = () => {
                       keyword: editRuleKeyword.trim(),
                       category_id: editRuleCategoryId,
                       match_type: editRuleMatchType,
+                      apply_to_existing: editRuleApplyExisting,
                     });
                     toast.success(t('settings.ruleUpdated'));
                     setEditRuleId(null);
+                    setEditRuleApplyExisting(false);
                   } catch (e: any) {
                     toast.error(e.message || t('settings.failedUpdateRule'));
                   }
