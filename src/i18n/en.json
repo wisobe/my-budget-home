@@ -241,6 +241,7 @@
     "ruleUpdated": "Rule updated",
     "failedUpdateRule": "Failed to update rule",
     "saveRule": "Save Rule",
+    "applyToExisting": "Apply this rule to all existing matching transactions",
     "preferences": "Preferences",
     "customizeExperience": "Customize your app experience",
     "darkMode": "Dark Mode",

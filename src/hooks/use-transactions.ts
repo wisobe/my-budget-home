@@ -134,10 +134,11 @@ export function useCategoryRules() {
 export function useCreateCategoryRule() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (data: { category_id: string; keyword: string; match_type?: string; priority?: number }) =>
+    mutationFn: (data: { category_id: string; keyword: string; match_type?: string; priority?: number; apply_to_existing?: boolean }) =>
       categoriesApi.createRule(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['category-rules'] });
+      queryClient.invalidateQueries({ queryKey: ['transactions'] });
     },
   });
 }
@@ -145,10 +146,11 @@ export function useCreateCategoryRule() {
 export function useUpdateCategoryRule() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (data: { id: string; keyword?: string; category_id?: string; match_type?: string; priority?: number }) =>
+    mutationFn: (data: { id: string; keyword?: string; category_id?: string; match_type?: string; priority?: number; apply_to_existing?: boolean }) =>
       categoriesApi.updateRule(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['category-rules'] });
+      queryClient.invalidateQueries({ queryKey: ['transactions'] });
     },
   });
 }

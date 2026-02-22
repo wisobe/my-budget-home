@@ -241,6 +241,7 @@
     "ruleUpdated": "Règle mise à jour",
     "failedUpdateRule": "Échec de la mise à jour de la règle",
     "saveRule": "Enregistrer la règle",
+    "applyToExisting": "Appliquer cette règle à toutes les transactions existantes correspondantes",
     "preferences": "Préférences",
     "customizeExperience": "Personnalisez votre expérience",
     "darkMode": "Mode sombre",
