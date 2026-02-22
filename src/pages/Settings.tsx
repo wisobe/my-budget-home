@@ -762,8 +762,7 @@ const Settings = () => {
 function RuleCategoryPicker({ categories, value, onChange }: { categories: Category[]; value: string; onChange: (id: string) => void }) {
   const { t } = useTranslation();
   const [open, setOpen] = useState(false);
-  const [hoveredParent, setHoveredParent] = useState<string | null>(null);
-  const submenuTimeout = useRef<ReturnType<typeof setTimeout>>();
+  const [expandedParent, setExpandedParent] = useState<string | null>(null);
 
   const parentCategories = categories.filter(c => !c.parent_id);
   const getChildren = (parentId: string) => categories.filter(c => c.parent_id === parentId);
@@ -773,24 +772,15 @@ function RuleCategoryPicker({ categories, value, onChange }: { categories: Categ
   const handleSelect = (id: string) => {
     onChange(id);
     setOpen(false);
-    setHoveredParent(null);
+    setExpandedParent(null);
   };
 
-  const handleParentEnter = (parentId: string) => {
-    if (submenuTimeout.current) clearTimeout(submenuTimeout.current);
-    setHoveredParent(parentId);
-  };
-
-  const handleParentLeave = () => {
-    submenuTimeout.current = setTimeout(() => setHoveredParent(null), 150);
-  };
-
-  const handleSubmenuEnter = () => {
-    if (submenuTimeout.current) clearTimeout(submenuTimeout.current);
+  const toggleExpand = (parentId: string) => {
+    setExpandedParent(prev => prev === parentId ? null : parentId);
   };
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
+    <Popover open={open} onOpenChange={(v) => { setOpen(v); if (!v) setExpandedParent(null); }}>
       <PopoverTrigger asChild>
         <Button variant="outline" className="w-full justify-start font-normal">
           {selectedCat ? (
@@ -804,62 +794,59 @@ function RuleCategoryPicker({ categories, value, onChange }: { categories: Categ
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-[220px] p-1 max-h-[var(--radix-popover-content-available-height,400px)] overflow-y-auto" align="start" collisionPadding={8}>
-        <div className="relative">
-          {parentCategories.map(cat => {
-            const children = getChildren(cat.id);
-            const hasChildren = children.length > 0;
+        {parentCategories.map(cat => {
+          const children = getChildren(cat.id);
+          const hasChildren = children.length > 0;
+          const isExpanded = expandedParent === cat.id;
 
-            return (
-              <div
-                key={cat.id}
-                className="relative"
-                onMouseEnter={() => handleParentEnter(cat.id)}
-                onMouseLeave={handleParentLeave}
-              >
-                <button
-                  className={cn(
-                    "w-full flex items-center justify-between px-3 py-2 text-sm rounded-sm hover:bg-muted transition-colors text-left",
-                    hoveredParent === cat.id && hasChildren && "bg-muted"
-                  )}
-                  onClick={() => { if (!hasChildren) handleSelect(cat.id); }}
-                >
-                  <div className="flex items-center gap-2">
-                    <div className="h-3 w-3 rounded-full shrink-0" style={{ backgroundColor: cat.color }} />
-                    <span>{cat.name}</span>
-                  </div>
-                  {hasChildren && <ChevronRight className="h-3 w-3 text-muted-foreground" />}
-                </button>
-
-                {hasChildren && hoveredParent === cat.id && (
-                  <div
-                    className="absolute left-full top-0 ml-1 w-[180px] bg-popover border rounded-md shadow-md p-1 z-50 max-h-[min(300px,var(--radix-popover-content-available-height,50vh))] overflow-y-auto"
-                    onMouseEnter={handleSubmenuEnter}
-                    onMouseLeave={handleParentLeave}
-                  >
-                    <button
-                      className="w-full flex items-center gap-2 px-3 py-2 text-sm rounded-sm hover:bg-muted transition-colors text-left font-medium"
-                      onClick={() => handleSelect(cat.id)}
-                    >
-                      <div className="h-3 w-3 rounded-full shrink-0" style={{ backgroundColor: cat.color }} />
-                      {cat.name}
-                    </button>
-                    <div className="h-px bg-border my-1" />
-                    {children.map(child => (
-                      <button
-                        key={child.id}
-                        className="w-full flex items-center gap-2 px-3 py-2 text-sm rounded-sm hover:bg-muted transition-colors text-left"
-                        onClick={() => handleSelect(child.id)}
-                      >
-                        <div className="h-3 w-3 rounded-full shrink-0" style={{ backgroundColor: child.color }} />
-                        {child.name}
-                      </button>
-                    ))}
-                  </div>
+          return (
+            <div key={cat.id}>
+              <button
+                className={cn(
+                  "w-full flex items-center justify-between px-3 py-2 text-sm rounded-sm hover:bg-muted transition-colors text-left",
+                  isExpanded && hasChildren && "bg-muted"
                 )}
-              </div>
-            );
-          })}
-        </div>
+                onClick={() => {
+                  if (hasChildren) {
+                    toggleExpand(cat.id);
+                  } else {
+                    handleSelect(cat.id);
+                  }
+                }}
+              >
+                <div className="flex items-center gap-2">
+                  <div className="h-3 w-3 rounded-full shrink-0" style={{ backgroundColor: cat.color }} />
+                  <span>{cat.name}</span>
+                </div>
+                {hasChildren && (
+                  <ChevronRight className={cn("h-3 w-3 text-muted-foreground transition-transform", isExpanded && "rotate-90")} />
+                )}
+              </button>
+
+              {hasChildren && isExpanded && (
+                <div className="ml-3 border-l pl-1">
+                  <button
+                    className="w-full flex items-center gap-2 px-3 py-1.5 text-sm rounded-sm hover:bg-muted transition-colors text-left font-medium"
+                    onClick={() => handleSelect(cat.id)}
+                  >
+                    <div className="h-3 w-3 rounded-full shrink-0" style={{ backgroundColor: cat.color }} />
+                    {cat.name}
+                  </button>
+                  {children.map(child => (
+                    <button
+                      key={child.id}
+                      className="w-full flex items-center gap-2 px-3 py-1.5 text-sm rounded-sm hover:bg-muted transition-colors text-left"
+                      onClick={() => handleSelect(child.id)}
+                    >
+                      <div className="h-3 w-3 rounded-full shrink-0" style={{ backgroundColor: child.color }} />
+                      {child.name}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          );
+        })}
       </PopoverContent>
     </Popover>
   );
