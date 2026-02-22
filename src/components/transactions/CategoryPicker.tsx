@@ -58,7 +58,7 @@ export function CategoryPicker({ value, categoryName, categoryColor, onSelect }:
           )}
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-[200px] p-1" align="start" side="bottom">
+      <PopoverContent className="w-[200px] p-1 max-h-[min(400px,60vh)] overflow-y-auto" align="start" side="bottom">
         <div className="relative">
           {/* None option */}
           <button
@@ -99,7 +99,7 @@ export function CategoryPicker({ value, categoryName, categoryColor, onSelect }:
                 {/* Submenu */}
                 {hasChildren && hoveredParent === cat.id && (
                   <div
-                    className="absolute left-full top-0 ml-1 w-[180px] bg-popover border rounded-md shadow-md p-1 z-50"
+                    className="absolute left-full top-0 ml-1 w-[180px] bg-popover border rounded-md shadow-md p-1 z-50 max-h-[min(300px,50vh)] overflow-y-auto"
                     onMouseEnter={handleSubmenuEnter}
                     onMouseLeave={handleParentLeave}
                   >
