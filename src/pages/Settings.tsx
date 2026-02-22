@@ -803,7 +803,7 @@ function RuleCategoryPicker({ categories, value, onChange }: { categories: Categ
           )}
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-[220px] p-1 max-h-[min(400px,60vh)] overflow-y-auto" align="start">
+      <PopoverContent className="w-[220px] p-1 max-h-[var(--radix-popover-content-available-height,400px)] overflow-y-auto" align="start" collisionPadding={8}>
         <div className="relative">
           {parentCategories.map(cat => {
             const children = getChildren(cat.id);
@@ -832,7 +832,7 @@ function RuleCategoryPicker({ categories, value, onChange }: { categories: Categ
 
                 {hasChildren && hoveredParent === cat.id && (
                   <div
-                    className="absolute left-full top-0 ml-1 w-[180px] bg-popover border rounded-md shadow-md p-1 z-50 max-h-[min(300px,50vh)] overflow-y-auto"
+                    className="absolute left-full top-0 ml-1 w-[180px] bg-popover border rounded-md shadow-md p-1 z-50 max-h-[min(300px,var(--radix-popover-content-available-height,50vh))] overflow-y-auto"
                     onMouseEnter={handleSubmenuEnter}
                     onMouseLeave={handleParentLeave}
                   >
