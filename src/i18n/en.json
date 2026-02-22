@@ -117,6 +117,7 @@
     "categoryBreakdown": "Category Breakdown",
     "transactions_count": "{{count}} transactions",
     "backToCategories": "Back to all categories",
+    "backToSubcategories": "Back to subcategories",
     "ofTotal": "{{percentage}}% of total"
   },
   "accounts": {
