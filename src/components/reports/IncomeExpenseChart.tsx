@@ -1,28 +1,19 @@
 import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { useMonthlyOverview, useMonthlyOverviewByRange } from '@/hooks/use-reports';
+import { useMonthlyOverviewByRange } from '@/hooks/use-reports';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend,
 } from 'recharts';
 
 interface IncomeExpenseChartProps {
-  mode: 'ytd' | 'rolling';
+  startDate: string;
+  endDate: string;
+  label: string;
 }
 
-export function IncomeExpenseChart({ mode }: IncomeExpenseChartProps) {
+export function IncomeExpenseChart({ startDate, endDate, label }: IncomeExpenseChartProps) {
   const { t } = useTranslation();
-  const currentYear = new Date().getFullYear();
-  const today = new Date();
-  const rolling12Start = new Date(today.getFullYear() - 1, today.getMonth(), today.getDate() + 1)
-    .toISOString().split('T')[0];
-  const rolling12End = today.toISOString().split('T')[0];
-
-  const ytdQuery = useMonthlyOverview(currentYear);
-  const rollingQuery = useMonthlyOverviewByRange(rolling12Start, rolling12End);
-
-  const { data: overviewData, isLoading } = mode === 'ytd' ? ytdQuery : rollingQuery;
-
-  const label = mode === 'ytd' ? `${currentYear}` : t('reports.rolling12');
+  const { data: overviewData, isLoading } = useMonthlyOverviewByRange(startDate, endDate);
 
   if (isLoading) {
     return (

@@ -102,6 +102,9 @@
   "reports": {
     "title": "Rapports et analyses",
     "rolling12": "12 derniers mois",
+    "last6Months": "6 derniers mois",
+    "last3Months": "3 derniers mois",
+    "lastMonth": "Dernier mois",
     "ytd": "Année en cours ({{year}})",
     "totalIncome": "Revenus totaux",
     "totalExpenses": "Dépenses totales",
