@@ -12,6 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useCategories, useDeleteCategory, useUpdateCategory, useCategoryRules, useCreateCategoryRule, useDeleteCategoryRule, useUpdateCategoryRule } from '@/hooks/use-transactions';
 import { useAuth } from '@/contexts/AuthContext';
 import { Plus, Trash2, CheckCircle2, XCircle, Loader2, Key, ExternalLink, FlaskConical, Building2, Lock, LogOut, Sparkles, Globe, ChevronRight, Pencil, ArrowLeft } from 'lucide-react';
+import { TwoFactorSettings } from '@/components/settings/TwoFactorSettings';
 import { useState, useRef } from 'react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
@@ -181,6 +182,9 @@ const Settings = () => {
             </form>
           </CardContent>
         </Card>
+
+        {/* Two-Factor Authentication */}
+        <TwoFactorSettings />
 
         {/* Plaid Configuration - Sandbox toggle only for admins */}
         {canUseSandbox && (

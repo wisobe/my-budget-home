@@ -8,7 +8,8 @@ interface AuthContextType {
   authEnabled: boolean;
   user: User | null;
   isAdmin: boolean;
-  login: (email: string, password: string) => Promise<void>;
+  login: (email: string, password: string) => Promise<{ requires2fa: boolean; tempToken?: string }>;
+  verify2fa: (tempToken: string, code: string) => Promise<void>;
   logout: () => void;
 }
 
@@ -47,6 +48,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = useCallback(async (email: string, password: string) => {
     const result = await authApi.login(email, password);
+    if (result.data.requires_2fa && result.data.temp_token) {
+      return { requires2fa: true, tempToken: result.data.temp_token };
+    }
+    sessionStorage.setItem('auth_token', result.data.token!);
+    setUser(result.data.user!);
+    setIsAuthenticated(true);
+    setAuthEnabled(true);
+    return { requires2fa: false };
+  }, []);
+
+  const verify2fa = useCallback(async (tempToken: string, code: string) => {
+    const result = await authApi.verify2fa(tempToken, code);
     sessionStorage.setItem('auth_token', result.data.token);
     setUser(result.data.user);
     setIsAuthenticated(true);
@@ -62,7 +75,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const isAdmin = user?.role === 'admin';
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, isLoading, authEnabled, user, isAdmin, login, logout }}>
+    <AuthContext.Provider value={{ isAuthenticated, isLoading, authEnabled, user, isAdmin, login, verify2fa, logout }}>
       {children}
     </AuthContext.Provider>
   );

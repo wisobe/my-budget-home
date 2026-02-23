@@ -116,7 +116,7 @@ function requireAuthToken(): string {
         $stmt = $pdo->prepare('
             SELECT at.user_id FROM auth_tokens at
             INNER JOIN users u ON at.user_id = u.id
-            WHERE at.token = :token AND at.expires_at > NOW()
+            WHERE at.token = :token AND at.expires_at > NOW() AND (at.is_2fa_pending IS NULL OR at.is_2fa_pending = 0)
         ');
         $stmt->execute(['token' => $matches[1]]);
         $row = $stmt->fetch();
@@ -173,7 +173,7 @@ function requireAdmin(): array {
 // ============================================================
 $_currentUserId = null;
 $_requestUri = $_SERVER['REQUEST_URI'] ?? '';
-$_isOpenAuthEndpoint = preg_match('#/auth/(login|verify)\.php#', $_requestUri);
+$_isOpenAuthEndpoint = preg_match('#/auth/(login|verify|2fa-verify)\.php#', $_requestUri);
 
 if (!$_isOpenAuthEndpoint && $_SERVER['REQUEST_METHOD'] !== 'OPTIONS') {
     try {
