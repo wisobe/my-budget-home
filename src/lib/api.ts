@@ -71,9 +71,29 @@ export const authApi = {
     request<ApiResponse<AuthVerifyResponse>>('/auth/verify.php'),
 
   login: (email: string, password: string) =>
-    request<ApiResponse<{ token: string; expires_at: string; user: User }>>('/auth/login.php', {
+    request<ApiResponse<{ token?: string; expires_at?: string; user?: User; requires_2fa?: boolean; temp_token?: string }>>('/auth/login.php', {
       method: 'POST',
       body: JSON.stringify({ email, password }),
+    }),
+
+  verify2fa: (temp_token: string, code: string) =>
+    request<ApiResponse<{ token: string; expires_at: string; user: User }>>('/auth/2fa-verify.php', {
+      method: 'POST',
+      body: JSON.stringify({ temp_token, code }),
+    }),
+
+  get2faStatus: () =>
+    request<ApiResponse<{ totp_enabled: boolean }>>('/auth/2fa-setup.php'),
+
+  setup2fa: (action: 'generate' | 'confirm' | 'disable', code?: string) =>
+    request<ApiResponse<{
+      otpauth_uri?: string;
+      secret?: string;
+      recovery_codes?: string[];
+      totp_enabled?: boolean;
+    }>>('/auth/2fa-setup.php', {
+      method: 'POST',
+      body: JSON.stringify({ action, code }),
     }),
 
   changePassword: (current_password: string, new_password: string) =>

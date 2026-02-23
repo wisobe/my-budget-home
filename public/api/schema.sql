@@ -8,6 +8,9 @@ CREATE TABLE IF NOT EXISTS users (
     name VARCHAR(255) NOT NULL,
     password_hash VARCHAR(255) NOT NULL,
     role ENUM('admin', 'user') NOT NULL DEFAULT 'user',
+    totp_secret VARCHAR(64) DEFAULT NULL,
+    totp_enabled BOOLEAN DEFAULT FALSE,
+    recovery_codes TEXT DEFAULT NULL,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     INDEX idx_email (email),
@@ -18,6 +21,7 @@ CREATE TABLE IF NOT EXISTS users (
 CREATE TABLE IF NOT EXISTS auth_tokens (
     token VARCHAR(64) PRIMARY KEY,
     user_id VARCHAR(50) NOT NULL,
+    is_2fa_pending BOOLEAN DEFAULT FALSE,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     expires_at DATETIME NOT NULL,
     INDEX idx_user (user_id),

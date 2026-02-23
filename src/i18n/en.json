@@ -19,7 +19,14 @@
     "signInDescription": "Sign in to your account",
     "email": "Email",
     "password": "Password",
-    "enterPassword": "Enter password"
+    "enterPassword": "Enter password",
+    "twoFactorTitle": "Two-Factor Authentication",
+    "twoFactorDescription": "Enter the code from your authenticator app",
+    "verificationCode": "Verification Code",
+    "recoveryCodeHint": "You can also use a recovery code",
+    "invalid2faCode": "Invalid verification code",
+    "verify": "Verify",
+    "backToLogin": "Back to login"
   },
   "dashboard": {
     "title": "Dashboard",
@@ -299,6 +306,30 @@
     "delete": "Delete",
     "edit": "Edit",
     "auto": "Auto"
+  },
+  "twoFactor": {
+    "title": "Two-Factor Authentication",
+    "description": "Add an extra layer of security to your account",
+    "active": "Active",
+    "enable": "Enable 2FA",
+    "disable": "Disable 2FA",
+    "notEnabledHint": "Protect your account by enabling two-factor authentication with an authenticator app.",
+    "setupTitle": "Set Up Two-Factor Authentication",
+    "scanQrDescription": "Scan this QR code with your authenticator app (Google Authenticator, Authy, etc.), then enter the 6-digit code to verify.",
+    "manualEntry": "Or enter this key manually:",
+    "verifyAndEnable": "Verify & Enable",
+    "setupFailed": "Failed to start 2FA setup",
+    "invalidCode": "Invalid code. Please try again.",
+    "enabled": "Two-factor authentication enabled!",
+    "disabled": "Two-factor authentication disabled.",
+    "recoveryTitle": "Save Your Recovery Codes",
+    "recoveryDescription": "Store these codes in a safe place. Each code can only be used once to access your account if you lose your authenticator device.",
+    "copyCodes": "Copy All Codes",
+    "recoveryWarning": "These codes will not be shown again. Save them now!",
+    "done": "Done",
+    "disableTitle": "Disable Two-Factor Authentication",
+    "disableDescription": "Enter your current authenticator code or a recovery code to disable 2FA.",
+    "confirmDisable": "Disable 2FA"
   },
   "export": {
     "success": "Export completed",
