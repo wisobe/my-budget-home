@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { IncomeExpenseChart } from '@/components/reports/IncomeExpenseChart';
@@ -5,7 +6,7 @@ import { SavingsRateChart } from '@/components/reports/SavingsRateChart';
 import { NetSavingsChart } from '@/components/reports/NetSavingsChart';
 import { CategoryBreakdown } from '@/components/reports/CategoryBreakdown';
 import { StatCard } from '@/components/dashboard/StatCard';
-import { useMonthlyOverview, useMonthlyOverviewByRange } from '@/hooks/use-reports';
+import { useMonthlyOverviewByRange } from '@/hooks/use-reports';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { TrendingUp, Percent, DollarSign, Calendar } from 'lucide-react';
 
@@ -28,48 +29,65 @@ function ReportStats({ monthlyData }: { monthlyData: { total_income: number; tot
   );
 }
 
+function ReportTab({ startDate, endDate, label }: { startDate: string; endDate: string; label: string }) {
+  const { data } = useMonthlyOverviewByRange(startDate, endDate);
+  const monthlyData = data?.data || [];
+
+  return (
+    <div className="space-y-6">
+      <ReportStats monthlyData={monthlyData} />
+      <div className="grid gap-6 lg:grid-cols-2">
+        <IncomeExpenseChart startDate={startDate} endDate={endDate} label={label} />
+        <SavingsRateChart startDate={startDate} endDate={endDate} />
+      </div>
+      <NetSavingsChart startDate={startDate} endDate={endDate} />
+      <CategoryBreakdown startDate={startDate} endDate={endDate} />
+    </div>
+  );
+}
+
 const Reports = () => {
   const { t } = useTranslation();
-  const currentYear = new Date().getFullYear();
   const today = new Date();
-  const rolling12Start = new Date(today.getFullYear() - 1, today.getMonth(), today.getDate() + 1)
-    .toISOString().split('T')[0];
-  const rolling12End = today.toISOString().split('T')[0];
-  const ytdStart = `${currentYear}-01-01`;
+  const currentYear = today.getFullYear();
+  const endDate = today.toISOString().split('T')[0];
 
-  const { data: ytdData } = useMonthlyOverview(currentYear);
-  const { data: rollingData } = useMonthlyOverviewByRange(rolling12Start, rolling12End);
+  const ranges = useMemo(() => {
+    const makeStart = (monthsBack: number) => {
+      const d = new Date(today.getFullYear(), today.getMonth() - monthsBack, today.getDate() + 1);
+      return d.toISOString().split('T')[0];
+    };
+    return {
+      rolling12: makeStart(12),
+      months6: makeStart(6),
+      months3: makeStart(3),
+      months1: makeStart(1),
+      ytd: `${currentYear}-01-01`,
+    };
+  }, [currentYear]);
 
-  const ytdMonthly = ytdData?.data || [];
-  const rollingMonthly = rollingData?.data || [];
+  const tabs = [
+    { value: 'rolling', label: t('reports.rolling12'), startDate: ranges.rolling12 },
+    { value: '6m', label: t('reports.last6Months'), startDate: ranges.months6 },
+    { value: '3m', label: t('reports.last3Months'), startDate: ranges.months3 },
+    { value: '1m', label: t('reports.lastMonth'), startDate: ranges.months1 },
+    { value: 'ytd', label: t('reports.ytd', { year: currentYear }), startDate: ranges.ytd },
+  ];
 
   return (
     <AppLayout title={t('reports.title')}>
       <Tabs defaultValue="rolling" className="space-y-6">
         <TabsList>
-          <TabsTrigger value="rolling">{t('reports.rolling12')}</TabsTrigger>
-          <TabsTrigger value="ytd">{t('reports.ytd', { year: currentYear })}</TabsTrigger>
+          {tabs.map(tab => (
+            <TabsTrigger key={tab.value} value={tab.value}>{tab.label}</TabsTrigger>
+          ))}
         </TabsList>
 
-        <TabsContent value="rolling" className="space-y-6">
-          <ReportStats monthlyData={rollingMonthly} />
-          <div className="grid gap-6 lg:grid-cols-2">
-            <IncomeExpenseChart mode="rolling" />
-            <SavingsRateChart mode="rolling" />
-          </div>
-          <NetSavingsChart mode="rolling" />
-          <CategoryBreakdown startDate={rolling12Start} endDate={rolling12End} />
-        </TabsContent>
-
-        <TabsContent value="ytd" className="space-y-6">
-          <ReportStats monthlyData={ytdMonthly} />
-          <div className="grid gap-6 lg:grid-cols-2">
-            <IncomeExpenseChart mode="ytd" />
-            <SavingsRateChart mode="ytd" />
-          </div>
-          <NetSavingsChart mode="ytd" />
-          <CategoryBreakdown startDate={ytdStart} endDate={rolling12End} />
-        </TabsContent>
+        {tabs.map(tab => (
+          <TabsContent key={tab.value} value={tab.value}>
+            <ReportTab startDate={tab.startDate} endDate={endDate} label={tab.label} />
+          </TabsContent>
+        ))}
       </Tabs>
     </AppLayout>
   );
