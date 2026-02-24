@@ -13,6 +13,7 @@ import { useCategories, useDeleteCategory, useUpdateCategory, useCategoryRules, 
 import { useAuth } from '@/contexts/AuthContext';
 import { Plus, Trash2, CheckCircle2, XCircle, Loader2, Key, ExternalLink, FlaskConical, Building2, Lock, LogOut, Sparkles, Globe, ChevronRight, Pencil, ArrowLeft } from 'lucide-react';
 import { TwoFactorSettings } from '@/components/settings/TwoFactorSettings';
+import { PlaidCredentialsSettings } from '@/components/settings/PlaidCredentialsSettings';
 import { useState, useRef } from 'react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
@@ -186,6 +187,9 @@ const Settings = () => {
         {/* Two-Factor Authentication */}
         <TwoFactorSettings />
 
+        {/* Plaid Credentials Management - Admin only */}
+        {isAdmin && <PlaidCredentialsSettings />}
+
         {/* Plaid Configuration - Sandbox toggle only for admins */}
         {canUseSandbox && (
           <Card>
@@ -230,17 +234,6 @@ const Settings = () => {
                 </div>
                 <p className="text-xs text-muted-foreground">{t('settings.envSeparate')}</p>
               </div>
-              <Separator />
-              <div className="space-y-2">
-                <Label>{t('settings.country')}</Label>
-                <Input value="Canada (CA)" readOnly className="bg-muted" />
-              </div>
-              <p className="text-xs text-muted-foreground">
-                {t('settings.configureCredentials')} <code className="bg-muted px-1 rounded">config.php</code>.{' '}
-                <a href="https://dashboard.plaid.com/developers/keys" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
-                  {t('settings.plaidDashboard')}
-                </a>
-              </p>
             </CardContent>
           </Card>
         )}

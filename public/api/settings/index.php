@@ -12,10 +12,33 @@ try {
         global $config;
         
         // Check which Plaid environments have credentials configured
-        $hasSandbox = !empty($config['plaid']['sandbox']['client_id'] ?? '')
-            && ($config['plaid']['sandbox']['client_id'] ?? '') !== 'your_sandbox_client_id';
-        $hasProduction = !empty($config['plaid']['production']['client_id'] ?? '')
-            && ($config['plaid']['production']['client_id'] ?? '') !== 'your_production_client_id';
+        // First check database (app_settings), then fall back to config.php
+        $hasSandbox = false;
+        $hasProduction = false;
+        
+        try {
+            $pdo = Database::getConnection();
+            $stmt = $pdo->prepare("SELECT setting_key, setting_value FROM app_settings WHERE setting_key LIKE 'plaid_%'");
+            $stmt->execute();
+            $dbSettings = [];
+            foreach ($stmt->fetchAll() as $row) {
+                $dbSettings[$row['setting_key']] = $row['setting_value'];
+            }
+            $hasSandbox = !empty($dbSettings['plaid_sandbox_client_id'] ?? '') && !empty($dbSettings['plaid_sandbox_secret'] ?? '');
+            $hasProduction = !empty($dbSettings['plaid_production_client_id'] ?? '') && !empty($dbSettings['plaid_production_secret'] ?? '');
+        } catch (Exception $e) {
+            // DB not available, skip
+        }
+        
+        // Fall back to config.php if not found in DB
+        if (!$hasSandbox) {
+            $hasSandbox = !empty($config['plaid']['sandbox']['client_id'] ?? '')
+                && ($config['plaid']['sandbox']['client_id'] ?? '') !== 'your_sandbox_client_id';
+        }
+        if (!$hasProduction) {
+            $hasProduction = !empty($config['plaid']['production']['client_id'] ?? '')
+                && ($config['plaid']['production']['client_id'] ?? '') !== 'your_production_client_id';
+        }
         
         // Return safe settings (no secrets)
         Response::success([

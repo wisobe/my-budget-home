@@ -51,11 +51,47 @@ function getPlaidClient(string $environment = 'sandbox'): PlaidClient {
         $environment = 'sandbox';
     }
     
-    if (isset($config['plaid'][$environment])) {
-        $plaidConfig = $config['plaid'][$environment];
-        $plaidConfig['environment'] = $environment;
-    } else {
-        $plaidConfig = $config['plaid'];
+    // Try loading credentials from database (app_settings) first
+    $plaidConfig = null;
+    try {
+        $pdo = Database::getConnection();
+        $stmt = $pdo->prepare("SELECT setting_key, setting_value FROM app_settings WHERE setting_key LIKE :prefix");
+        $stmt->execute(['prefix' => "plaid_{$environment}_%"]);
+        $rows = $stmt->fetchAll();
+        
+        if (!empty($rows)) {
+            $dbSettings = [];
+            foreach ($rows as $row) {
+                $dbSettings[$row['setting_key']] = $row['setting_value'];
+            }
+            
+            $clientId = $dbSettings["plaid_{$environment}_client_id"] ?? '';
+            $secret = $dbSettings["plaid_{$environment}_secret"] ?? '';
+            
+            if (!empty($clientId) && !empty($secret)) {
+                $countryCodes = $dbSettings["plaid_{$environment}_country_codes"] ?? 'CA';
+                $products = $dbSettings["plaid_{$environment}_products"] ?? 'transactions';
+                $plaidConfig = [
+                    'client_id' => $clientId,
+                    'secret' => $secret,
+                    'country_codes' => is_string($countryCodes) ? explode(',', $countryCodes) : $countryCodes,
+                    'products' => is_string($products) ? explode(',', $products) : $products,
+                    'environment' => $environment,
+                ];
+            }
+        }
+    } catch (Exception $e) {
+        // DB not available or table missing, fall through to config.php
+    }
+    
+    // Fallback to config.php
+    if ($plaidConfig === null) {
+        if (isset($config['plaid'][$environment])) {
+            $plaidConfig = $config['plaid'][$environment];
+            $plaidConfig['environment'] = $environment;
+        } else {
+            $plaidConfig = $config['plaid'];
+        }
     }
     
     return new PlaidClient($plaidConfig);
