@@ -350,5 +350,20 @@
     "subcategories": "sous-catégories",
     "clickToExpand": "Cliquez pour voir les sous-catégories",
     "backToParents": "Retour aux catégories"
+  },
+  "plaidCredentials": {
+    "title": "Identifiants API Plaid",
+    "description": "Gérez vos clés API Plaid pour les environnements bac à sable et production",
+    "clientId": "Client ID",
+    "clientIdPlaceholder": "Entrez votre Client ID Plaid",
+    "secret": "Clé secrète",
+    "secretPlaceholder": "Entrez votre clé secrète Plaid",
+    "saveCredentials": "Enregistrer les identifiants",
+    "configured": "Identifiants configurés",
+    "bothRequired": "Le Client ID et la clé secrète sont requis",
+    "saved": "Identifiants {{env}} enregistrés avec succès",
+    "failedSave": "Échec de l'enregistrement des identifiants",
+    "leaveBlankHint": "Entrez une nouvelle clé pour remplacer l'existante",
+    "getKeysHint": "Obtenez vos clés API depuis le"
   }
 }

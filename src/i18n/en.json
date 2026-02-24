@@ -350,5 +350,20 @@
     "subcategories": "subcategories",
     "clickToExpand": "Click to see subcategories",
     "backToParents": "Back to categories"
+  },
+  "plaidCredentials": {
+    "title": "Plaid API Credentials",
+    "description": "Manage your Plaid API keys for sandbox and production environments",
+    "clientId": "Client ID",
+    "clientIdPlaceholder": "Enter your Plaid client ID",
+    "secret": "Secret Key",
+    "secretPlaceholder": "Enter your Plaid secret key",
+    "saveCredentials": "Save Credentials",
+    "configured": "Credentials configured",
+    "bothRequired": "Both Client ID and Secret are required",
+    "saved": "{{env}} credentials saved successfully",
+    "failedSave": "Failed to save credentials",
+    "leaveBlankHint": "Enter a new secret to replace the existing one",
+    "getKeysHint": "Get your API keys from the"
   }
 }
