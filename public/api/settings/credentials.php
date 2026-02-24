@@ -35,11 +35,15 @@ try {
             'sandbox' => [
                 'client_id' => $settings['plaid_sandbox_client_id'] ?? '',
                 'secret' => $mask($settings['plaid_sandbox_secret'] ?? ''),
+                'country_codes' => $settings['plaid_sandbox_country_codes'] ?? 'CA',
+                'products' => $settings['plaid_sandbox_products'] ?? 'transactions',
                 'has_credentials' => !empty($settings['plaid_sandbox_client_id']) && !empty($settings['plaid_sandbox_secret']),
             ],
             'production' => [
                 'client_id' => $settings['plaid_production_client_id'] ?? '',
                 'secret' => $mask($settings['plaid_production_secret'] ?? ''),
+                'country_codes' => $settings['plaid_production_country_codes'] ?? 'CA',
+                'products' => $settings['plaid_production_products'] ?? 'transactions',
                 'has_credentials' => !empty($settings['plaid_production_client_id']) && !empty($settings['plaid_production_secret']),
             ],
         ]);

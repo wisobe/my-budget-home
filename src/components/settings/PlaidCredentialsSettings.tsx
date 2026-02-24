@@ -13,6 +13,8 @@ import { toast } from '@/components/ui/sonner';
 interface PlaidEnvCredentials {
   client_id: string;
   secret: string;
+  country_codes: string;
+  products: string;
   has_credentials: boolean;
 }
 
@@ -30,9 +32,12 @@ export function PlaidCredentialsSettings() {
   // Form state
   const [sandboxClientId, setSandboxClientId] = useState('');
   const [sandboxSecret, setSandboxSecret] = useState('');
+  const [sandboxCountryCodes, setSandboxCountryCodes] = useState('CA');
+  const [sandboxProducts, setSandboxProducts] = useState('transactions');
   const [prodClientId, setProdClientId] = useState('');
   const [prodSecret, setProdSecret] = useState('');
-
+  const [prodCountryCodes, setProdCountryCodes] = useState('CA');
+  const [prodProducts, setProdProducts] = useState('transactions');
   // Show/hide secrets
   const [showSandboxSecret, setShowSandboxSecret] = useState(false);
   const [showProdSecret, setShowProdSecret] = useState(false);
@@ -56,8 +61,12 @@ export function PlaidCredentialsSettings() {
         setCredentials(result.data);
         setSandboxClientId(result.data.sandbox.client_id || '');
         setSandboxSecret('');
+        setSandboxCountryCodes(result.data.sandbox.country_codes || 'CA');
+        setSandboxProducts(result.data.sandbox.products || 'transactions');
         setProdClientId(result.data.production.client_id || '');
         setProdSecret('');
+        setProdCountryCodes(result.data.production.country_codes || 'CA');
+        setProdProducts(result.data.production.products || 'transactions');
       }
     } catch {
       // Ignore fetch errors
@@ -69,6 +78,8 @@ export function PlaidCredentialsSettings() {
   const saveCredentials = async (environment: 'sandbox' | 'production') => {
     const clientId = environment === 'sandbox' ? sandboxClientId : prodClientId;
     const secret = environment === 'sandbox' ? sandboxSecret : prodSecret;
+    const countryCodes = environment === 'sandbox' ? sandboxCountryCodes : prodCountryCodes;
+    const products = environment === 'sandbox' ? sandboxProducts : prodProducts;
 
     if (!clientId.trim() || !secret.trim()) {
       toast.error(t('plaidCredentials.bothRequired'));
@@ -80,7 +91,7 @@ export function PlaidCredentialsSettings() {
       const res = await fetch(`${API_BASE_URL}/settings/credentials.php`, {
         method: 'POST',
         headers,
-        body: JSON.stringify({ environment, client_id: clientId.trim(), secret: secret.trim() }),
+        body: JSON.stringify({ environment, client_id: clientId.trim(), secret: secret.trim(), country_codes: countryCodes.trim(), products: products.trim() }),
       });
       const result = await res.json();
       if (result.success) {
@@ -115,6 +126,10 @@ export function PlaidCredentialsSettings() {
     const setSecret = isSandbox ? setSandboxSecret : setProdSecret;
     const showSecret = isSandbox ? showSandboxSecret : showProdSecret;
     const toggleSecret = isSandbox ? setShowSandboxSecret : setShowProdSecret;
+    const countryCodes = isSandbox ? sandboxCountryCodes : prodCountryCodes;
+    const setCountryCodes = isSandbox ? setSandboxCountryCodes : setProdCountryCodes;
+    const products = isSandbox ? sandboxProducts : prodProducts;
+    const setProducts = isSandbox ? setSandboxProducts : setProdProducts;
     const hasExisting = credentials?.[env]?.has_credentials;
     const maskedSecret = credentials?.[env]?.secret || '';
 
@@ -154,6 +169,26 @@ export function PlaidCredentialsSettings() {
           {hasExisting && (
             <p className="text-xs text-muted-foreground">{t('plaidCredentials.leaveBlankHint')}</p>
           )}
+        </div>
+        <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <Label>{t('plaidCredentials.countryCodes')}</Label>
+            <Input
+              value={countryCodes}
+              onChange={e => setCountryCodes(e.target.value)}
+              placeholder={t('plaidCredentials.countryCodesPlaceholder')}
+            />
+            <p className="text-xs text-muted-foreground">{t('plaidCredentials.countryCodesHint')}</p>
+          </div>
+          <div className="space-y-2">
+            <Label>{t('plaidCredentials.products')}</Label>
+            <Input
+              value={products}
+              onChange={e => setProducts(e.target.value)}
+              placeholder={t('plaidCredentials.productsPlaceholder')}
+            />
+            <p className="text-xs text-muted-foreground">{t('plaidCredentials.productsHint')}</p>
+          </div>
         </div>
         <Button
           onClick={() => saveCredentials(env)}
