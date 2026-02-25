@@ -133,14 +133,18 @@ CREATE TABLE IF NOT EXISTS transaction_splits (
 -- Budgets
 CREATE TABLE IF NOT EXISTS budgets (
     id VARCHAR(50) PRIMARY KEY,
+    user_id VARCHAR(50) NOT NULL,
     category_id VARCHAR(50) NOT NULL,
     amount DECIMAL(15, 2) NOT NULL,
     period ENUM('weekly', 'monthly', 'yearly') DEFAULT 'monthly',
-    start_date DATE NOT NULL,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    UNIQUE KEY uk_user_category_period (user_id, category_id, period),
     INDEX idx_category (category_id),
     INDEX idx_period (period),
-    FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE CASCADE
+    INDEX idx_user (user_id),
+    FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE CASCADE,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Category Rules (for auto-categorization by keyword matching)

@@ -10,6 +10,7 @@ import type {
   Account,
   PlaidConnection,
   Budget,
+  BudgetWithSpent,
   SpendingInsight,
   MonthlyOverview,
   ApiResponse,
@@ -319,6 +320,30 @@ export const reportsApi = {
     request<ApiResponse<{ date: string; amount: number; running_total: number }[]>>(
       `/reports/cash-flow.php?start_date=${params.start_date}&end_date=${params.end_date}`
     ),
+};
+
+// ============ Budgets API ============
+
+export const budgetsApi = {
+  list: () => request<ApiResponse<BudgetWithSpent[]>>('/budgets/'),
+
+  create: (data: { category_id: string; amount: number; period: string }) =>
+    request<ApiResponse<BudgetWithSpent>>('/budgets/', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+
+  update: (data: { id: string; amount?: number; category_id?: string; period?: string }) =>
+    request<ApiResponse<BudgetWithSpent>>('/budgets/', {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    }),
+
+  delete: (id: string) =>
+    request<ApiResponse<null>>('/budgets/', {
+      method: 'DELETE',
+      body: JSON.stringify({ id }),
+    }),
 };
 
 export { ApiError };

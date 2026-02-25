@@ -11,6 +11,7 @@ import { PreferencesProvider } from "@/contexts/PreferencesContext";
 import { Loader2 } from "lucide-react";
 import Dashboard from "./pages/Dashboard";
 import Transactions from "./pages/Transactions";
+import Budgets from "./pages/Budgets";
 import Reports from "./pages/Reports";
 import Accounts from "./pages/Accounts";
 import Connections from "./pages/Connections";
@@ -53,6 +54,7 @@ const App = () => (
                   <Routes>
                     <Route path="/" element={<Dashboard />} />
                     <Route path="/transactions" element={<Transactions />} />
+                    <Route path="/budgets" element={<Budgets />} />
                     <Route path="/reports" element={<Reports />} />
                     <Route path="/accounts" element={<Accounts />} />
                     <Route path="/connections" element={<Connections />} />
