@@ -91,11 +91,23 @@ export interface PlaidConnection {
 
 export interface Budget {
   id: string;
+  user_id: string;
   category_id: string;
   amount: number;
   period: 'weekly' | 'monthly' | 'yearly';
-  start_date: string;
   created_at: string;
+  updated_at?: string;
+}
+
+export interface BudgetWithSpent extends Budget {
+  category_name: string;
+  category_color: string;
+  parent_id?: string;
+  is_income: boolean;
+  spent: number;
+  percentage: number;
+  period_start: string;
+  period_end: string;
 }
 
 export interface SpendingInsight {

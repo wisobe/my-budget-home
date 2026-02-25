@@ -6,6 +6,7 @@
   "nav": {
     "dashboard": "Tableau de bord",
     "transactions": "Transactions",
+    "budgets": "Budgets",
     "reports": "Rapports",
     "accounts": "Comptes",
     "connections": "Connexions bancaires",
@@ -371,5 +372,28 @@
     "failedSave": "Échec de l'enregistrement des identifiants",
     "leaveBlankHint": "Entrez une nouvelle clé pour remplacer l'existante",
     "getKeysHint": "Obtenez vos clés API depuis le"
+  },
+  "budgets": {
+    "title": "Budgets",
+    "description": "Définissez des limites de dépenses et suivez vos progrès",
+    "addBudget": "Ajouter un budget",
+    "noBudgets": "Aucun budget défini",
+    "noBudgetsDesc": "Créez un budget pour commencer à suivre vos dépenses par rapport à vos objectifs.",
+    "category": "Catégorie",
+    "selectCategory": "Sélectionner une catégorie",
+    "amount": "Montant",
+    "period": "Période",
+    "weekly": "Hebdomadaire",
+    "monthly": "Mensuel",
+    "yearly": "Annuel",
+    "weeklyBudgets": "Budgets hebdomadaires",
+    "monthlyBudgets": "Budgets mensuels",
+    "yearlyBudgets": "Budgets annuels",
+    "remaining": "{{amount}} restant",
+    "over": "{{amount}} dépassé",
+    "budgetSaved": "Budget enregistré",
+    "budgetDeleted": "Budget supprimé",
+    "failedSave": "Échec de l'enregistrement du budget",
+    "failedDelete": "Échec de la suppression du budget"
   }
 }

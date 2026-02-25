@@ -6,6 +6,7 @@
   "nav": {
     "dashboard": "Dashboard",
     "transactions": "Transactions",
+    "budgets": "Budgets",
     "reports": "Reports",
     "accounts": "Accounts",
     "connections": "Bank Connections",
@@ -371,5 +372,28 @@
     "failedSave": "Failed to save credentials",
     "leaveBlankHint": "Enter a new secret to replace the existing one",
     "getKeysHint": "Get your API keys from the"
+  },
+  "budgets": {
+    "title": "Budgets",
+    "description": "Set spending limits and track your progress",
+    "addBudget": "Add Budget",
+    "noBudgets": "No budgets set",
+    "noBudgetsDesc": "Create a budget to start tracking your spending against targets.",
+    "category": "Category",
+    "selectCategory": "Select a category",
+    "amount": "Amount",
+    "period": "Period",
+    "weekly": "Weekly",
+    "monthly": "Monthly",
+    "yearly": "Yearly",
+    "weeklyBudgets": "Weekly Budgets",
+    "monthlyBudgets": "Monthly Budgets",
+    "yearlyBudgets": "Yearly Budgets",
+    "remaining": "{{amount}} remaining",
+    "over": "{{amount}} over budget",
+    "budgetSaved": "Budget saved",
+    "budgetDeleted": "Budget deleted",
+    "failedSave": "Failed to save budget",
+    "failedDelete": "Failed to delete budget"
   }
 }

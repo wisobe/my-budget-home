@@ -11,6 +11,7 @@ import {
   Wallet,
   LogOut,
   Users,
+  Target,
 } from 'lucide-react';
 import {
   Sidebar,
@@ -27,6 +28,7 @@ import { Badge } from '@/components/ui/badge';
 const navigationKeys = [
   { key: 'nav.dashboard', href: '/', icon: LayoutDashboard },
   { key: 'nav.transactions', href: '/transactions', icon: ArrowLeftRight },
+  { key: 'nav.budgets', href: '/budgets', icon: Target },
   { key: 'nav.reports', href: '/reports', icon: PieChart },
   { key: 'nav.accounts', href: '/accounts', icon: CreditCard },
   { key: 'nav.connections', href: '/connections', icon: Link2 },
