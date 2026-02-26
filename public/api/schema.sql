@@ -158,11 +158,13 @@ CREATE TABLE IF NOT EXISTS category_rules (
     match_type ENUM('contains', 'exact', 'starts_with') DEFAULT 'contains',
     priority INT DEFAULT 0,
     auto_learned BOOLEAN DEFAULT FALSE,
+    plaid_environment ENUM('sandbox', 'production') NOT NULL DEFAULT 'sandbox',
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     INDEX idx_keyword (keyword),
     INDEX idx_category (category_id),
     INDEX idx_priority (priority),
     INDEX idx_user (user_id),
+    INDEX idx_environment (plaid_environment),
     FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE CASCADE,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

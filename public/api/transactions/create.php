@@ -31,7 +31,7 @@ try {
     // Auto-categorize if no category provided
     $categoryId = !empty($body['category_id']) ? $body['category_id'] : null;
     if (!$categoryId) {
-        $categoryId = AutoCategorizer::match($pdo, $body['name'], $body['merchant_name'] ?? null, $userId);
+        $categoryId = AutoCategorizer::match($pdo, $body['name'], $body['merchant_name'] ?? null, $userId, getPlaidEnvironment());
     }
     
     $stmt = $pdo->prepare('

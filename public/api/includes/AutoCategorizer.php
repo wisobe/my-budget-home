@@ -1,25 +1,25 @@
 <?php
 /**
  * AutoCategorizer - matches transaction names against category rules
- * Now user-scoped: rules belong to individual users
+ * Now user-scoped and environment-scoped: rules belong to individual users per environment
  */
 
 class AutoCategorizer {
     /**
      * Find the best matching category for a transaction name/merchant.
-     * Filters rules by user_id.
+     * Filters rules by user_id and plaid_environment.
      * Returns category_id or null if no match.
      */
-    public static function match(PDO $pdo, string $transactionName, ?string $merchantName = null, ?string $userId = null): ?string {
+    public static function match(PDO $pdo, string $transactionName, ?string $merchantName = null, ?string $userId = null, string $environment = 'sandbox'): ?string {
         if (!$userId) return null;
         
         $stmt = $pdo->prepare('
             SELECT id, category_id, keyword, match_type, priority
             FROM category_rules
-            WHERE user_id = :user_id
+            WHERE user_id = :user_id AND plaid_environment = :env
             ORDER BY priority DESC, match_type ASC
         ');
-        $stmt->execute(['user_id' => $userId]);
+        $stmt->execute(['user_id' => $userId, 'env' => $environment]);
         $rules = $stmt->fetchAll();
 
         $nameUpper = strtoupper($transactionName);
@@ -56,18 +56,18 @@ class AutoCategorizer {
 
     /**
      * Auto-learn: create a rule from a manual categorization.
-     * Rules are user-scoped.
+     * Rules are user-scoped and environment-scoped.
      */
-    public static function learnFromCategorization(PDO $pdo, string $transactionName, ?string $merchantName, string $categoryId, ?string $userId = null): void {
+    public static function learnFromCategorization(PDO $pdo, string $transactionName, ?string $merchantName, string $categoryId, ?string $userId = null, string $environment = 'sandbox'): void {
         if (!$userId) return;
         
         $keyword = $merchantName ? strtoupper(trim($merchantName)) : strtoupper(trim($transactionName));
 
         if (strlen($keyword) < 3) return;
 
-        // Check if a rule with this keyword already exists for this user
-        $checkStmt = $pdo->prepare('SELECT id, category_id FROM category_rules WHERE keyword = :keyword AND user_id = :user_id LIMIT 1');
-        $checkStmt->execute(['keyword' => $keyword, 'user_id' => $userId]);
+        // Check if a rule with this keyword already exists for this user in this environment
+        $checkStmt = $pdo->prepare('SELECT id, category_id FROM category_rules WHERE keyword = :keyword AND user_id = :user_id AND plaid_environment = :env LIMIT 1');
+        $checkStmt->execute(['keyword' => $keyword, 'user_id' => $userId, 'env' => $environment]);
         $existing = $checkStmt->fetch();
 
         if ($existing) {
@@ -77,8 +77,8 @@ class AutoCategorizer {
             }
         } else {
             $insertStmt = $pdo->prepare('
-                INSERT INTO category_rules (id, user_id, category_id, keyword, match_type, priority, auto_learned, created_at)
-                VALUES (:id, :user_id, :category_id, :keyword, :match_type, :priority, 1, NOW())
+                INSERT INTO category_rules (id, user_id, category_id, keyword, match_type, priority, auto_learned, plaid_environment, created_at)
+                VALUES (:id, :user_id, :category_id, :keyword, :match_type, :priority, 1, :env, NOW())
             ');
             $insertStmt->execute([
                 'id' => 'rule_' . uniqid(),
@@ -87,6 +87,7 @@ class AutoCategorizer {
                 'keyword' => $keyword,
                 'match_type' => 'contains',
                 'priority' => 0,
+                'env' => $environment,
             ]);
         }
     }

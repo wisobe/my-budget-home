@@ -11,16 +11,17 @@ require_once __DIR__ . '/../includes/bootstrap.php';
 try {
     $userId = getCurrentUserId();
     $pdo = Database::getConnection();
+    $environment = getPlaidEnvironment();
 
     if ($_SERVER['REQUEST_METHOD'] === 'GET') {
         $stmt = $pdo->prepare('
             SELECT r.*, c.name as category_name, c.color as category_color
             FROM category_rules r
             LEFT JOIN categories c ON r.category_id = c.id
-            WHERE r.user_id = :user_id
+            WHERE r.user_id = :user_id AND r.plaid_environment = :env
             ORDER BY r.priority DESC, r.keyword ASC
         ');
-        $stmt->execute(['user_id' => $userId]);
+        $stmt->execute(['user_id' => $userId, 'env' => $environment]);
         Response::success($stmt->fetchAll());
 
     } elseif ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -34,8 +35,8 @@ try {
         $applyToExisting = !empty($body['apply_to_existing']);
 
         $stmt = $pdo->prepare('
-            INSERT INTO category_rules (id, user_id, category_id, keyword, match_type, priority, auto_learned, created_at)
-            VALUES (:id, :user_id, :category_id, :keyword, :match_type, :priority, :auto_learned, NOW())
+            INSERT INTO category_rules (id, user_id, category_id, keyword, match_type, priority, auto_learned, plaid_environment, created_at)
+            VALUES (:id, :user_id, :category_id, :keyword, :match_type, :priority, :auto_learned, :env, NOW())
             ON DUPLICATE KEY UPDATE category_id = VALUES(category_id), priority = VALUES(priority)
         ');
         $stmt->execute([
@@ -46,11 +47,12 @@ try {
             'match_type' => $matchType,
             'priority' => $body['priority'] ?? 0,
             'auto_learned' => ($body['auto_learned'] ?? false) ? 1 : 0,
+            'env' => $environment,
         ]);
 
         $affected = 0;
         if ($applyToExisting) {
-            $affected = applyRuleToExistingTransactions($pdo, $userId, $keyword, $matchType, $categoryId);
+            $affected = applyRuleToExistingTransactions($pdo, $userId, $keyword, $matchType, $categoryId, $environment);
         }
 
         $fetchStmt = $pdo->prepare('
@@ -95,7 +97,7 @@ try {
             $keyword = isset($body['keyword']) ? strtoupper(trim($body['keyword'])) : $existingRule['keyword'];
             $matchType = $body['match_type'] ?? $existingRule['match_type'];
             $categoryId = $body['category_id'] ?? $existingRule['category_id'];
-            $affected = applyRuleToExistingTransactions($pdo, $userId, $keyword, $matchType, $categoryId);
+            $affected = applyRuleToExistingTransactions($pdo, $userId, $keyword, $matchType, $categoryId, $environment);
         }
 
         $fetchStmt = $pdo->prepare('
@@ -130,10 +132,10 @@ try {
 }
 
 /**
- * Apply a rule to all existing matching transactions for a user.
+ * Apply a rule to all existing matching transactions for a user in the given environment.
  * Returns the number of transactions updated.
  */
-function applyRuleToExistingTransactions(PDO $pdo, string $userId, string $keyword, string $matchType, string $categoryId): int {
+function applyRuleToExistingTransactions(PDO $pdo, string $userId, string $keyword, string $matchType, string $categoryId, string $environment = 'sandbox'): int {
     switch ($matchType) {
         case 'exact':
             $condition = '(UPPER(t.name) = :kw OR UPPER(t.merchant_name) = :kw2)';
@@ -152,13 +154,16 @@ function applyRuleToExistingTransactions(PDO $pdo, string $userId, string $keywo
     $stmt = $pdo->prepare("
         UPDATE transactions t
         INNER JOIN accounts a ON t.account_id = a.id
+        INNER JOIN plaid_connections pc ON a.plaid_connection_id = pc.id
         SET t.category_id = :category_id
         WHERE a.user_id = :user_id
+          AND pc.plaid_environment = :env
           AND {$condition}
     ");
     $stmt->execute([
         'category_id' => $categoryId,
         'user_id' => $userId,
+        'env' => $environment,
         'kw' => $keyword,
         'kw2' => $keyword,
     ]);

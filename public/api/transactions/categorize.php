@@ -59,7 +59,8 @@ try {
             $transaction['name'],
             $transaction['merchant_name'] ?? null,
             $categoryId,
-            $userId
+            $userId,
+            getPlaidEnvironment()
         );
     }
     

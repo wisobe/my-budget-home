@@ -54,7 +54,7 @@ try {
             $account = $accountStmt->fetch();
             
             if ($account) {
-                $autoCategoryId = AutoCategorizer::match($pdo, $tx['name'], $tx['merchant_name'] ?? null, $userId);
+                $autoCategoryId = AutoCategorizer::match($pdo, $tx['name'], $tx['merchant_name'] ?? null, $userId, $environment);
                 
                 $insertStmt = $pdo->prepare('
                     INSERT INTO transactions (
