@@ -17,7 +17,9 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
 
   if (!response.ok) {
     const error = await response.json().catch(() => ({ message: 'Request failed' }));
-    throw new Error(error.message || 'Request failed');
+    const err = new Error(error.message || 'Request failed') as any;
+    err.plaidError = error.plaid_error || null;
+    throw err;
   }
 
   return response.json();

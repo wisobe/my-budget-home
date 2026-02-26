@@ -4,6 +4,30 @@
  * Handles all communication with Plaid API
  */
 
+class PlaidApiException extends Exception {
+    public string $errorCode;
+    public string $errorType;
+    public string $requestId;
+    public int $httpCode;
+
+    public function __construct(string $message, string $errorCode, string $errorType, string $requestId, int $httpCode) {
+        parent::__construct($message);
+        $this->errorCode = $errorCode;
+        $this->errorType = $errorType;
+        $this->requestId = $requestId;
+        $this->httpCode = $httpCode;
+    }
+
+    public function toArray(): array {
+        return [
+            'error_type' => $this->errorType,
+            'error_code' => $this->errorCode,
+            'error_message' => $this->getMessage(),
+            'request_id' => $this->requestId,
+        ];
+    }
+}
+
 class PlaidClient {
     private string $clientId;
     private string $secret;
@@ -62,7 +86,13 @@ class PlaidClient {
         if ($httpCode >= 400) {
             $errorMessage = $result['error_message'] ?? 'Unknown error';
             $errorCode = $result['error_code'] ?? 'UNKNOWN';
-            throw new Exception("Plaid API error [{$errorCode}]: {$errorMessage}");
+            $errorType = $result['error_type'] ?? 'UNKNOWN';
+            $requestId = $result['request_id'] ?? 'N/A';
+            
+            // Log full error details server-side
+            error_log("Plaid API Error: endpoint={$endpoint} http={$httpCode} type={$errorType} code={$errorCode} message={$errorMessage} request_id={$requestId}");
+            
+            throw new PlaidApiException($errorMessage, $errorCode, $errorType, $requestId, $httpCode);
         }
 
         return $result;
