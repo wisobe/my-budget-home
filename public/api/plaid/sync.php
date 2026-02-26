@@ -18,8 +18,9 @@ try {
     $body = getJsonBody();
     validateRequired($body, ['connection_id']);
     
+    $environment = getPlaidEnvironment();
     $pdo = Database::getConnection();
-    $plaid = getPlaidClient();
+    $plaid = getPlaidClient($environment);
     
     // Get connection - verify ownership
     $stmt = $pdo->prepare('
