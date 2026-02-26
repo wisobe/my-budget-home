@@ -37,6 +37,7 @@ function getPeriodRange(string $period, string $refDate = null): array {
 try {
     $userId = getCurrentUserId();
     $pdo = Database::getConnection();
+    $environment = getPlaidEnvironment();
 
     if ($_SERVER['REQUEST_METHOD'] === 'GET') {
         // List all budgets with spent amounts
@@ -44,10 +45,10 @@ try {
             SELECT b.*, c.name AS category_name, c.color AS category_color, c.parent_id, c.is_income
             FROM budgets b
             JOIN categories c ON b.category_id = c.id
-            WHERE b.user_id = :uid
+            WHERE b.user_id = :uid AND b.plaid_environment = :env
             ORDER BY c.is_income ASC, c.name ASC
         ');
-        $stmt->execute(['uid' => $userId]);
+        $stmt->execute(['uid' => $userId, 'env' => $environment]);
         $budgets = $stmt->fetchAll();
 
         // Calculate spent for each budget based on its period
@@ -158,9 +159,9 @@ try {
 
         // Check for existing budget with same category+period
         $existsStmt = $pdo->prepare('
-            SELECT id FROM budgets WHERE user_id = :uid AND category_id = :cat AND period = :period
+            SELECT id FROM budgets WHERE user_id = :uid AND category_id = :cat AND period = :period AND plaid_environment = :env
         ');
-        $existsStmt->execute(['uid' => $userId, 'cat' => $body['category_id'], 'period' => $body['period']]);
+        $existsStmt->execute(['uid' => $userId, 'cat' => $body['category_id'], 'period' => $body['period'], 'env' => $environment]);
         $existing = $existsStmt->fetch();
 
         if ($existing) {
@@ -171,8 +172,8 @@ try {
         } else {
             $id = 'bgt_' . uniqid();
             $stmt = $pdo->prepare('
-                INSERT INTO budgets (id, user_id, category_id, amount, period)
-                VALUES (:id, :uid, :cat, :amount, :period)
+                INSERT INTO budgets (id, user_id, category_id, amount, period, plaid_environment)
+                VALUES (:id, :uid, :cat, :amount, :period, :env)
             ');
             $stmt->execute([
                 'id' => $id,
@@ -180,6 +181,7 @@ try {
                 'cat' => $body['category_id'],
                 'amount' => $body['amount'],
                 'period' => $body['period'],
+                'env' => $environment,
             ]);
         }
 
