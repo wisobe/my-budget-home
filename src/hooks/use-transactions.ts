@@ -126,17 +126,19 @@ export function useDeleteCategory() {
 }
 
 export function useCategoryRules() {
+  const { plaidEnvironment } = usePlaidEnvironment();
   return useQuery({
-    queryKey: ['category-rules'],
-    queryFn: () => categoriesApi.listRules(),
+    queryKey: ['category-rules', plaidEnvironment],
+    queryFn: () => categoriesApi.listRules(plaidEnvironment),
   });
 }
 
 export function useCreateCategoryRule() {
   const queryClient = useQueryClient();
+  const { plaidEnvironment } = usePlaidEnvironment();
   return useMutation({
     mutationFn: (data: { category_id: string; keyword: string; match_type?: string; priority?: number; apply_to_existing?: boolean }) =>
-      categoriesApi.createRule(data),
+      categoriesApi.createRule({ ...data, plaid_environment: plaidEnvironment }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['category-rules'] });
       queryClient.invalidateQueries({ queryKey: ['transactions'] });
@@ -146,9 +148,10 @@ export function useCreateCategoryRule() {
 
 export function useUpdateCategoryRule() {
   const queryClient = useQueryClient();
+  const { plaidEnvironment } = usePlaidEnvironment();
   return useMutation({
     mutationFn: (data: { id: string; keyword?: string; category_id?: string; match_type?: string; priority?: number; apply_to_existing?: boolean }) =>
-      categoriesApi.updateRule(data),
+      categoriesApi.updateRule({ ...data, plaid_environment: plaidEnvironment }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['category-rules'] });
       queryClient.invalidateQueries({ queryKey: ['transactions'] });
@@ -158,8 +161,9 @@ export function useUpdateCategoryRule() {
 
 export function useDeleteCategoryRule() {
   const queryClient = useQueryClient();
+  const { plaidEnvironment } = usePlaidEnvironment();
   return useMutation({
-    mutationFn: (id: string) => categoriesApi.deleteRule(id),
+    mutationFn: (id: string) => categoriesApi.deleteRule(id, plaidEnvironment),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['category-rules'] });
     },
