@@ -325,24 +325,25 @@ export const reportsApi = {
 // ============ Budgets API ============
 
 export const budgetsApi = {
-  list: () => request<ApiResponse<BudgetWithSpent[]>>('/budgets/'),
+  list: (plaid_environment?: string) =>
+    request<ApiResponse<BudgetWithSpent[]>>(`/budgets/${plaid_environment ? `?plaid_environment=${plaid_environment}` : ''}`),
 
-  create: (data: { category_id: string; amount: number; period: string }) =>
+  create: (data: { category_id: string; amount: number; period: string; plaid_environment?: string }) =>
     request<ApiResponse<BudgetWithSpent>>('/budgets/', {
       method: 'POST',
       body: JSON.stringify(data),
     }),
 
-  update: (data: { id: string; amount?: number; category_id?: string; period?: string }) =>
+  update: (data: { id: string; amount?: number; category_id?: string; period?: string; plaid_environment?: string }) =>
     request<ApiResponse<BudgetWithSpent>>('/budgets/', {
       method: 'PUT',
       body: JSON.stringify(data),
     }),
 
-  delete: (id: string) =>
+  delete: (id: string, plaid_environment?: string) =>
     request<ApiResponse<null>>('/budgets/', {
       method: 'DELETE',
-      body: JSON.stringify({ id }),
+      body: JSON.stringify({ id, plaid_environment }),
     }),
 };
 
