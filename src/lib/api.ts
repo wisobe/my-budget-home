@@ -157,10 +157,10 @@ export const transactionsApi = {
 
   get: (id: string) => request<ApiResponse<Transaction>>(`/transactions/?id=${id}`),
 
-  categorize: (transaction_id: string, category_id: string | null) =>
+  categorize: (transaction_id: string, category_id: string | null, plaid_environment?: string) =>
     request<ApiResponse<Transaction>>('/transactions/categorize.php', {
       method: 'POST',
-      body: JSON.stringify({ transaction_id, category_id }),
+      body: JSON.stringify({ transaction_id, category_id, plaid_environment }),
     }),
 
   exclude: (transaction_id: string, excluded: boolean) =>
