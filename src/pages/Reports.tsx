@@ -68,10 +68,10 @@ const Reports = () => {
 
   const tabs = [
     { value: 'rolling', label: t('reports.rolling12'), startDate: ranges.rolling12 },
+    { value: 'ytd', label: t('reports.ytd', { year: currentYear }), startDate: ranges.ytd },
     { value: '6m', label: t('reports.last6Months'), startDate: ranges.months6 },
     { value: '3m', label: t('reports.last3Months'), startDate: ranges.months3 },
     { value: '1m', label: t('reports.lastMonth'), startDate: ranges.months1 },
-    { value: 'ytd', label: t('reports.ytd', { year: currentYear }), startDate: ranges.ytd },
   ];
 
   return (
