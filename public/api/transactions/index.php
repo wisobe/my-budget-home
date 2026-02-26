@@ -55,10 +55,12 @@ try {
         $params['category_id'] = $categoryId;
     }
     
-    if ($startDate) {
-        $where[] = 't.date >= :start_date';
-        $params['start_date'] = $startDate;
+    // Default to 13 months ago if no start_date provided (keeps listing manageable)
+    if (!$startDate) {
+        $startDate = (new DateTime())->modify('-13 months')->format('Y-m-d');
     }
+    $where[] = 't.date >= :start_date';
+    $params['start_date'] = $startDate;
     
     if ($endDate) {
         $where[] = 't.date <= :end_date';
