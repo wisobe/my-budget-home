@@ -377,6 +377,7 @@
     "title": "Budgets",
     "description": "Set spending limits and track your progress",
     "addBudget": "Add Budget",
+    "editBudget": "Edit Budget",
     "noBudgets": "No budgets set",
     "noBudgetsDesc": "Create a budget to start tracking your spending against targets.",
     "category": "Category",

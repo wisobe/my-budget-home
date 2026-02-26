@@ -377,6 +377,7 @@
     "title": "Budgets",
     "description": "Définissez des limites de dépenses et suivez vos progrès",
     "addBudget": "Ajouter un budget",
+    "editBudget": "Modifier le budget",
     "noBudgets": "Aucun budget défini",
     "noBudgetsDesc": "Créez un budget pour commencer à suivre vos dépenses par rapport à vos objectifs.",
     "category": "Catégorie",

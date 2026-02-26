@@ -1,11 +1,10 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
-import { Plus, Trash2, Target } from 'lucide-react';
+import { Plus, Trash2, Target, Pencil } from 'lucide-react';
 import { AppLayout } from '@/components/layout/AppLayout';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import {
   Dialog,
@@ -27,6 +26,7 @@ import { categoriesApi } from '@/lib/api';
 import { useBudgets, useSaveBudget, useDeleteBudget } from '@/hooks/use-budgets';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
+import { BudgetCategoryPicker } from '@/components/budgets/BudgetCategoryPicker';
 import type { Category, BudgetWithSpent } from '@/types';
 
 function getProgressColor(percentage: number): string {
@@ -49,6 +49,7 @@ export default function Budgets() {
   const { t } = useTranslation();
   const { toast } = useToast();
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [editingBudget, setEditingBudget] = useState<BudgetWithSpent | null>(null);
   const [selectedCategory, setSelectedCategory] = useState('');
   const [amount, setAmount] = useState('');
   const [period, setPeriod] = useState<string>('monthly');
@@ -64,14 +65,26 @@ export default function Budgets() {
 
   const budgets = budgetsRes?.data ?? [];
   const categories: Category[] = categoriesRes?.data ?? [];
-  
-  // Only show non-income categories without parents (top-level expense categories)
-  const expenseCategories = categories.filter(c => !c.is_income);
 
-  // Group budgets by period
   const weeklyBudgets = budgets.filter(b => b.period === 'weekly');
   const monthlyBudgets = budgets.filter(b => b.period === 'monthly');
   const yearlyBudgets = budgets.filter(b => b.period === 'yearly');
+
+  const openAddDialog = () => {
+    setEditingBudget(null);
+    setSelectedCategory('');
+    setAmount('');
+    setPeriod('monthly');
+    setDialogOpen(true);
+  };
+
+  const openEditDialog = (budget: BudgetWithSpent) => {
+    setEditingBudget(budget);
+    setSelectedCategory(budget.category_id);
+    setAmount(String(budget.amount));
+    setPeriod(budget.period);
+    setDialogOpen(true);
+  };
 
   const handleSave = () => {
     if (!selectedCategory || !amount || parseFloat(amount) <= 0) return;
@@ -81,9 +94,7 @@ export default function Budgets() {
         onSuccess: () => {
           toast({ title: t('budgets.budgetSaved') });
           setDialogOpen(false);
-          setSelectedCategory('');
-          setAmount('');
-          setPeriod('monthly');
+          setEditingBudget(null);
         },
         onError: () => toast({ title: t('budgets.failedSave'), variant: 'destructive' }),
       }
@@ -129,14 +140,24 @@ export default function Budgets() {
             <span className="text-xs text-muted-foreground">{budget.percentage}%</span>
           </div>
         </div>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="shrink-0 h-8 w-8 text-muted-foreground hover:text-destructive"
-          onClick={() => handleDelete(budget.id)}
-        >
-          <Trash2 className="h-4 w-4" />
-        </Button>
+        <div className="flex shrink-0 gap-1">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8 text-muted-foreground hover:text-foreground"
+            onClick={() => openEditDialog(budget)}
+          >
+            <Pencil className="h-4 w-4" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8 text-muted-foreground hover:text-destructive"
+            onClick={() => handleDelete(budget.id)}
+          >
+            <Trash2 className="h-4 w-4" />
+          </Button>
+        </div>
       </div>
     );
   };
@@ -165,6 +186,8 @@ export default function Budgets() {
     );
   };
 
+  const isEditing = !!editingBudget;
+
   return (
     <AppLayout>
       <div className="space-y-6">
@@ -173,7 +196,7 @@ export default function Budgets() {
             <h1 className="text-2xl font-bold text-foreground">{t('budgets.title')}</h1>
             <p className="text-muted-foreground">{t('budgets.description')}</p>
           </div>
-          <Button onClick={() => setDialogOpen(true)}>
+          <Button onClick={openAddDialog}>
             <Plus className="h-4 w-4 mr-2" />
             {t('budgets.addBudget')}
           </Button>
@@ -189,7 +212,7 @@ export default function Budgets() {
               <Target className="h-12 w-12 text-muted-foreground mb-4" />
               <h3 className="text-lg font-medium mb-1">{t('budgets.noBudgets')}</h3>
               <p className="text-muted-foreground mb-4">{t('budgets.noBudgetsDesc')}</p>
-              <Button onClick={() => setDialogOpen(true)}>
+              <Button onClick={openAddDialog}>
                 <Plus className="h-4 w-4 mr-2" />
                 {t('budgets.addBudget')}
               </Button>
@@ -204,30 +227,19 @@ export default function Budgets() {
         )}
       </div>
 
-      {/* Add/Edit Budget Dialog */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{t('budgets.addBudget')}</DialogTitle>
+            <DialogTitle>{isEditing ? t('budgets.editBudget') : t('budgets.addBudget')}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-2">
             <div className="space-y-2">
               <Label>{t('budgets.category')}</Label>
-              <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-                <SelectTrigger>
-                  <SelectValue placeholder={t('budgets.selectCategory')} />
-                </SelectTrigger>
-                <SelectContent>
-                  {expenseCategories.map(cat => (
-                    <SelectItem key={cat.id} value={cat.id}>
-                      <span className="flex items-center gap-2">
-                        <span className="w-2 h-2 rounded-full" style={{ backgroundColor: cat.color }} />
-                        {cat.parent_id ? '  ' : ''}{cat.name}
-                      </span>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <BudgetCategoryPicker
+                categories={categories}
+                value={selectedCategory}
+                onChange={setSelectedCategory}
+              />
             </div>
             <div className="space-y-2">
               <Label>{t('budgets.amount')}</Label>
