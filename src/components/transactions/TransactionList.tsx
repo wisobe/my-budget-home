@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { format } from 'date-fns';
 import {
   useTransactions,
   useCategories,
@@ -17,13 +18,15 @@ import {
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Calendar } from '@/components/ui/calendar';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
 import {
   Search, ChevronLeft, ChevronRight, ArrowUpRight, ArrowDownRight,
-  MoreHorizontal, Split, EyeOff, Eye,
+  MoreHorizontal, Split, EyeOff, Eye, CalendarIcon, X,
 } from 'lucide-react';
 import { SplitTransactionDialog } from './SplitTransactionDialog';
 import { CategoryPicker } from './CategoryPicker';
@@ -36,6 +39,8 @@ export function TransactionList() {
   const [search, setSearch] = useState('');
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
   const [showExcluded, setShowExcluded] = useState(false);
+  const [startDate, setStartDate] = useState<Date | undefined>(undefined);
+  const [endDate, setEndDate] = useState<Date | undefined>(undefined);
   const [splitTransaction, setSplitTransaction] = useState<Transaction | null>(null);
   const [splitOpen, setSplitOpen] = useState(false);
 
@@ -45,6 +50,8 @@ export function TransactionList() {
     search: search || undefined,
     category_id: categoryFilter !== 'all' ? categoryFilter : undefined,
     show_excluded: showExcluded,
+    start_date: startDate ? format(startDate, 'yyyy-MM-dd') : undefined,
+    end_date: endDate ? format(endDate, 'yyyy-MM-dd') : undefined,
   });
 
   const { data: categoriesData } = useCategories();
@@ -74,39 +81,91 @@ export function TransactionList() {
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-col sm:flex-row gap-4">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder={t('transactions.searchPlaceholder')}
-            value={search}
-            onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-            className="pl-9"
-          />
+      <div className="flex flex-col gap-4">
+        <div className="flex flex-col sm:flex-row gap-4">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder={t('transactions.searchPlaceholder')}
+              value={search}
+              onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+              className="pl-9"
+            />
+          </div>
+          <Select value={categoryFilter} onValueChange={(v) => { setCategoryFilter(v); setPage(1); }}>
+            <SelectTrigger className="w-full sm:w-[200px]">
+              <SelectValue placeholder={t('transactions.allCategories')} />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">{t('transactions.allCategories')}</SelectItem>
+              <SelectItem value="uncategorized">{t('transactions.uncategorized')}</SelectItem>
+              {categories.filter(c => !c.parent_id).map(category => {
+                const children = categories.filter(c => c.parent_id === category.id);
+                return [
+                  <SelectItem key={category.id} value={category.id}>{category.name}</SelectItem>,
+                  ...children.map(child => (
+                    <SelectItem key={child.id} value={child.id}>
+                      <span className="pl-3 text-muted-foreground">↳ {child.name}</span>
+                    </SelectItem>
+                  )),
+                ];
+              })}
+            </SelectContent>
+          </Select>
+          <div className="flex items-center gap-2">
+            <Switch id="show-excluded" checked={showExcluded} onCheckedChange={setShowExcluded} />
+            <Label htmlFor="show-excluded" className="text-sm whitespace-nowrap">{t('transactions.showExcluded')}</Label>
+          </div>
         </div>
-        <Select value={categoryFilter} onValueChange={(v) => { setCategoryFilter(v); setPage(1); }}>
-          <SelectTrigger className="w-full sm:w-[200px]">
-            <SelectValue placeholder={t('transactions.allCategories')} />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">{t('transactions.allCategories')}</SelectItem>
-            <SelectItem value="uncategorized">{t('transactions.uncategorized')}</SelectItem>
-            {categories.filter(c => !c.parent_id).map(category => {
-              const children = categories.filter(c => c.parent_id === category.id);
-              return [
-                <SelectItem key={category.id} value={category.id}>{category.name}</SelectItem>,
-                ...children.map(child => (
-                  <SelectItem key={child.id} value={child.id}>
-                    <span className="pl-3 text-muted-foreground">↳ {child.name}</span>
-                  </SelectItem>
-                )),
-              ];
-            })}
-          </SelectContent>
-        </Select>
-        <div className="flex items-center gap-2">
-          <Switch id="show-excluded" checked={showExcluded} onCheckedChange={setShowExcluded} />
-          <Label htmlFor="show-excluded" className="text-sm whitespace-nowrap">{t('transactions.showExcluded')}</Label>
+        <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
+          <div className="flex items-center gap-2">
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="outline" size="sm" className={cn("w-[150px] justify-start text-left font-normal", !startDate && "text-muted-foreground")}>
+                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  {startDate ? format(startDate, 'MMM d, yyyy') : <span>{t('transactions.startDate')}</span>}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <Calendar
+                  mode="single"
+                  selected={startDate}
+                  onSelect={(d) => { setStartDate(d); setPage(1); }}
+                  initialFocus
+                  className={cn("p-3 pointer-events-auto")}
+                />
+              </PopoverContent>
+            </Popover>
+            {startDate && (
+              <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => { setStartDate(undefined); setPage(1); }}>
+                <X className="h-3 w-3" />
+              </Button>
+            )}
+          </div>
+          <div className="flex items-center gap-2">
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="outline" size="sm" className={cn("w-[150px] justify-start text-left font-normal", !endDate && "text-muted-foreground")}>
+                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  {endDate ? format(endDate, 'MMM d, yyyy') : <span>{t('transactions.endDate')}</span>}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <Calendar
+                  mode="single"
+                  selected={endDate}
+                  onSelect={(d) => { setEndDate(d); setPage(1); }}
+                  initialFocus
+                  className={cn("p-3 pointer-events-auto")}
+                />
+              </PopoverContent>
+            </Popover>
+            {endDate && (
+              <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => { setEndDate(undefined); setPage(1); }}>
+                <X className="h-3 w-3" />
+              </Button>
+            )}
+          </div>
         </div>
       </div>
 

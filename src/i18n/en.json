@@ -52,6 +52,8 @@
     "allCategories": "All Categories",
     "uncategorized": "Uncategorized",
     "showExcluded": "Show excluded",
+    "startDate": "Start date",
+    "endDate": "End date",
     "description": "Description",
     "category": "Category",
     "date": "Date",
