@@ -102,6 +102,8 @@ try {
         'accounts_count' => count($accountsResult['accounts']),
         'created_at' => date('c'),
     ]);
+} catch (PlaidApiException $e) {
+    Response::error('Failed to exchange token: ' . $e->getMessage(), 500, $e->toArray());
 } catch (Exception $e) {
     Response::error('Failed to exchange token: ' . $e->getMessage(), 500);
 }

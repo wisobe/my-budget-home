@@ -68,7 +68,15 @@ const Connections = () => {
       const result = await createLinkTokenMutation.mutateAsync();
       setLinkToken(result.data.link_token);
     } catch (error: any) {
-      toast.error(t('connections.failedInit', { message: error.message }));
+      const plaidErr = error.plaidError;
+      if (plaidErr) {
+        toast.error(`Plaid error: ${plaidErr.error_code} — ${plaidErr.error_message}`, {
+          description: `Type: ${plaidErr.error_type} | Request ID: ${plaidErr.request_id}`,
+          duration: 15000,
+        });
+      } else {
+        toast.error(t('connections.failedInit', { message: error.message }));
+      }
       setIsConnecting(false);
     }
   };
@@ -89,7 +97,15 @@ const Connections = () => {
         toast.warning(t('connections.initialSyncFailed'));
       }
     } catch (error: any) {
-      toast.error(t('connections.failedConnect', { message: error.message }));
+      const plaidErr = error.plaidError;
+      if (plaidErr) {
+        toast.error(`Plaid error: ${plaidErr.error_code} — ${plaidErr.error_message}`, {
+          description: `Type: ${plaidErr.error_type} | Request ID: ${plaidErr.request_id}`,
+          duration: 15000,
+        });
+      } else {
+        toast.error(t('connections.failedConnect', { message: error.message }));
+      }
     } finally {
       setIsConnecting(false);
     }

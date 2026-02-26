@@ -29,6 +29,8 @@ try {
         'expiration' => $result['expiration'],
         'environment' => $environment,
     ]);
+} catch (PlaidApiException $e) {
+    Response::error('Failed to create link token: ' . $e->getMessage(), 500, $e->toArray());
 } catch (Exception $e) {
     Response::error('Failed to create link token: ' . $e->getMessage(), 500);
 }

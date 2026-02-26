@@ -55,13 +55,17 @@ class Response {
         exit;
     }
 
-    public static function error(string $message, int $statusCode = 400): void {
+    public static function error(string $message, int $statusCode = 400, array $extra = []): void {
         self::setCorsHeaders();
         http_response_code($statusCode);
-        echo json_encode([
+        $response = [
             'success' => false,
             'message' => $message,
-        ]);
+        ];
+        if (!empty($extra)) {
+            $response['plaid_error'] = $extra;
+        }
+        echo json_encode($response);
         exit;
     }
 

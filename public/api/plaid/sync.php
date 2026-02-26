@@ -170,5 +170,9 @@ try {
         } catch (Exception $innerEx) {}
     }
     
-    Response::error('Failed to sync transactions: ' . $e->getMessage(), 500);
+    if ($e instanceof PlaidApiException) {
+        Response::error('Failed to sync transactions: ' . $e->getMessage(), 500, $e->toArray());
+    } else {
+        Response::error('Failed to sync transactions: ' . $e->getMessage(), 500);
+    }
 }
