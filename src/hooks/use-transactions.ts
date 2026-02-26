@@ -11,6 +11,7 @@ interface UseTransactionsParams {
   end_date?: string;
   search?: string;
   show_excluded?: boolean;
+  uncategorized?: boolean;
 }
 
 export function useTransactions(params: UseTransactionsParams = {}) {
