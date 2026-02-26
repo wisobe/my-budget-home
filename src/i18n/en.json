@@ -50,6 +50,7 @@
     "addTransaction": "Add Transaction",
     "searchPlaceholder": "Search transactions...",
     "allCategories": "All Categories",
+    "uncategorized": "Uncategorized",
     "showExcluded": "Show excluded",
     "description": "Description",
     "category": "Category",

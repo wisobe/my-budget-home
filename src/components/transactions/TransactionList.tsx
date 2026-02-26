@@ -90,6 +90,7 @@ export function TransactionList() {
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">{t('transactions.allCategories')}</SelectItem>
+            <SelectItem value="uncategorized">{t('transactions.uncategorized')}</SelectItem>
             {categories.filter(c => !c.parent_id).map(category => {
               const children = categories.filter(c => c.parent_id === category.id);
               return [

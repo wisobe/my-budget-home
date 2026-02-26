@@ -50,7 +50,9 @@ try {
         $params['account_id'] = $accountId;
     }
     
-    if ($categoryId) {
+    if ($categoryId === 'uncategorized') {
+        $where[] = 't.category_id IS NULL';
+    } elseif ($categoryId) {
         $where[] = 't.category_id = :category_id';
         $params['category_id'] = $categoryId;
     }
