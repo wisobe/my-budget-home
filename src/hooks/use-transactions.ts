@@ -24,9 +24,10 @@ export function useTransactions(params: UseTransactionsParams = {}) {
 
 export function useCategorizeTransaction() {
   const queryClient = useQueryClient();
+  const { plaidEnvironment } = usePlaidEnvironment();
   return useMutation({
     mutationFn: ({ id, category_id }: { id: string; category_id: string | null }) =>
-      transactionsApi.categorize(id, category_id),
+      transactionsApi.categorize(id, category_id, plaidEnvironment),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['transactions'] });
     },
