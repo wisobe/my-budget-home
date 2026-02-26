@@ -65,11 +65,12 @@ export function useExchangePlaidToken() {
 
 export function useSyncPlaidConnection() {
   const queryClient = useQueryClient();
+  const { plaidEnvironment } = usePlaidEnvironment();
   return useMutation({
     mutationFn: (connectionId: string) =>
       request<{ data: { added: number; modified: number; removed: number; accounts_updated: number }; success: boolean }>(
         '/plaid/sync.php',
-        { method: 'POST', body: JSON.stringify({ connection_id: connectionId }) }
+        { method: 'POST', body: JSON.stringify({ connection_id: connectionId, plaid_environment: plaidEnvironment }) }
       ),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['plaid-connections'] });
@@ -117,7 +118,7 @@ export function useSyncAllConnections() {
           success: boolean;
         }>('/plaid/sync.php', {
           method: 'POST',
-          body: JSON.stringify({ connection_id: connection.id }),
+          body: JSON.stringify({ connection_id: connection.id, plaid_environment: plaidEnvironment }),
         });
 
         totalAdded += result.data.added;
