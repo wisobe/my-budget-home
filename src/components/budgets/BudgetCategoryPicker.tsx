@@ -44,7 +44,7 @@ export function BudgetCategoryPicker({ categories, value, onChange }: Props) {
           <SelectValue placeholder={t('budgets.selectCategory')} />
         )}
       </SelectTrigger>
-      <SelectContent className="max-h-[300px]">
+      <SelectContent>
         {orderedItems.map(({ category, isChild }) => (
           <SelectItem key={category.id} value={category.id}>
             <div className="flex items-center gap-2" style={{ paddingLeft: isChild ? '1rem' : 0 }}>
