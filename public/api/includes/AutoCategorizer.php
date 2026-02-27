@@ -29,20 +29,24 @@ class AutoCategorizer {
         $bestPriority = -1;
 
         foreach ($rules as $rule) {
-            $keyword = strtoupper($rule['keyword']);
+            $keywords = array_map('trim', explode('|', strtoupper($rule['keyword'])));
             $matched = false;
 
-            switch ($rule['match_type']) {
-                case 'exact':
-                    $matched = ($nameUpper === $keyword || $merchantUpper === $keyword);
-                    break;
-                case 'starts_with':
-                    $matched = (strpos($nameUpper, $keyword) === 0 || strpos($merchantUpper, $keyword) === 0);
-                    break;
-                case 'contains':
-                default:
-                    $matched = (strpos($nameUpper, $keyword) !== false || ($merchantUpper && strpos($merchantUpper, $keyword) !== false));
-                    break;
+            foreach ($keywords as $keyword) {
+                if ($keyword === '') continue;
+                switch ($rule['match_type']) {
+                    case 'exact':
+                        $matched = ($nameUpper === $keyword || $merchantUpper === $keyword);
+                        break;
+                    case 'starts_with':
+                        $matched = (strpos($nameUpper, $keyword) === 0 || strpos($merchantUpper, $keyword) === 0);
+                        break;
+                    case 'contains':
+                    default:
+                        $matched = (strpos($nameUpper, $keyword) !== false || ($merchantUpper && strpos($merchantUpper, $keyword) !== false));
+                        break;
+                }
+                if ($matched) break;
             }
 
             if ($matched && (int)$rule['priority'] > $bestPriority) {

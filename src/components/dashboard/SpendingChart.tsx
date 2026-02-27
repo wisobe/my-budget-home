@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useSpendingByCategory } from '@/hooks/use-reports';
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 
 const FALLBACK_COLORS = ['#22c55e', '#f97316', '#3b82f6', '#8b5cf6', '#ec4899', '#14b8a6', '#ef4444', '#6366f1'];
 
@@ -67,7 +67,6 @@ export function SpendingChart() {
                   new Intl.NumberFormat('en-CA', { style: 'currency', currency: 'CAD' }).format(value)
                 }
               />
-              <Legend />
             </PieChart>
           </ResponsiveContainer>
         )}

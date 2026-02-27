@@ -51,11 +51,12 @@ export function BudgetCategoryPicker({ categories, value, onChange }: Props) {
         </button>
       </PopoverTrigger>
       <PopoverContent
-        className="w-[--radix-popover-trigger-width] p-1 max-h-[var(--radix-popover-content-available-height,300px)] overflow-y-auto"
+        className="w-[--radix-popover-trigger-width] p-0 max-h-[var(--radix-popover-content-available-height,300px)] overflow-y-auto"
         align="start"
         side="bottom"
         collisionPadding={8}
       >
+        <div className="p-1">
         {parentCategories.map(cat => {
           const children = getChildren(cat.id);
           const hasChildren = children.length > 0;
@@ -107,6 +108,7 @@ export function BudgetCategoryPicker({ categories, value, onChange }: Props) {
             </div>
           );
         })}
+        </div>
       </PopoverContent>
     </Popover>
   );
