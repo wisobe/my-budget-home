@@ -136,20 +136,40 @@ try {
  * Returns the number of transactions updated.
  */
 function applyRuleToExistingTransactions(PDO $pdo, string $userId, string $keyword, string $matchType, string $categoryId, string $environment = 'sandbox'): int {
-    switch ($matchType) {
-        case 'exact':
-            $condition = '(UPPER(t.name) = :kw OR UPPER(t.merchant_name) = :kw2)';
-            break;
-        case 'starts_with':
-            $condition = '(UPPER(t.name) LIKE :kw OR UPPER(t.merchant_name) LIKE :kw2)';
-            $keyword = $keyword . '%';
-            break;
-        case 'contains':
-        default:
-            $condition = '(UPPER(t.name) LIKE :kw OR UPPER(t.merchant_name) LIKE :kw2)';
-            $keyword = '%' . $keyword . '%';
-            break;
+    $keywords = array_filter(array_map('trim', explode('|', $keyword)));
+    if (empty($keywords)) return 0;
+
+    $conditions = [];
+    $params = [
+        'category_id' => $categoryId,
+        'user_id' => $userId,
+        'env' => $environment,
+    ];
+
+    foreach ($keywords as $i => $kw) {
+        $kwParam = "kw_{$i}";
+        $kwParam2 = "kw2_{$i}";
+        switch ($matchType) {
+            case 'exact':
+                $conditions[] = "(UPPER(t.name) = :{$kwParam} OR UPPER(t.merchant_name) = :{$kwParam2})";
+                $params[$kwParam] = $kw;
+                $params[$kwParam2] = $kw;
+                break;
+            case 'starts_with':
+                $conditions[] = "(UPPER(t.name) LIKE :{$kwParam} OR UPPER(t.merchant_name) LIKE :{$kwParam2})";
+                $params[$kwParam] = $kw . '%';
+                $params[$kwParam2] = $kw . '%';
+                break;
+            case 'contains':
+            default:
+                $conditions[] = "(UPPER(t.name) LIKE :{$kwParam} OR UPPER(t.merchant_name) LIKE :{$kwParam2})";
+                $params[$kwParam] = '%' . $kw . '%';
+                $params[$kwParam2] = '%' . $kw . '%';
+                break;
+        }
     }
+
+    $combinedCondition = '(' . implode(' OR ', $conditions) . ')';
 
     $stmt = $pdo->prepare("
         UPDATE transactions t
@@ -158,14 +178,8 @@ function applyRuleToExistingTransactions(PDO $pdo, string $userId, string $keywo
         SET t.category_id = :category_id
         WHERE a.user_id = :user_id
           AND pc.plaid_environment = :env
-          AND {$condition}
+          AND {$combinedCondition}
     ");
-    $stmt->execute([
-        'category_id' => $categoryId,
-        'user_id' => $userId,
-        'env' => $environment,
-        'kw' => $keyword,
-        'kw2' => $keyword,
-    ]);
+    $stmt->execute($params);
     return $stmt->rowCount();
 }

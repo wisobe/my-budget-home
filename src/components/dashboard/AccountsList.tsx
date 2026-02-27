@@ -35,12 +35,12 @@ export function AccountsList() {
     );
   }
 
-  const accounts = accountsData?.data || [];
+  const accounts = (accountsData?.data || []).filter(a => !a.excluded);
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle>{t('dashboard.connectedAccounts')}</CardTitle>
+        <CardTitle>{t('accounts.title')}</CardTitle>
       </CardHeader>
       <CardContent className="space-y-3">
         {accounts.map(account => {
