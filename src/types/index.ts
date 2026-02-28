@@ -21,6 +21,7 @@ export interface Transaction {
   excluded: boolean;
   notes?: string;
   split_count?: number;
+  included_split_amount?: number;
   category_name?: string;
   category_color?: string;
   account_name?: string;
