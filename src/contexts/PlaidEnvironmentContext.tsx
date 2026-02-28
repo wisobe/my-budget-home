@@ -1,6 +1,7 @@
-import React, { createContext, useContext, useState, useCallback } from 'react';
+import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/contexts/AuthContext';
+import { API_BASE_URL } from '@/lib/config';
 
 type PlaidEnvironment = 'sandbox' | 'production';
 
@@ -12,36 +13,64 @@ interface PlaidEnvironmentContextType {
 
 const PlaidEnvironmentContext = createContext<PlaidEnvironmentContextType | undefined>(undefined);
 
-function getStoredPlaidEnv(): PlaidEnvironment {
+async function fetchUserPreferences(): Promise<Record<string, string>> {
+  const token = sessionStorage.getItem('auth_token');
   try {
-    const stored = localStorage.getItem('plaid_environment');
-    if (stored === 'sandbox' || stored === 'production') return stored;
+    const res = await fetch(`${API_BASE_URL}/settings/user-preferences.php`, {
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+    });
+    if (!res.ok) return {};
+    const json = await res.json();
+    return json.data ?? {};
   } catch {
-    // localStorage not available
+    return {};
   }
-  return 'production';
+}
+
+async function saveUserPreference(key: string, value: string) {
+  const token = sessionStorage.getItem('auth_token');
+  try {
+    await fetch(`${API_BASE_URL}/settings/user-preferences.php`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+      body: JSON.stringify({ [key]: value }),
+    });
+  } catch {
+    // silent fail
+  }
 }
 
 export function PlaidEnvironmentProvider({ children }: { children: React.ReactNode }) {
-  const [plaidEnvironment, setPlaidEnvState] = useState<PlaidEnvironment>(getStoredPlaidEnv);
+  const [plaidEnvironment, setPlaidEnvState] = useState<PlaidEnvironment>('production');
+  const [loaded, setLoaded] = useState(false);
   const queryClient = useQueryClient();
-  const { isAdmin } = useAuth();
+  const { isAdmin, isAuthenticated } = useAuth();
 
-  // Non-admin users are locked to production
   const canUseSandbox = isAdmin;
-
-  // If non-admin tries to use sandbox, force production
   const effectiveEnvironment = canUseSandbox ? plaidEnvironment : 'production';
 
+  // Load preference from server on mount
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    fetchUserPreferences().then((prefs) => {
+      const env = prefs.plaid_environment;
+      if (env === 'sandbox' || env === 'production') {
+        setPlaidEnvState(env);
+      }
+      setLoaded(true);
+    });
+  }, [isAuthenticated]);
+
   const setPlaidEnvironment = useCallback((value: PlaidEnvironment) => {
-    // Non-admins can only use production
     const resolvedValue = canUseSandbox ? value : 'production';
     setPlaidEnvState(resolvedValue);
-    try {
-      localStorage.setItem('plaid_environment', resolvedValue);
-    } catch {
-      // localStorage not available
-    }
+    saveUserPreference('plaid_environment', resolvedValue);
     queryClient.invalidateQueries();
   }, [queryClient, canUseSandbox]);
 
