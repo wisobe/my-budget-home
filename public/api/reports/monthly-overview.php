@@ -27,43 +27,51 @@ try {
     $envFilter = '(c.plaid_environment = :environment OR a.plaid_connection_id IS NULL)';
     $userFilter = 'a.user_id = :user_id';
 
-    if ($startDate && $endDate) {
-        $stmt = $pdo->prepare("
+    // Helper to build the UNION query for split-aware amounts
+    $buildQuery = function($dateFilter, $dateParams) use ($envFilter, $userFilter) {
+        return "
             SELECT
-                DATE_FORMAT(t.date, '%Y-%m') AS month,
-                SUM(CASE WHEN t.amount < 0 THEN ABS(t.amount) ELSE 0 END) AS total_income,
-                SUM(CASE WHEN t.amount > 0 THEN t.amount       ELSE 0 END) AS total_expenses
-            FROM transactions t
-            INNER JOIN accounts a ON t.account_id = a.id
-            LEFT JOIN plaid_connections c ON a.plaid_connection_id = c.id
-            WHERE t.date >= :start_date
-              AND t.date <= :end_date
-              AND t.excluded = 0
-              AND a.excluded = 0
-              AND {$envFilter}
-              AND {$userFilter}
-            GROUP BY DATE_FORMAT(t.date, '%Y-%m')
+                DATE_FORMAT(date, '%Y-%m') AS month,
+                SUM(CASE WHEN effective_amount < 0 THEN ABS(effective_amount) ELSE 0 END) AS total_income,
+                SUM(CASE WHEN effective_amount > 0 THEN effective_amount ELSE 0 END) AS total_expenses
+            FROM (
+                -- Non-split transactions
+                SELECT t.date, t.amount AS effective_amount
+                FROM transactions t
+                INNER JOIN accounts a ON t.account_id = a.id
+                LEFT JOIN plaid_connections c ON a.plaid_connection_id = c.id
+                WHERE {$dateFilter}
+                  AND t.excluded = 0 AND a.excluded = 0
+                  AND {$envFilter} AND {$userFilter}
+                  AND t.id NOT IN (SELECT DISTINCT transaction_id FROM transaction_splits)
+
+                UNION ALL
+
+                -- Split parts (non-excluded only)
+                SELECT t.date, ts.amount AS effective_amount
+                FROM transaction_splits ts
+                INNER JOIN transactions t ON ts.transaction_id = t.id
+                INNER JOIN accounts a ON t.account_id = a.id
+                LEFT JOIN plaid_connections c ON a.plaid_connection_id = c.id
+                WHERE {$dateFilter}
+                  AND t.excluded = 0 AND a.excluded = 0 AND ts.is_excluded = 0
+                  AND {$envFilter} AND {$userFilter}
+            ) AS combined
+            GROUP BY DATE_FORMAT(date, '%Y-%m')
             ORDER BY month
-        ");
+        ";
+    };
+
+    if ($startDate && $endDate) {
+        $dateFilter = 't.date >= :start_date AND t.date <= :end_date';
+        $sql = $buildQuery($dateFilter, []);
+        $stmt = $pdo->prepare($sql);
         $stmt->execute(['start_date' => $startDate, 'end_date' => $endDate, 'environment' => $environment, 'user_id' => $userId]);
     } else {
         $year = (int) ($_GET['year'] ?? date('Y'));
-        $stmt = $pdo->prepare("
-            SELECT
-                DATE_FORMAT(t.date, '%Y-%m') AS month,
-                SUM(CASE WHEN t.amount < 0 THEN ABS(t.amount) ELSE 0 END) AS total_income,
-                SUM(CASE WHEN t.amount > 0 THEN t.amount       ELSE 0 END) AS total_expenses
-            FROM transactions t
-            INNER JOIN accounts a ON t.account_id = a.id
-            LEFT JOIN plaid_connections c ON a.plaid_connection_id = c.id
-            WHERE YEAR(t.date) = :year
-              AND t.excluded = 0
-              AND a.excluded = 0
-              AND {$envFilter}
-              AND {$userFilter}
-            GROUP BY DATE_FORMAT(t.date, '%Y-%m')
-            ORDER BY month
-        ");
+        $dateFilter = 'YEAR(t.date) = :year';
+        $sql = $buildQuery($dateFilter, []);
+        $stmt = $pdo->prepare($sql);
         $stmt->execute(['year' => $year, 'environment' => $environment, 'user_id' => $userId]);
     }
 
