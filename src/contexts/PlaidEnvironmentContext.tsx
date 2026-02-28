@@ -19,7 +19,7 @@ function getStoredPlaidEnv(): PlaidEnvironment {
   } catch {
     // localStorage not available
   }
-  return 'sandbox';
+  return 'production';
 }
 
 export function PlaidEnvironmentProvider({ children }: { children: React.ReactNode }) {
