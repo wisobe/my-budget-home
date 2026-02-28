@@ -249,9 +249,17 @@ export function TransactionList() {
                       })}
                     </TableCell>
                     <TableCell className="text-right">
-                      <span className={cn("font-semibold", isIncome ? "text-income" : "text-expense")}>
-                        {isIncome ? '+' : '-'}${Math.abs(transaction.amount).toFixed(2)}
-                      </span>
+                      {(() => {
+                        const displayAmount = hasSplits && transaction.included_split_amount != null
+                          ? transaction.included_split_amount
+                          : transaction.amount;
+                        const displayIsIncome = displayAmount < 0;
+                        return (
+                          <span className={cn("font-semibold", displayIsIncome ? "text-income" : "text-expense")}>
+                            {displayIsIncome ? '+' : '-'}${Math.abs(displayAmount).toFixed(2)}
+                          </span>
+                        );
+                      })()}
                     </TableCell>
                     <TableCell>
                       <DropdownMenu>

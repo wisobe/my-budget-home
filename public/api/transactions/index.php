@@ -105,7 +105,8 @@ try {
             cat.name as category_name,
             cat.color as category_color,
             a.name as account_name,
-            (SELECT COUNT(*) FROM transaction_splits ts WHERE ts.transaction_id = t.id) as split_count
+            (SELECT COUNT(*) FROM transaction_splits ts WHERE ts.transaction_id = t.id) as split_count,
+            (SELECT SUM(ts2.amount) FROM transaction_splits ts2 WHERE ts2.transaction_id = t.id AND ts2.is_excluded = 0) as included_split_amount
         FROM transactions t
         INNER JOIN accounts a ON t.account_id = a.id
         LEFT JOIN plaid_connections c ON a.plaid_connection_id = c.id
