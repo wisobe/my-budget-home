@@ -44,7 +44,10 @@ export function RecentTransactions() {
       </CardHeader>
       <CardContent className="space-y-2">
         {transactions.map(transaction => {
-          const isIncome = transaction.amount < 0;
+          const effectiveAmount = (transaction.split_count ?? 0) > 0 && transaction.included_split_amount != null
+            ? transaction.included_split_amount
+            : transaction.amount;
+          const isIncome = effectiveAmount < 0;
           
           return (
             <div
@@ -73,7 +76,7 @@ export function RecentTransactions() {
                 "font-semibold",
                 isIncome ? "text-income" : "text-expense"
               )}>
-                {isIncome ? '+' : '-'}${Math.abs(transaction.amount).toFixed(2)}
+                {isIncome ? '+' : '-'}${Math.abs(effectiveAmount).toFixed(2)}
               </p>
             </div>
           );
