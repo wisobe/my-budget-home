@@ -43,6 +43,7 @@ try {
     
     if (!$showExcluded) {
         $where[] = 't.excluded = 0';
+        $where[] = 'a.excluded = 0';
     }
     
     if ($accountId) {
