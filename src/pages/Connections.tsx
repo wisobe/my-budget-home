@@ -3,7 +3,7 @@ import { AppLayout } from '@/components/layout/AppLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Plus, RefreshCw, ExternalLink, Trash2, AlertCircle, CheckCircle2, Loader2, FlaskConical, Building2 } from 'lucide-react';
+import { Plus, RefreshCw, ExternalLink, Trash2, AlertCircle, CheckCircle2, Loader2, FlaskConical, Building2, Link2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { usePlaidConnections, useCreateLinkToken, useExchangePlaidToken, useSyncPlaidConnection, useRemovePlaidConnection } from '@/hooks/use-plaid';
 import { usePlaidEnvironment } from '@/contexts/PlaidEnvironmentContext';
@@ -40,6 +40,7 @@ const Connections = () => {
 
   const [linkToken, setLinkToken] = useState<string | null>(null);
   const [isConnecting, setIsConnecting] = useState(false);
+  const [relinkingId, setRelinkingId] = useState<string | null>(null);
 
   const connections = connectionsData?.data || [];
 
@@ -47,8 +48,16 @@ const Connections = () => {
     try {
       const result = await syncMutation.mutateAsync(connectionId);
       toast.success(t('connections.syncedTransactions', { count: result.data.added }));
-    } catch (error) {
-      toast.error(t('connections.failedSync'));
+    } catch (error: any) {
+      const plaidErr = error.plaidError;
+      if (plaidErr) {
+        toast.error(`Plaid error: ${plaidErr.error_code} — ${plaidErr.error_message}`, {
+          description: `Type: ${plaidErr.error_type} | Request ID: ${plaidErr.request_id}`,
+          duration: 15000,
+        });
+      } else {
+        toast.error(error.message || t('connections.failedSync'));
+      }
     }
   };
 
@@ -64,8 +73,9 @@ const Connections = () => {
 
   const handleConnectBank = async () => {
     setIsConnecting(true);
+    setRelinkingId(null);
     try {
-      const result = await createLinkTokenMutation.mutateAsync();
+      const result = await createLinkTokenMutation.mutateAsync(undefined);
       setLinkToken(result.data.link_token);
     } catch (error: any) {
       const plaidErr = error.plaidError;
@@ -81,8 +91,45 @@ const Connections = () => {
     }
   };
 
+  const handleRelink = async (connectionId: string) => {
+    setIsConnecting(true);
+    setRelinkingId(connectionId);
+    try {
+      const result = await createLinkTokenMutation.mutateAsync(connectionId);
+      setLinkToken(result.data.link_token);
+    } catch (error: any) {
+      const plaidErr = error.plaidError;
+      if (plaidErr) {
+        toast.error(`Plaid error: ${plaidErr.error_code} — ${plaidErr.error_message}`, {
+          description: `Type: ${plaidErr.error_type} | Request ID: ${plaidErr.request_id}`,
+          duration: 15000,
+        });
+      } else {
+        toast.error(t('connections.failedInit', { message: error.message }));
+      }
+      setIsConnecting(false);
+      setRelinkingId(null);
+    }
+  };
+
   const handlePlaidSuccess = useCallback(async (publicToken: string, metadata: any) => {
     setLinkToken(null);
+
+    if (relinkingId) {
+      // Update mode — no token exchange needed, Plaid updates the item automatically
+      toast.success(t('connections.relinkSuccess'));
+      setIsConnecting(false);
+      setRelinkingId(null);
+      // Clear error status and try a sync
+      try {
+        await syncMutation.mutateAsync(relinkingId);
+        toast.success(t('connections.relinkSyncComplete'));
+      } catch {
+        toast.warning(t('connections.relinkSyncFailed'));
+      }
+      return;
+    }
+
     try {
       const institutionId = metadata?.institution?.institution_id || 'unknown';
       const result = await exchangeTokenMutation.mutateAsync({ publicToken, institutionId });
@@ -108,12 +155,14 @@ const Connections = () => {
       }
     } finally {
       setIsConnecting(false);
+      setRelinkingId(null);
     }
-  }, [exchangeTokenMutation, syncMutation, t]);
+  }, [exchangeTokenMutation, syncMutation, relinkingId, t]);
 
   const handlePlaidExit = useCallback(() => {
     setLinkToken(null);
     setIsConnecting(false);
+    setRelinkingId(null);
   }, []);
 
   return (
@@ -121,7 +170,7 @@ const Connections = () => {
       title={t('connections.title')}
       actions={
         <Button size="sm" onClick={handleConnectBank} disabled={isConnecting}>
-          {isConnecting ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Plus className="h-4 w-4 mr-2" />}
+          {isConnecting && !relinkingId ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Plus className="h-4 w-4 mr-2" />}
           {t('connections.connectBank')}
         </Button>
       }
@@ -180,37 +229,71 @@ const Connections = () => {
                 </Button>
               </div>
             ) : (
-              connections.map(connection => (
-                <div key={connection.id} className="flex items-center justify-between p-4 rounded-lg border">
-                  <div className="flex items-center gap-4">
-                    <div className="h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center">
-                      <span className="text-lg font-bold text-primary">{connection.institution_name.charAt(0)}</span>
-                    </div>
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <p className="font-semibold">{connection.institution_name}</p>
-                        <Badge variant={connection.status === 'active' ? 'default' : 'destructive'} className={cn(connection.status === 'active' && "bg-income")}>
-                          {connection.status === 'active' ? <><CheckCircle2 className="h-3 w-3 mr-1" /> {t('connections.active')}</> : <><AlertCircle className="h-3 w-3 mr-1" /> {t('connections.error')}</>}
-                        </Badge>
+              connections.map(connection => {
+                const isError = connection.status === 'error';
+                const isRelinking = relinkingId === connection.id && isConnecting;
+
+                return (
+                  <div key={connection.id} className={cn(
+                    "flex flex-col gap-3 p-4 rounded-lg border",
+                    isError && "border-destructive/50 bg-destructive/5"
+                  )}>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-4">
+                        <div className={cn(
+                          "h-12 w-12 rounded-lg flex items-center justify-center",
+                          isError ? "bg-destructive/10" : "bg-primary/10"
+                        )}>
+                          <span className={cn(
+                            "text-lg font-bold",
+                            isError ? "text-destructive" : "text-primary"
+                          )}>{connection.institution_name.charAt(0)}</span>
+                        </div>
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <p className="font-semibold">{connection.institution_name}</p>
+                            <Badge variant={isError ? 'destructive' : 'default'} className={cn(!isError && "bg-income")}>
+                              {isError ? (
+                                <><AlertCircle className="h-3 w-3 mr-1" /> {t('connections.error')}</>
+                              ) : (
+                                <><CheckCircle2 className="h-3 w-3 mr-1" /> {t('connections.active')}</>
+                              )}
+                            </Badge>
+                          </div>
+                          <p className="text-sm text-muted-foreground">
+                            {connection.last_synced
+                              ? t('connections.lastSynced', { date: new Date(connection.last_synced).toLocaleString() })
+                              : t('connections.lastSynced', { date: t('connections.never') })}
+                          </p>
+                        </div>
                       </div>
-                      <p className="text-sm text-muted-foreground">
-                        {connection.last_synced
-                          ? t('connections.lastSynced', { date: new Date(connection.last_synced).toLocaleString() })
-                          : t('connections.lastSynced', { date: t('connections.never') })}
-                      </p>
+                      <div className="flex gap-2">
+                        {isError ? (
+                          <Button variant="default" size="sm" onClick={() => handleRelink(connection.id)} disabled={isRelinking}>
+                            {isRelinking ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Link2 className="h-4 w-4 mr-2" />}
+                            {t('connections.relink')}
+                          </Button>
+                        ) : (
+                          <Button variant="outline" size="sm" onClick={() => handleSync(connection.id)} disabled={syncMutation.isPending}>
+                            {syncMutation.isPending ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <RefreshCw className="h-4 w-4 mr-2" />}
+                            {t('sync.sync')}
+                          </Button>
+                        )}
+                        <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive" onClick={() => handleRemove(connection.id)} disabled={removeMutation.isPending}>
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
                     </div>
+
+                    {isError && connection.error_message && (
+                      <div className="flex items-start gap-2 px-3 py-2 rounded-md bg-destructive/10 text-sm text-destructive">
+                        <AlertCircle className="h-4 w-4 mt-0.5 shrink-0" />
+                        <p>{connection.error_message}</p>
+                      </div>
+                    )}
                   </div>
-                  <div className="flex gap-2">
-                    <Button variant="outline" size="sm" onClick={() => handleSync(connection.id)} disabled={syncMutation.isPending}>
-                      {syncMutation.isPending ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <RefreshCw className="h-4 w-4 mr-2" />}
-                      {t('sync.sync')}
-                    </Button>
-                    <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive" onClick={() => handleRemove(connection.id)} disabled={removeMutation.isPending}>
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
-              ))
+                );
+              })
             )}
           </CardContent>
         </Card>

@@ -39,10 +39,10 @@ export function usePlaidConnections() {
 export function useCreateLinkToken() {
   const { plaidEnvironment } = usePlaidEnvironment();
   return useMutation({
-    mutationFn: () =>
+    mutationFn: (connectionId?: string) =>
       request<{ data: { link_token: string; expiration: string; environment: string }; success: boolean }>(
         '/plaid/link-token.php',
-        { method: 'POST', body: JSON.stringify({ plaid_environment: plaidEnvironment }) }
+        { method: 'POST', body: JSON.stringify({ plaid_environment: plaidEnvironment, ...(connectionId ? { connection_id: connectionId } : {}) }) }
       ),
   });
 }

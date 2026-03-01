@@ -101,14 +101,23 @@ class PlaidClient {
     /**
      * Create a Link token for Plaid Link initialization
      */
-    public function createLinkToken(string $userId): array {
-        return $this->request('/link/token/create', [
+    public function createLinkToken(string $userId, ?string $accessToken = null): array {
+        $data = [
             'user' => ['client_user_id' => $userId],
             'client_name' => 'BudgetWise',
-            'products' => $this->products,
             'country_codes' => $this->countryCode,
             'language' => 'en',
-        ]);
+        ];
+
+        if ($accessToken) {
+            // Update mode: re-authenticate an existing item
+            $data['access_token'] = $accessToken;
+        } else {
+            // New link: require products
+            $data['products'] = $this->products;
+        }
+
+        return $this->request('/link/token/create', $data);
     }
 
     /**

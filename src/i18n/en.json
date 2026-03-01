@@ -176,7 +176,11 @@
     "failedSync": "Failed to sync transactions",
     "confirmRemove": "Are you sure you want to remove this bank connection?",
     "bankRemoved": "Bank connection removed",
-    "failedRemove": "Failed to remove connection"
+    "failedRemove": "Failed to remove connection",
+    "relink": "Re-link",
+    "relinkSuccess": "Bank re-authenticated successfully! Syncing...",
+    "relinkSyncComplete": "Re-link complete — transactions synced.",
+    "relinkSyncFailed": "Bank re-authenticated, but sync failed. Try the Sync button manually."
   },
   "settings": {
     "title": "Settings",
