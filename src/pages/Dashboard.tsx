@@ -87,12 +87,12 @@ const Dashboard = () => {
           />
         </div>
 
+        <RecentTransactions />
+
         <div className="grid gap-6 lg:grid-cols-2">
           <SpendingChart />
           <AccountsList />
         </div>
-
-        <RecentTransactions />
       </div>
     </AppLayout>
   );
