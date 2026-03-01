@@ -348,4 +348,17 @@ export const budgetsApi = {
     }),
 };
 
+// ============ User Preferences API ============
+
+export const preferencesApi = {
+  get: () =>
+    request<ApiResponse<Record<string, string>>>('/settings/user-preferences.php'),
+
+  save: (prefs: Record<string, string>) =>
+    request<ApiResponse<{ saved: boolean }>>('/settings/user-preferences.php', {
+      method: 'POST',
+      body: JSON.stringify(prefs),
+    }),
+};
+
 export { ApiError };
