@@ -1,5 +1,6 @@
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import i18n from '@/i18n';
+import { preferencesApi } from '@/lib/api';
 
 interface Preferences {
   darkMode: boolean;
@@ -13,9 +14,8 @@ interface PreferencesContextType extends Preferences {
   setAutoSync: (v: boolean) => void;
   setShowPending: (v: boolean) => void;
   setLanguage: (v: string) => void;
+  isLoaded: boolean;
 }
-
-const STORAGE_KEY = 'app_preferences';
 
 const defaults: Preferences = {
   darkMode: false,
@@ -24,22 +24,59 @@ const defaults: Preferences = {
   language: 'en',
 };
 
-function loadPreferences(): Preferences {
-  try {
-    const stored = localStorage.getItem(STORAGE_KEY);
-    if (stored) return { ...defaults, ...JSON.parse(stored) };
-  } catch {}
-  return defaults;
+function fromApi(data: Record<string, string>): Partial<Preferences> {
+  const p: Partial<Preferences> = {};
+  if (data.dark_mode !== undefined) p.darkMode = data.dark_mode === '1';
+  if (data.auto_sync !== undefined) p.autoSync = data.auto_sync === '1';
+  if (data.show_pending !== undefined) p.showPending = data.show_pending === '1';
+  if (data.language !== undefined) p.language = data.language;
+  return p;
+}
+
+function toApi(prefs: Preferences): Record<string, string> {
+  return {
+    dark_mode: prefs.darkMode ? '1' : '0',
+    auto_sync: prefs.autoSync ? '1' : '0',
+    show_pending: prefs.showPending ? '1' : '0',
+    language: prefs.language,
+  };
 }
 
 const PreferencesContext = createContext<PreferencesContextType | null>(null);
 
 export function PreferencesProvider({ children }: { children: React.ReactNode }) {
-  const [prefs, setPrefs] = useState<Preferences>(loadPreferences);
+  const [prefs, setPrefs] = useState<Preferences>(defaults);
+  const [isLoaded, setIsLoaded] = useState(false);
+  const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const initialLoad = useRef(true);
 
-  // Persist to localStorage
+  // Load from API on mount
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(prefs));
+    preferencesApi.get()
+      .then(res => {
+        if (res.data) {
+          setPrefs(p => ({ ...p, ...fromApi(res.data) }));
+        }
+      })
+      .catch(() => {
+        // API unreachable — keep defaults
+      })
+      .finally(() => {
+        setIsLoaded(true);
+        initialLoad.current = false;
+      });
+  }, []);
+
+  // Save to API on change (debounced), skip initial load
+  useEffect(() => {
+    if (initialLoad.current) return;
+    if (saveTimer.current) clearTimeout(saveTimer.current);
+    saveTimer.current = setTimeout(() => {
+      preferencesApi.save(toApi(prefs)).catch(() => {});
+    }, 500);
+    return () => {
+      if (saveTimer.current) clearTimeout(saveTimer.current);
+    };
   }, [prefs]);
 
   // Apply dark mode class to <html>
@@ -60,7 +97,7 @@ export function PreferencesProvider({ children }: { children: React.ReactNode })
   const setLanguage = useCallback((v: string) => setPrefs(p => ({ ...p, language: v })), []);
 
   return (
-    <PreferencesContext.Provider value={{ ...prefs, setDarkMode, setAutoSync, setShowPending, setLanguage }}>
+    <PreferencesContext.Provider value={{ ...prefs, setDarkMode, setAutoSync, setShowPending, setLanguage, isLoaded }}>
       {children}
     </PreferencesContext.Provider>
   );
