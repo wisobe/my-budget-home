@@ -26,9 +26,11 @@ try {
 
     $envFilter = '(c.plaid_environment = :environment OR a.plaid_connection_id IS NULL)';
     $userFilter = 'a.user_id = :user_id';
+    $envFilter2 = '(c.plaid_environment = :environment2 OR a.plaid_connection_id IS NULL)';
+    $userFilter2 = 'a.user_id = :user_id2';
 
     // Helper to build the UNION query for split-aware amounts
-    $buildQuery = function($dateFilter, $dateParams) use ($envFilter, $userFilter) {
+    $buildQuery = function($dateFilter, $dateFilter2) use ($envFilter, $userFilter, $envFilter2, $userFilter2) {
         return "
             SELECT
                 DATE_FORMAT(date, '%Y-%m') AS month,
@@ -53,9 +55,9 @@ try {
                 INNER JOIN transactions t ON ts.transaction_id = t.id
                 INNER JOIN accounts a ON t.account_id = a.id
                 LEFT JOIN plaid_connections c ON a.plaid_connection_id = c.id
-                WHERE {$dateFilter}
+                WHERE {$dateFilter2}
                   AND t.excluded = 0 AND a.excluded = 0 AND ts.is_excluded = 0
-                  AND {$envFilter} AND {$userFilter}
+                  AND {$envFilter2} AND {$userFilter2}
             ) AS combined
             GROUP BY DATE_FORMAT(date, '%Y-%m')
             ORDER BY month
@@ -64,15 +66,25 @@ try {
 
     if ($startDate && $endDate) {
         $dateFilter = 't.date >= :start_date AND t.date <= :end_date';
-        $sql = $buildQuery($dateFilter, []);
+        $dateFilter2 = 't.date >= :start_date2 AND t.date <= :end_date2';
+        $sql = $buildQuery($dateFilter, $dateFilter2);
         $stmt = $pdo->prepare($sql);
-        $stmt->execute(['start_date' => $startDate, 'end_date' => $endDate, 'environment' => $environment, 'user_id' => $userId]);
+        $stmt->execute([
+            'start_date' => $startDate, 'end_date' => $endDate,
+            'environment' => $environment, 'user_id' => $userId,
+            'start_date2' => $startDate, 'end_date2' => $endDate,
+            'environment2' => $environment, 'user_id2' => $userId,
+        ]);
     } else {
         $year = (int) ($_GET['year'] ?? date('Y'));
         $dateFilter = 'YEAR(t.date) = :year';
-        $sql = $buildQuery($dateFilter, []);
+        $dateFilter2 = 'YEAR(t.date) = :year2';
+        $sql = $buildQuery($dateFilter, $dateFilter2);
         $stmt = $pdo->prepare($sql);
-        $stmt->execute(['year' => $year, 'environment' => $environment, 'user_id' => $userId]);
+        $stmt->execute([
+            'year' => $year, 'environment' => $environment, 'user_id' => $userId,
+            'year2' => $year, 'environment2' => $environment, 'user_id2' => $userId,
+        ]);
     }
 
     $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
