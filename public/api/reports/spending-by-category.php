@@ -4,6 +4,7 @@
  * GET /api/reports/spending-by-category.php?start_date=YYYY-MM-DD&end_date=YYYY-MM-DD&plaid_environment=sandbox
  *
  * Returns spending totals grouped by category for the current user.
+ * Only includes expense categories (is_income = 0).
  */
 
 require_once __DIR__ . '/../includes/bootstrap.php';
@@ -30,12 +31,7 @@ try {
     $envFilter = '(c.plaid_environment = :environment OR a.plaid_connection_id IS NULL)';
     $userFilter = 'a.user_id = :user_id';
 
-    // Current period
-    // For split transactions, use the non-excluded split amounts instead of the full transaction amount.
-    // Non-split transactions use their own amount directly.
-    // Split transactions are excluded from the main category grouping (category_id is NULL when split),
-    // so we need a UNION approach: non-split transactions + individual split rows.
-
+    // Current period – exclude income categories
     $stmt = $pdo->prepare("
         SELECT
             COALESCE(category_id, 'uncategorized') AS category_id,
@@ -44,27 +40,29 @@ try {
             COUNT(*) AS transaction_count
         FROM (
             -- Non-split transactions
-            SELECT t.category_id, cat.name AS category_name, t.amount AS effective_amount
+            SELECT t.category_id, cat.name AS category_name, ABS(t.amount) AS effective_amount
             FROM transactions t
             INNER JOIN accounts a ON t.account_id = a.id
             LEFT JOIN plaid_connections c ON a.plaid_connection_id = c.id
             LEFT JOIN categories cat ON t.category_id = cat.id
             WHERE t.date >= :start_date AND t.date <= :end_date
-              AND t.excluded = 0 AND a.excluded = 0 AND t.amount > 0
+              AND t.excluded = 0 AND a.excluded = 0
+              AND COALESCE(cat.is_income, 0) = 0
               AND {$envFilter} AND {$userFilter}
               AND t.id NOT IN (SELECT DISTINCT transaction_id FROM transaction_splits)
 
             UNION ALL
 
             -- Split parts (non-excluded only)
-            SELECT ts.category_id, cat.name AS category_name, ts.amount AS effective_amount
+            SELECT ts.category_id, cat.name AS category_name, ABS(ts.amount) AS effective_amount
             FROM transaction_splits ts
             INNER JOIN transactions t ON ts.transaction_id = t.id
             INNER JOIN accounts a ON t.account_id = a.id
             LEFT JOIN plaid_connections c ON a.plaid_connection_id = c.id
             LEFT JOIN categories cat ON ts.category_id = cat.id
             WHERE t.date >= :start_date2 AND t.date <= :end_date2
-              AND t.excluded = 0 AND a.excluded = 0 AND ts.is_excluded = 0 AND ts.amount > 0
+              AND t.excluded = 0 AND a.excluded = 0 AND ts.is_excluded = 0
+              AND COALESCE(cat.is_income, 0) = 0
               AND (c.plaid_environment = :environment2 OR a.plaid_connection_id IS NULL)
               AND a.user_id = :user_id2
         ) AS combined
@@ -93,24 +91,28 @@ try {
             COALESCE(category_id, 'uncategorized') AS category_id,
             SUM(effective_amount) AS total_amount
         FROM (
-            SELECT t.category_id, t.amount AS effective_amount
+            SELECT t.category_id, ABS(t.amount) AS effective_amount
             FROM transactions t
             INNER JOIN accounts a ON t.account_id = a.id
             LEFT JOIN plaid_connections c ON a.plaid_connection_id = c.id
+            LEFT JOIN categories cat ON t.category_id = cat.id
             WHERE t.date >= :start_date AND t.date <= :end_date
-              AND t.excluded = 0 AND a.excluded = 0 AND t.amount > 0
+              AND t.excluded = 0 AND a.excluded = 0
+              AND COALESCE(cat.is_income, 0) = 0
               AND {$envFilter} AND {$userFilter}
               AND t.id NOT IN (SELECT DISTINCT transaction_id FROM transaction_splits)
 
             UNION ALL
 
-            SELECT ts.category_id, ts.amount AS effective_amount
+            SELECT ts.category_id, ABS(ts.amount) AS effective_amount
             FROM transaction_splits ts
             INNER JOIN transactions t ON ts.transaction_id = t.id
             INNER JOIN accounts a ON t.account_id = a.id
             LEFT JOIN plaid_connections c ON a.plaid_connection_id = c.id
+            LEFT JOIN categories cat ON ts.category_id = cat.id
             WHERE t.date >= :start_date2 AND t.date <= :end_date2
-              AND t.excluded = 0 AND a.excluded = 0 AND ts.is_excluded = 0 AND ts.amount > 0
+              AND t.excluded = 0 AND a.excluded = 0 AND ts.is_excluded = 0
+              AND COALESCE(cat.is_income, 0) = 0
               AND (c.plaid_environment = :environment2 OR a.plaid_connection_id IS NULL)
               AND a.user_id = :user_id2
         ) AS combined

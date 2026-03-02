@@ -105,6 +105,7 @@ try {
             t.*,
             cat.name as category_name,
             cat.color as category_color,
+            cat.is_income as category_is_income,
             a.name as account_name,
             (SELECT COUNT(*) FROM transaction_splits ts WHERE ts.transaction_id = t.id) as split_count,
             (SELECT SUM(ts2.amount) FROM transaction_splits ts2 WHERE ts2.transaction_id = t.id AND ts2.is_excluded = 0) as included_split_amount

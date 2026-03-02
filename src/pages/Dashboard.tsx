@@ -31,22 +31,25 @@ const Dashboard = () => {
   const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
   
   const transactions = (transactionsData?.data || [])
-    .filter(t => showPending || !t.pending);
+    .filter(t => showPending || !t.pending)
+    .filter(t => !t.excluded);
   const thisMonthTransactions = transactions.filter(t => new Date(t.date) >= startOfMonth);
   
   const getEffectiveAmount = (t: typeof transactions[0]) => {
     if ((t.split_count ?? 0) > 0 && t.included_split_amount != null) {
-      return Number(t.included_split_amount);
+      return Math.abs(Number(t.included_split_amount));
     }
-    return Number(t.amount);
+    return Math.abs(Number(t.amount));
   };
 
+  const isIncomeTransaction = (t: typeof transactions[0]) => !!t.category_is_income;
+
   const monthlyIncome = thisMonthTransactions
-    .filter(t => getEffectiveAmount(t) < 0)
-    .reduce((sum, t) => sum + Math.abs(getEffectiveAmount(t)), 0);
+    .filter(t => isIncomeTransaction(t))
+    .reduce((sum, t) => sum + getEffectiveAmount(t), 0);
   
   const monthlyExpenses = thisMonthTransactions
-    .filter(t => getEffectiveAmount(t) > 0)
+    .filter(t => !isIncomeTransaction(t))
     .reduce((sum, t) => sum + getEffectiveAmount(t), 0);
 
   const netSavings = monthlyIncome - monthlyExpenses;

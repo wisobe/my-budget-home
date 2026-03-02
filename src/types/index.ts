@@ -24,6 +24,7 @@ export interface Transaction {
   included_split_amount?: number;
   category_name?: string;
   category_color?: string;
+  category_is_income?: boolean | number;
   account_name?: string;
   created_at: string;
   updated_at: string;
