@@ -5,6 +5,8 @@
  * GET /api/reports/monthly-overview.php?start_date=YYYY-MM-DD&end_date=YYYY-MM-DD&plaid_environment=sandbox
  *
  * Returns income, expenses, net savings and savings rate per month for the current user.
+ * Income = transactions categorised under an is_income category.
+ * Expenses = all other non-excluded transactions.
  */
 
 require_once __DIR__ . '/../includes/bootstrap.php';
@@ -24,24 +26,27 @@ try {
 
     $pdo = Database::getConnection();
 
-    $envFilter = '(c.plaid_environment = :environment OR a.plaid_connection_id IS NULL)';
+    $envFilter  = '(c.plaid_environment = :environment OR a.plaid_connection_id IS NULL)';
     $userFilter = 'a.user_id = :user_id';
-    $envFilter2 = '(c.plaid_environment = :environment2 OR a.plaid_connection_id IS NULL)';
+    $envFilter2  = '(c.plaid_environment = :environment2 OR a.plaid_connection_id IS NULL)';
     $userFilter2 = 'a.user_id = :user_id2';
 
     // Helper to build the UNION query for split-aware amounts
+    // Now joins categories to determine is_income flag
     $buildQuery = function($dateFilter, $dateFilter2) use ($envFilter, $userFilter, $envFilter2, $userFilter2) {
         return "
             SELECT
                 DATE_FORMAT(date, '%Y-%m') AS month,
-                SUM(CASE WHEN effective_amount < 0 THEN ABS(effective_amount) ELSE 0 END) AS total_income,
-                SUM(CASE WHEN effective_amount > 0 THEN effective_amount ELSE 0 END) AS total_expenses
+                SUM(CASE WHEN is_income_cat = 1 THEN ABS(effective_amount) ELSE 0 END) AS total_income,
+                SUM(CASE WHEN is_income_cat = 0 THEN ABS(effective_amount) ELSE 0 END) AS total_expenses
             FROM (
                 -- Non-split transactions
-                SELECT t.date, t.amount AS effective_amount
+                SELECT t.date, t.amount AS effective_amount,
+                       COALESCE(cat.is_income, 0) AS is_income_cat
                 FROM transactions t
                 INNER JOIN accounts a ON t.account_id = a.id
                 LEFT JOIN plaid_connections c ON a.plaid_connection_id = c.id
+                LEFT JOIN categories cat ON t.category_id = cat.id
                 WHERE {$dateFilter}
                   AND t.excluded = 0 AND a.excluded = 0
                   AND {$envFilter} AND {$userFilter}
@@ -50,11 +55,13 @@ try {
                 UNION ALL
 
                 -- Split parts (non-excluded only)
-                SELECT t.date, ts.amount AS effective_amount
+                SELECT t.date, ts.amount AS effective_amount,
+                       COALESCE(cat.is_income, 0) AS is_income_cat
                 FROM transaction_splits ts
                 INNER JOIN transactions t ON ts.transaction_id = t.id
                 INNER JOIN accounts a ON t.account_id = a.id
                 LEFT JOIN plaid_connections c ON a.plaid_connection_id = c.id
+                LEFT JOIN categories cat ON ts.category_id = cat.id
                 WHERE {$dateFilter2}
                   AND t.excluded = 0 AND a.excluded = 0 AND ts.is_excluded = 0
                   AND {$envFilter2} AND {$userFilter2}
