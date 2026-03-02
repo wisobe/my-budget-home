@@ -44,12 +44,12 @@ const App = () => (
   <React.StrictMode>
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <PreferencesProvider>
-          <PlaidEnvironmentProvider>
-            <TooltipProvider>
-              <Toaster />
-              <Sonner />
-              <AuthGate>
+        <PlaidEnvironmentProvider>
+          <TooltipProvider>
+            <Toaster />
+            <Sonner />
+            <AuthGate>
+              <PreferencesProvider>
                 <BrowserRouter basename={BASE_PATH}>
                   <Routes>
                     <Route path="/" element={<Dashboard />} />
@@ -63,10 +63,10 @@ const App = () => (
                     <Route path="*" element={<NotFound />} />
                   </Routes>
                 </BrowserRouter>
-              </AuthGate>
-            </TooltipProvider>
-          </PlaidEnvironmentProvider>
-        </PreferencesProvider>
+              </PreferencesProvider>
+            </AuthGate>
+          </TooltipProvider>
+        </PlaidEnvironmentProvider>
       </AuthProvider>
     </QueryClientProvider>
   </React.StrictMode>
