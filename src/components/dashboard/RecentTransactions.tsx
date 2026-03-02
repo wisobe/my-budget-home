@@ -10,6 +10,7 @@ export function RecentTransactions() {
   const { t } = useTranslation();
   const { data: transactionsData, isLoading } = useTransactions({ per_page: 5 });
   const { data: categoriesData } = useCategories();
+  const { showPending } = usePreferences();
 
   const categories = categoriesData?.data || [];
   const getCategoryName = (id?: string) => {
@@ -34,7 +35,6 @@ export function RecentTransactions() {
     );
   }
 
-  const { showPending } = usePreferences();
   const transactions = (transactionsData?.data || []).filter(t => showPending || !t.pending);
 
   return (
