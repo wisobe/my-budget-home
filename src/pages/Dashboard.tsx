@@ -31,7 +31,7 @@ const Dashboard = () => {
   const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
   
   const transactions = (transactionsData?.data || [])
-    .filter(t => showPending || !t.pending)
+    .filter(t => !t.pending)
     .filter(t => !t.excluded);
   const thisMonthTransactions = transactions.filter(t => new Date(t.date) >= startOfMonth);
   

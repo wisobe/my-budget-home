@@ -46,7 +46,7 @@ try {
             LEFT JOIN plaid_connections c ON a.plaid_connection_id = c.id
             LEFT JOIN categories cat ON t.category_id = cat.id
             WHERE t.date >= :start_date AND t.date <= :end_date
-              AND t.excluded = 0 AND a.excluded = 0
+              AND t.excluded = 0 AND a.excluded = 0 AND t.pending = 0
               AND COALESCE(cat.is_income, 0) = 0
               AND {$envFilter} AND {$userFilter}
               AND t.id NOT IN (SELECT DISTINCT transaction_id FROM transaction_splits)
@@ -61,7 +61,7 @@ try {
             LEFT JOIN plaid_connections c ON a.plaid_connection_id = c.id
             LEFT JOIN categories cat ON ts.category_id = cat.id
             WHERE t.date >= :start_date2 AND t.date <= :end_date2
-              AND t.excluded = 0 AND a.excluded = 0 AND ts.is_excluded = 0
+              AND t.excluded = 0 AND a.excluded = 0 AND ts.is_excluded = 0 AND t.pending = 0
               AND COALESCE(cat.is_income, 0) = 0
               AND (c.plaid_environment = :environment2 OR a.plaid_connection_id IS NULL)
               AND a.user_id = :user_id2
@@ -97,7 +97,7 @@ try {
             LEFT JOIN plaid_connections c ON a.plaid_connection_id = c.id
             LEFT JOIN categories cat ON t.category_id = cat.id
             WHERE t.date >= :start_date AND t.date <= :end_date
-              AND t.excluded = 0 AND a.excluded = 0
+              AND t.excluded = 0 AND a.excluded = 0 AND t.pending = 0
               AND COALESCE(cat.is_income, 0) = 0
               AND {$envFilter} AND {$userFilter}
               AND t.id NOT IN (SELECT DISTINCT transaction_id FROM transaction_splits)
@@ -111,7 +111,7 @@ try {
             LEFT JOIN plaid_connections c ON a.plaid_connection_id = c.id
             LEFT JOIN categories cat ON ts.category_id = cat.id
             WHERE t.date >= :start_date2 AND t.date <= :end_date2
-              AND t.excluded = 0 AND a.excluded = 0 AND ts.is_excluded = 0
+              AND t.excluded = 0 AND a.excluded = 0 AND ts.is_excluded = 0 AND t.pending = 0
               AND COALESCE(cat.is_income, 0) = 0
               AND (c.plaid_environment = :environment2 OR a.plaid_connection_id IS NULL)
               AND a.user_id = :user_id2
