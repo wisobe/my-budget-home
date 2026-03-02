@@ -48,7 +48,7 @@ try {
                 LEFT JOIN plaid_connections c ON a.plaid_connection_id = c.id
                 LEFT JOIN categories cat ON t.category_id = cat.id
                 WHERE {$dateFilter}
-                  AND t.excluded = 0 AND a.excluded = 0
+                  AND t.excluded = 0 AND a.excluded = 0 AND t.pending = 0
                   AND {$envFilter} AND {$userFilter}
                   AND t.id NOT IN (SELECT DISTINCT transaction_id FROM transaction_splits)
 
@@ -63,7 +63,7 @@ try {
                 LEFT JOIN plaid_connections c ON a.plaid_connection_id = c.id
                 LEFT JOIN categories cat ON ts.category_id = cat.id
                 WHERE {$dateFilter2}
-                  AND t.excluded = 0 AND a.excluded = 0 AND ts.is_excluded = 0
+                  AND t.excluded = 0 AND a.excluded = 0 AND ts.is_excluded = 0 AND t.pending = 0
                   AND {$envFilter2} AND {$userFilter2}
             ) AS combined
             GROUP BY DATE_FORMAT(date, '%Y-%m')
