@@ -116,6 +116,8 @@
     "last6Months": "6 derniers mois",
     "last3Months": "3 derniers mois",
     "lastMonth": "Dernier mois",
+    "currentMonth": "Mois en cours",
+    "specificMonth": "Choisir un mois",
     "ytd": "Année en cours ({{year}})",
     "totalIncome": "Revenus totaux",
     "totalExpenses": "Dépenses totales",
