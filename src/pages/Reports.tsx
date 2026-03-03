@@ -53,15 +53,24 @@ const Reports = () => {
   const endDate = today.toISOString().split('T')[0];
 
   const ranges = useMemo(() => {
-    const makeStart = (monthsBack: number) => {
-      const d = new Date(today.getFullYear(), today.getMonth() - monthsBack, today.getDate() + 1);
+    // Rolling 12 months: sliding window from today
+    const rolling12Start = new Date(today.getFullYear(), today.getMonth() - 12, today.getDate() + 1);
+
+    // Calendar month starts: first day of month N months ago
+    const calendarStart = (monthsBack: number) => {
+      const d = new Date(today.getFullYear(), today.getMonth() - monthsBack, 1);
       return d.toISOString().split('T')[0];
     };
+    // Calendar month end: last day of the previous month
+    const lastDayPrevMonth = new Date(today.getFullYear(), today.getMonth(), 0);
+    const calendarEnd = lastDayPrevMonth.toISOString().split('T')[0];
+
     return {
-      rolling12: makeStart(12),
-      months6: makeStart(6),
-      months3: makeStart(3),
-      months1: makeStart(1),
+      rolling12: rolling12Start.toISOString().split('T')[0],
+      months6Start: calendarStart(6),
+      months3Start: calendarStart(3),
+      months1Start: calendarStart(1),
+      calendarEnd,
       ytd: `${currentYear}-01-01`,
     };
   }, [currentYear]);

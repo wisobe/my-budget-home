@@ -28,7 +28,9 @@ const Dashboard = () => {
   }, [autoSync]);
 
   const now = new Date();
-  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+  // Use the previous calendar month for dashboard stats
+  const startOfMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+  const endOfMonth = new Date(now.getFullYear(), now.getMonth(), 0); // last day of prev month
   
   const transactions = (transactionsData?.data || [])
     .filter(t => !t.pending)
