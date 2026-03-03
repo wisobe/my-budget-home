@@ -38,7 +38,7 @@ try {
             SELECT
                 DATE_FORMAT(date, '%Y-%m') AS month,
                 SUM(CASE WHEN is_income_cat = 1 THEN ABS(effective_amount) ELSE 0 END) AS total_income,
-                SUM(CASE WHEN is_income_cat = 0 THEN ABS(effective_amount) ELSE 0 END) AS total_expenses
+                SUM(CASE WHEN is_income_cat = 0 THEN effective_amount ELSE 0 END) AS total_expenses
             FROM (
                 -- Non-split transactions
                 SELECT t.date, t.amount AS effective_amount,
