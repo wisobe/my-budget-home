@@ -1,5 +1,7 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { format, startOfMonth, endOfMonth, subMonths } from 'date-fns';
+import { enUS, fr } from 'date-fns/locale';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { IncomeExpenseChart } from '@/components/reports/IncomeExpenseChart';
 import { SavingsRateChart } from '@/components/reports/SavingsRateChart';
@@ -8,6 +10,7 @@ import { CategoryBreakdown } from '@/components/reports/CategoryBreakdown';
 import { StatCard } from '@/components/dashboard/StatCard';
 import { useMonthlyOverviewByRange } from '@/hooks/use-reports';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { TrendingUp, Percent, DollarSign, Calendar } from 'lucide-react';
 
 function ReportStats({ monthlyData }: { monthlyData: { total_income: number; total_expenses: number; net_savings: number; savings_rate: number }[] }) {
@@ -47,23 +50,37 @@ function ReportTab({ startDate, endDate, label }: { startDate: string; endDate: 
 }
 
 const Reports = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const today = new Date();
   const currentYear = today.getFullYear();
   const endDate = today.toISOString().split('T')[0];
+  const locale = i18n.language === 'fr' ? fr : enUS;
+
+  // Generate last 12 months for the month picker
+  const monthOptions = useMemo(() => {
+    const options: { value: string; label: string; startDate: string; endDate: string }[] = [];
+    for (let i = 0; i < 12; i++) {
+      const monthDate = subMonths(today, i);
+      const start = format(startOfMonth(monthDate), 'yyyy-MM-dd');
+      const end = format(endOfMonth(monthDate), 'yyyy-MM-dd');
+      const label = format(monthDate, 'MMMM yyyy', { locale });
+      options.push({ value: `month-${i}`, label, startDate: start, endDate: end });
+    }
+    return options;
+  }, [currentYear, i18n.language]);
+
+  const [selectedMonth, setSelectedMonth] = useState(monthOptions[0].value);
+  const selectedMonthData = monthOptions.find(m => m.value === selectedMonth) || monthOptions[0];
 
   const ranges = useMemo(() => {
-    // Rolling 12 months: sliding window from today
     const rolling12Start = new Date(today.getFullYear(), today.getMonth() - 12, today.getDate() + 1);
-
-    // Calendar month starts: first day of month N months ago
     const calendarStart = (monthsBack: number) => {
       const d = new Date(today.getFullYear(), today.getMonth() - monthsBack, 1);
       return d.toISOString().split('T')[0];
     };
-    // Calendar month end: last day of the previous month
     const lastDayPrevMonth = new Date(today.getFullYear(), today.getMonth(), 0);
     const calendarEnd = lastDayPrevMonth.toISOString().split('T')[0];
+    const currentMonthStart = format(startOfMonth(today), 'yyyy-MM-dd');
 
     return {
       rolling12: rolling12Start.toISOString().split('T')[0],
@@ -72,6 +89,7 @@ const Reports = () => {
       months1Start: calendarStart(1),
       calendarEnd,
       ytd: `${currentYear}-01-01`,
+      currentMonthStart,
     };
   }, [currentYear]);
 
@@ -81,22 +99,48 @@ const Reports = () => {
     { value: '6m', label: t('reports.last6Months'), startDate: ranges.months6Start, endDate: ranges.calendarEnd },
     { value: '3m', label: t('reports.last3Months'), startDate: ranges.months3Start, endDate: ranges.calendarEnd },
     { value: '1m', label: t('reports.lastMonth'), startDate: ranges.months1Start, endDate: ranges.calendarEnd },
+    { value: 'current', label: t('reports.currentMonth'), startDate: ranges.currentMonthStart, endDate },
   ];
 
   return (
     <AppLayout title={t('reports.title')}>
       <Tabs defaultValue="rolling" className="space-y-6">
-        <TabsList>
-          {tabs.map(tab => (
-            <TabsTrigger key={tab.value} value={tab.value}>{tab.label}</TabsTrigger>
-          ))}
-        </TabsList>
+        <div className="flex flex-wrap items-center gap-4">
+          <TabsList>
+            {tabs.map(tab => (
+              <TabsTrigger key={tab.value} value={tab.value}>{tab.label}</TabsTrigger>
+            ))}
+            <TabsTrigger value="specific">{t('reports.specificMonth')}</TabsTrigger>
+          </TabsList>
+        </div>
 
         {tabs.map(tab => (
           <TabsContent key={tab.value} value={tab.value}>
             <ReportTab startDate={tab.startDate} endDate={tab.endDate} label={tab.label} />
           </TabsContent>
         ))}
+
+        <TabsContent value="specific">
+          <div className="mb-6">
+            <Select value={selectedMonth} onValueChange={setSelectedMonth}>
+              <SelectTrigger className="w-[240px]">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {monthOptions.map(opt => (
+                  <SelectItem key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <ReportTab
+            startDate={selectedMonthData.startDate}
+            endDate={selectedMonthData.endDate}
+            label={selectedMonthData.label}
+          />
+        </TabsContent>
       </Tabs>
     </AppLayout>
   );
