@@ -37,9 +37,9 @@ const Dashboard = () => {
   
   const getEffectiveAmount = (t: typeof transactions[0]) => {
     if ((t.split_count ?? 0) > 0 && t.included_split_amount != null) {
-      return Math.abs(Number(t.included_split_amount));
+      return Number(t.included_split_amount);
     }
-    return Math.abs(Number(t.amount));
+    return Number(t.amount);
   };
 
   const isIncomeTransaction = (t: typeof transactions[0]) => !!t.category_is_income;

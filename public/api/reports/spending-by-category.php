@@ -40,7 +40,7 @@ try {
             COUNT(*) AS transaction_count
         FROM (
             -- Non-split transactions
-            SELECT t.category_id, cat.name AS category_name, ABS(t.amount) AS effective_amount
+            SELECT t.category_id, cat.name AS category_name, t.amount AS effective_amount
             FROM transactions t
             INNER JOIN accounts a ON t.account_id = a.id
             LEFT JOIN plaid_connections c ON a.plaid_connection_id = c.id
@@ -54,7 +54,7 @@ try {
             UNION ALL
 
             -- Split parts (non-excluded only)
-            SELECT ts.category_id, cat.name AS category_name, ABS(ts.amount) AS effective_amount
+            SELECT ts.category_id, cat.name AS category_name, ts.amount AS effective_amount
             FROM transaction_splits ts
             INNER JOIN transactions t ON ts.transaction_id = t.id
             INNER JOIN accounts a ON t.account_id = a.id
@@ -91,7 +91,7 @@ try {
             COALESCE(category_id, 'uncategorized') AS category_id,
             SUM(effective_amount) AS total_amount
         FROM (
-            SELECT t.category_id, ABS(t.amount) AS effective_amount
+            SELECT t.category_id, t.amount AS effective_amount
             FROM transactions t
             INNER JOIN accounts a ON t.account_id = a.id
             LEFT JOIN plaid_connections c ON a.plaid_connection_id = c.id
@@ -104,7 +104,7 @@ try {
 
             UNION ALL
 
-            SELECT ts.category_id, ABS(ts.amount) AS effective_amount
+            SELECT ts.category_id, ts.amount AS effective_amount
             FROM transaction_splits ts
             INNER JOIN transactions t ON ts.transaction_id = t.id
             INNER JOIN accounts a ON t.account_id = a.id
