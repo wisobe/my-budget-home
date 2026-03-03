@@ -76,11 +76,11 @@ const Reports = () => {
   }, [currentYear]);
 
   const tabs = [
-    { value: 'rolling', label: t('reports.rolling12'), startDate: ranges.rolling12 },
-    { value: 'ytd', label: t('reports.ytd', { year: currentYear }), startDate: ranges.ytd },
-    { value: '6m', label: t('reports.last6Months'), startDate: ranges.months6 },
-    { value: '3m', label: t('reports.last3Months'), startDate: ranges.months3 },
-    { value: '1m', label: t('reports.lastMonth'), startDate: ranges.months1 },
+    { value: 'rolling', label: t('reports.rolling12'), startDate: ranges.rolling12, endDate },
+    { value: 'ytd', label: t('reports.ytd', { year: currentYear }), startDate: ranges.ytd, endDate: ranges.calendarEnd },
+    { value: '6m', label: t('reports.last6Months'), startDate: ranges.months6Start, endDate: ranges.calendarEnd },
+    { value: '3m', label: t('reports.last3Months'), startDate: ranges.months3Start, endDate: ranges.calendarEnd },
+    { value: '1m', label: t('reports.lastMonth'), startDate: ranges.months1Start, endDate: ranges.calendarEnd },
   ];
 
   return (
@@ -94,7 +94,7 @@ const Reports = () => {
 
         {tabs.map(tab => (
           <TabsContent key={tab.value} value={tab.value}>
-            <ReportTab startDate={tab.startDate} endDate={endDate} label={tab.label} />
+            <ReportTab startDate={tab.startDate} endDate={tab.endDate} label={tab.label} />
           </TabsContent>
         ))}
       </Tabs>
