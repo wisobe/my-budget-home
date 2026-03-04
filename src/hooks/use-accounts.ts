@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { accountsApi } from '@/lib/api';
 import { usePlaidEnvironment } from '@/contexts/PlaidEnvironmentContext';
+import { usePreferences } from '@/contexts/PreferencesContext';
 
 export function useAccounts() {
   const { plaidEnvironment } = usePlaidEnvironment();
@@ -30,7 +31,13 @@ export function useUpdateAccount() {
 
 export function useTotalBalance() {
   const { data: accountsData } = useAccounts();
-  return accountsData?.data
-    ?.filter(a => !a.excluded)
-    ?.reduce((sum, account) => sum + Number(account.current_balance || 0), 0) ?? 0;
+  const { balanceAccounts } = usePreferences();
+  const accounts = accountsData?.data?.filter(a => !a.excluded) ?? [];
+
+  if (balanceAccounts.length > 0) {
+    return accounts
+      .filter(a => balanceAccounts.includes(String(a.id)))
+      .reduce((sum, a) => sum + Number(a.current_balance || 0), 0);
+  }
+  return accounts.reduce((sum, a) => sum + Number(a.current_balance || 0), 0);
 }

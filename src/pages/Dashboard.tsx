@@ -5,6 +5,7 @@ import { StatCard } from '@/components/dashboard/StatCard';
 import { AccountsList } from '@/components/dashboard/AccountsList';
 import { RecentTransactions } from '@/components/dashboard/RecentTransactions';
 import { SpendingChart } from '@/components/dashboard/SpendingChart';
+import { BalanceAccountsPicker } from '@/components/dashboard/BalanceAccountsPicker';
 import { useAccounts, useTotalBalance } from '@/hooks/use-accounts';
 import { useTransactions } from '@/hooks/use-transactions';
 import { SyncButton } from '@/components/transactions/SyncButton';
@@ -66,6 +67,7 @@ const Dashboard = () => {
             value={totalBalance}
             icon={Wallet}
             description={t('dashboard.acrossAllAccounts')}
+            action={<BalanceAccountsPicker />}
           />
           <StatCard
             title={t('dashboard.monthlyIncome')}

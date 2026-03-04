@@ -12,21 +12,25 @@ interface StatCardProps {
     label: string;
   };
   variant?: 'default' | 'income' | 'expense';
+  action?: React.ReactNode;
 }
 
-export function StatCard({ title, value, description, icon: Icon, trend, variant = 'default' }: StatCardProps) {
+export function StatCard({ title, value, description, icon: Icon, trend, variant = 'default', action }: StatCardProps) {
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
         <CardTitle className="text-sm font-medium text-muted-foreground">{title}</CardTitle>
-        {Icon && (
-          <Icon className={cn(
-            "h-5 w-5",
-            variant === 'income' && "text-income",
-            variant === 'expense' && "text-expense",
-            variant === 'default' && "text-muted-foreground"
-          )} />
-        )}
+        <div className="flex items-center gap-2">
+          {action}
+          {Icon && (
+            <Icon className={cn(
+              "h-5 w-5",
+              variant === 'income' && "text-income",
+              variant === 'expense' && "text-expense",
+              variant === 'default' && "text-muted-foreground"
+            )} />
+          )}
+        </div>
       </CardHeader>
       <CardContent>
         <div className={cn(

@@ -7,6 +7,7 @@ interface Preferences {
   autoSync: boolean;
   showPending: boolean;
   language: string;
+  balanceAccounts: string[]; // account IDs to include in total balance; empty = all
 }
 
 interface PreferencesContextType extends Preferences {
@@ -14,6 +15,7 @@ interface PreferencesContextType extends Preferences {
   setAutoSync: (v: boolean) => void;
   setShowPending: (v: boolean) => void;
   setLanguage: (v: string) => void;
+  setBalanceAccounts: (v: string[]) => void;
   isLoaded: boolean;
 }
 
@@ -22,6 +24,7 @@ const defaults: Preferences = {
   autoSync: true,
   showPending: true,
   language: 'en',
+  balanceAccounts: [],
 };
 
 function fromApi(data: Record<string, string>): Partial<Preferences> {
@@ -30,6 +33,7 @@ function fromApi(data: Record<string, string>): Partial<Preferences> {
   if (data.auto_sync !== undefined) p.autoSync = data.auto_sync === '1';
   if (data.show_pending !== undefined) p.showPending = data.show_pending === '1';
   if (data.language !== undefined) p.language = data.language;
+  if (data.balance_accounts !== undefined) p.balanceAccounts = data.balance_accounts ? data.balance_accounts.split(',') : [];
   return p;
 }
 
@@ -39,6 +43,7 @@ function toApi(prefs: Preferences): Record<string, string> {
     auto_sync: prefs.autoSync ? '1' : '0',
     show_pending: prefs.showPending ? '1' : '0',
     language: prefs.language,
+    balance_accounts: prefs.balanceAccounts.join(','),
   };
 }
 
@@ -95,9 +100,10 @@ export function PreferencesProvider({ children }: { children: React.ReactNode })
   const setAutoSync = useCallback((v: boolean) => setPrefs(p => ({ ...p, autoSync: v })), []);
   const setShowPending = useCallback((v: boolean) => setPrefs(p => ({ ...p, showPending: v })), []);
   const setLanguage = useCallback((v: string) => setPrefs(p => ({ ...p, language: v })), []);
+  const setBalanceAccounts = useCallback((v: string[]) => setPrefs(p => ({ ...p, balanceAccounts: v })), []);
 
   return (
-    <PreferencesContext.Provider value={{ ...prefs, setDarkMode, setAutoSync, setShowPending, setLanguage, isLoaded }}>
+    <PreferencesContext.Provider value={{ ...prefs, setDarkMode, setAutoSync, setShowPending, setLanguage, setBalanceAccounts, isLoaded }}>
       {children}
     </PreferencesContext.Provider>
   );
