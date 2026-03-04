@@ -32,7 +32,7 @@ try {
         $body = getJsonBody();
 
         // Only allow known preference keys
-        $allowedKeys = ['plaid_environment', 'dark_mode', 'auto_sync', 'show_pending', 'language'];
+        $allowedKeys = ['plaid_environment', 'dark_mode', 'auto_sync', 'show_pending', 'language', 'balance_accounts'];
 
         $stmt = $pdo->prepare("
             INSERT INTO app_settings (setting_key, setting_value)
