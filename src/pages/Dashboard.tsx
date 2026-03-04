@@ -16,16 +16,16 @@ const Dashboard = () => {
   const { t } = useTranslation();
   const totalBalance = useTotalBalance();
   const { data: transactionsData } = useTransactions({ per_page: 100 });
-  const { autoSync, showPending } = usePreferences();
+  const { autoSync, showPending, isLoaded: prefsLoaded } = usePreferences();
   const syncAll = useSyncAllConnections();
   const hasSynced = useRef(false);
 
   useEffect(() => {
-    if (autoSync && !hasSynced.current) {
+    if (prefsLoaded && autoSync && !hasSynced.current) {
       hasSynced.current = true;
       syncAll.mutate(undefined, { onError: () => {} });
     }
-  }, [autoSync]);
+  }, [prefsLoaded, autoSync]);
 
   const now = new Date();
   const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
