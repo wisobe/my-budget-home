@@ -59,7 +59,7 @@ const Reports = () => {
   // Generate last 12 months for the month picker
   const monthOptions = useMemo(() => {
     const options: { value: string; label: string; startDate: string; endDate: string }[] = [];
-    for (let i = 0; i < 12; i++) {
+    for (let i = 0; i < 13; i++) {
       const monthDate = subMonths(today, i);
       const start = format(startOfMonth(monthDate), 'yyyy-MM-dd');
       const end = format(endOfMonth(monthDate), 'yyyy-MM-dd');
@@ -73,7 +73,6 @@ const Reports = () => {
   const selectedMonthData = monthOptions.find(m => m.value === selectedMonth) || monthOptions[0];
 
   const ranges = useMemo(() => {
-    const rolling12Start = new Date(today.getFullYear(), today.getMonth() - 12, today.getDate() + 1);
     const calendarStart = (monthsBack: number) => {
       const d = new Date(today.getFullYear(), today.getMonth() - monthsBack, 1);
       return d.toISOString().split('T')[0];
@@ -83,7 +82,7 @@ const Reports = () => {
     const currentMonthStart = format(startOfMonth(today), 'yyyy-MM-dd');
 
     return {
-      rolling12: rolling12Start.toISOString().split('T')[0],
+      rolling12Start: calendarStart(12),
       months6Start: calendarStart(6),
       months3Start: calendarStart(3),
       months1Start: calendarStart(1),
@@ -94,7 +93,7 @@ const Reports = () => {
   }, [currentYear]);
 
   const tabs = [
-    { value: 'rolling', label: t('reports.rolling12'), startDate: ranges.rolling12, endDate },
+    { value: 'rolling', label: t('reports.rolling12'), startDate: ranges.rolling12Start, endDate: ranges.calendarEnd },
     { value: 'ytd', label: t('reports.ytd', { year: currentYear }), startDate: ranges.ytd, endDate: ranges.calendarEnd },
     { value: '6m', label: t('reports.last6Months'), startDate: ranges.months6Start, endDate: ranges.calendarEnd },
     { value: '3m', label: t('reports.last3Months'), startDate: ranges.months3Start, endDate: ranges.calendarEnd },
