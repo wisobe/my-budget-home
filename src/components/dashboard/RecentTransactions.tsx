@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useTransactions } from '@/hooks/use-transactions';
@@ -5,10 +6,12 @@ import { useCategories } from '@/hooks/use-transactions';
 import { usePreferences } from '@/contexts/PreferencesContext';
 import { cn } from '@/lib/utils';
 import { ArrowUpRight, ArrowDownRight } from 'lucide-react';
+import { format, subDays } from 'date-fns';
 
 export function RecentTransactions() {
   const { t } = useTranslation();
-  const { data: transactionsData, isLoading } = useTransactions({ per_page: 5 });
+  const threeDaysAgo = useMemo(() => format(subDays(new Date(), 3), 'yyyy-MM-dd'), []);
+  const { data: transactionsData, isLoading } = useTransactions({ per_page: 100, start_date: threeDaysAgo });
   const { data: categoriesData } = useCategories();
   const { showPending } = usePreferences();
 
