@@ -17,6 +17,8 @@ import Accounts from "./pages/Accounts";
 import Connections from "./pages/Connections";
 import Settings from "./pages/Settings";
 import AdminUsers from "./pages/AdminUsers";
+import AdminPlaid from "./pages/AdminPlaid";
+import AdminBackend from "./pages/AdminBackend";
 import NotFound from "./pages/NotFound";
 import Login from "./pages/Login";
 
@@ -60,6 +62,8 @@ const App = () => (
                     <Route path="/connections" element={<Connections />} />
                     <Route path="/settings" element={<Settings />} />
                     <Route path="/admin/users" element={<AdminUsers />} />
+                    <Route path="/admin/plaid" element={<AdminPlaid />} />
+                    <Route path="/admin/backend" element={<AdminBackend />} />
                     <Route path="*" element={<NotFound />} />
                   </Routes>
                 </BrowserRouter>

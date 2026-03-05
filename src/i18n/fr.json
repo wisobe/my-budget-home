@@ -13,6 +13,8 @@
     "settings": "Paramètres",
     "admin": "Admin",
     "users": "Utilisateurs",
+    "plaidConfig": "Configuration Plaid",
+    "backendSetup": "Configuration du backend",
     "logout": "Déconnexion"
   },
   "auth": {
@@ -303,6 +305,12 @@
     "deleteUserConfirm": "Supprimer l'utilisateur « {{name}} » ({{email}}) ? Toutes ses données seront définitivement supprimées.",
     "userDeleted": "Utilisateur « {{name}} » supprimé",
     "failedDeleteUser": "Échec de la suppression de l'utilisateur"
+  },
+  "adminPlaid": {
+    "title": "Configuration Plaid"
+  },
+  "adminBackend": {
+    "title": "Configuration du backend"
   },
   "notFound": {
     "title": "404",

@@ -13,6 +13,8 @@
     "settings": "Settings",
     "admin": "Admin",
     "users": "Users",
+    "plaidConfig": "Plaid Configuration",
+    "backendSetup": "Backend Setup",
     "logout": "Logout"
   },
   "auth": {
@@ -303,6 +305,12 @@
     "deleteUserConfirm": "Delete user \"{{name}}\" ({{email}})? This will permanently delete all their data.",
     "userDeleted": "User \"{{name}}\" deleted",
     "failedDeleteUser": "Failed to delete user"
+  },
+  "adminPlaid": {
+    "title": "Plaid Configuration"
+  },
+  "adminBackend": {
+    "title": "Backend Setup"
   },
   "notFound": {
     "title": "404",
