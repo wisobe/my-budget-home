@@ -7,7 +7,11 @@ interface Preferences {
   autoSync: boolean;
   showPending: boolean;
   language: string;
-  balanceAccounts: string[]; // account IDs to include in total balance; empty = all
+  balanceAccounts: string[];
+  consentDataCollection: boolean;
+  consentDataProcessing: boolean;
+  consentDataStorage: boolean;
+  consentRecorded: boolean;
 }
 
 interface PreferencesContextType extends Preferences {
@@ -16,6 +20,9 @@ interface PreferencesContextType extends Preferences {
   setShowPending: (v: boolean) => void;
   setLanguage: (v: string) => void;
   setBalanceAccounts: (v: string[]) => void;
+  setConsentDataCollection: (v: boolean) => void;
+  setConsentDataProcessing: (v: boolean) => void;
+  setConsentDataStorage: (v: boolean) => void;
   isLoaded: boolean;
 }
 
@@ -25,6 +32,10 @@ const defaults: Preferences = {
   showPending: true,
   language: 'en',
   balanceAccounts: [],
+  consentDataCollection: false,
+  consentDataProcessing: false,
+  consentDataStorage: false,
+  consentRecorded: false,
 };
 
 function fromApi(data: Record<string, string>): Partial<Preferences> {
@@ -34,6 +45,9 @@ function fromApi(data: Record<string, string>): Partial<Preferences> {
   if (data.show_pending !== undefined) p.showPending = data.show_pending === '1';
   if (data.language !== undefined) p.language = data.language;
   if (data.balance_accounts !== undefined) p.balanceAccounts = data.balance_accounts ? data.balance_accounts.split(',') : [];
+  if (data.consent_data_collection !== undefined) { p.consentDataCollection = data.consent_data_collection === '1'; p.consentRecorded = true; }
+  if (data.consent_data_processing !== undefined) { p.consentDataProcessing = data.consent_data_processing === '1'; p.consentRecorded = true; }
+  if (data.consent_data_storage !== undefined) { p.consentDataStorage = data.consent_data_storage === '1'; p.consentRecorded = true; }
   return p;
 }
 
@@ -44,6 +58,9 @@ function toApi(prefs: Preferences): Record<string, string> {
     show_pending: prefs.showPending ? '1' : '0',
     language: prefs.language,
     balance_accounts: prefs.balanceAccounts.join(','),
+    consent_data_collection: prefs.consentDataCollection ? '1' : '0',
+    consent_data_processing: prefs.consentDataProcessing ? '1' : '0',
+    consent_data_storage: prefs.consentDataStorage ? '1' : '0',
   };
 }
 
@@ -101,9 +118,12 @@ export function PreferencesProvider({ children }: { children: React.ReactNode })
   const setShowPending = useCallback((v: boolean) => setPrefs(p => ({ ...p, showPending: v })), []);
   const setLanguage = useCallback((v: string) => setPrefs(p => ({ ...p, language: v })), []);
   const setBalanceAccounts = useCallback((v: string[]) => setPrefs(p => ({ ...p, balanceAccounts: v })), []);
+  const setConsentDataCollection = useCallback((v: boolean) => setPrefs(p => ({ ...p, consentDataCollection: v, consentRecorded: true })), []);
+  const setConsentDataProcessing = useCallback((v: boolean) => setPrefs(p => ({ ...p, consentDataProcessing: v, consentRecorded: true })), []);
+  const setConsentDataStorage = useCallback((v: boolean) => setPrefs(p => ({ ...p, consentDataStorage: v, consentRecorded: true })), []);
 
   return (
-    <PreferencesContext.Provider value={{ ...prefs, setDarkMode, setAutoSync, setShowPending, setLanguage, setBalanceAccounts, isLoaded }}>
+    <PreferencesContext.Provider value={{ ...prefs, setDarkMode, setAutoSync, setShowPending, setLanguage, setBalanceAccounts, setConsentDataCollection, setConsentDataProcessing, setConsentDataStorage, isLoaded }}>
       {children}
     </PreferencesContext.Provider>
   );
