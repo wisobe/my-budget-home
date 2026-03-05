@@ -413,5 +413,24 @@
     "budgetDeleted": "Budget supprimé",
     "failedSave": "Échec de l'enregistrement du budget",
     "failedDelete": "Échec de la suppression du budget"
+  },
+  "consent": {
+    "cookieTitle": "Ce site utilise des cookies",
+    "cookieDescription": "Nous utilisons des cookies pour améliorer votre expérience, analyser le trafic du site et à des fins de sécurité. En continuant à utiliser ce site, vous consentez à l'utilisation de cookies.",
+    "accept": "Accepter",
+    "decline": "Refuser",
+    "dataTitle": "Votre vie privée compte",
+    "dataDescription": "Nous avons besoin de votre consentement pour gérer vos données",
+    "dataExplanation": "BudgetWise collecte, traite et stocke vos données financières pour fournir des services de budgétisation et de reporting personnalisés. Vous avez le contrôle total sur l'utilisation de vos données. Vous pouvez mettre à jour ces préférences à tout moment dans les Paramètres.",
+    "collectionTitle": "Collecte de données",
+    "collectionDesc": "Nous autoriser à collecter vos données de transactions financières à partir de vos comptes bancaires connectés",
+    "processingTitle": "Traitement des données",
+    "processingDesc": "Nous autoriser à analyser vos données pour générer des rapports, budgets et analyses de dépenses",
+    "storageTitle": "Stockage des données",
+    "storageDesc": "Nous autoriser à stocker vos données financières de manière sécurisée pour un accès futur et un suivi historique",
+    "declineAll": "Tout refuser",
+    "savePreferences": "Enregistrer les préférences",
+    "privacyTitle": "Confidentialité et consentement",
+    "privacyDescription": "Gérer la façon dont vos données sont collectées, traitées et stockées"
   }
 }

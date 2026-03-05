@@ -8,6 +8,8 @@ import { BASE_PATH } from "@/lib/config";
 import { PlaidEnvironmentProvider } from "@/contexts/PlaidEnvironmentContext";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { PreferencesProvider } from "@/contexts/PreferencesContext";
+import { CookieConsentBanner } from "@/components/consent/CookieConsentBanner";
+import { DataConsentDialog } from "@/components/consent/DataConsentDialog";
 import { Loader2 } from "lucide-react";
 import Dashboard from "./pages/Dashboard";
 import Transactions from "./pages/Transactions";
@@ -50,8 +52,10 @@ const App = () => (
           <TooltipProvider>
             <Toaster />
             <Sonner />
+            <CookieConsentBanner />
             <AuthGate>
               <PreferencesProvider>
+                <DataConsentDialog />
                 <BrowserRouter basename={BASE_PATH}>
                   <Routes>
                     <Route path="/" element={<Dashboard />} />
