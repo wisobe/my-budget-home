@@ -11,13 +11,14 @@ import { useTransactions } from '@/hooks/use-transactions';
 import { SyncButton } from '@/components/transactions/SyncButton';
 import { useSyncAllConnections } from '@/hooks/use-plaid';
 import { usePreferences } from '@/contexts/PreferencesContext';
+import { ConsentGate } from '@/components/consent/ConsentGate';
 import { Wallet, TrendingUp, TrendingDown, PiggyBank } from 'lucide-react';
 
 const Dashboard = () => {
   const { t } = useTranslation();
   const totalBalance = useTotalBalance();
   const { data: transactionsData } = useTransactions({ per_page: 100 });
-  const { autoSync, showPending, isLoaded: prefsLoaded } = usePreferences();
+  const { autoSync, showPending, isLoaded: prefsLoaded, consentDataProcessing } = usePreferences();
   const syncAll = useSyncAllConnections();
   const hasSynced = useRef(false);
 
@@ -54,6 +55,14 @@ const Dashboard = () => {
     .reduce((sum, t) => sum + getEffectiveAmount(t), 0);
 
   const netSavings = monthlyIncome - monthlyExpenses;
+
+  if (!consentDataProcessing) {
+    return (
+      <AppLayout title={t('dashboard.title')}>
+        <ConsentGate type="processing" />
+      </AppLayout>
+    );
+  }
 
   return (
     <AppLayout 
