@@ -431,6 +431,31 @@
     "declineAll": "Tout refuser",
     "savePreferences": "Enregistrer les préférences",
     "privacyTitle": "Confidentialité et consentement",
-    "privacyDescription": "Gérer la façon dont vos données sont collectées, traitées et stockées"
+    "privacyDescription": "Gérer la façon dont vos données sont collectées, traitées et stockées",
+    "gate": {
+      "collectionTitle": "Collecte de données désactivée",
+      "collectionDescription": "Vous n'avez pas donné votre consentement pour la collecte de données. Les connexions bancaires et la synchronisation des transactions sont temporairement désactivées. Activez la collecte de données dans vos paramètres de confidentialité pour reprendre.",
+      "processingTitle": "Traitement des données désactivé",
+      "processingDescription": "Vous n'avez pas donné votre consentement pour le traitement des données. Les analyses du tableau de bord, les rapports et les analyses de dépenses sont temporairement désactivés. Activez le traitement des données dans vos paramètres de confidentialité pour voir ce contenu.",
+      "goToSettings": "Aller aux paramètres de confidentialité",
+      "collectionSyncBlocked": "La synchronisation est désactivée car vous n'avez pas donné votre consentement pour la collecte de données. Mettez à jour vos paramètres de confidentialité pour activer la synchronisation.",
+      "collectionHint": "Les connexions bancaires et la synchronisation sont désactivées tant que ceci est désactivé.",
+      "processingHint": "Le tableau de bord et les rapports sont désactivés tant que ceci est désactivé.",
+      "storageHint": "Vos données devront peut-être être supprimées si le consentement au stockage est retiré."
+    },
+    "deleteData": {
+      "title": "Supprimer toutes les données financières",
+      "description": "Cette action est permanente et ne peut pas être annulée",
+      "warning": "Cela supprimera définitivement toutes vos données financières, y compris les transactions, comptes, connexions bancaires, budgets, catégories et règles de catégorisation. Votre compte utilisateur restera actif mais toutes les données financières seront effacées.",
+      "confirmLabel": "Tapez DELETE pour confirmer",
+      "passwordLabel": "Entrez votre mot de passe pour confirmer",
+      "passwordPlaceholder": "Votre mot de passe actuel",
+      "confirm": "Supprimer toutes mes données",
+      "success": "Toutes vos données financières ont été supprimées de manière sécurisée.",
+      "failed": "Échec de la suppression des données. Veuillez réessayer.",
+      "button": "Supprimer mes données",
+      "manualTitle": "Supprimer les données stockées",
+      "manualDesc": "Supprimer définitivement toutes vos données financières de nos serveurs"
+    }
   }
 }
