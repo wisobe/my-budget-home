@@ -12,6 +12,8 @@ import { useMonthlyOverviewByRange } from '@/hooks/use-reports';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { TrendingUp, Percent, DollarSign, Calendar } from 'lucide-react';
+import { usePreferences } from '@/contexts/PreferencesContext';
+import { ConsentGate } from '@/components/consent/ConsentGate';
 
 function ReportStats({ monthlyData }: { monthlyData: { total_income: number; total_expenses: number; net_savings: number; savings_rate: number }[] }) {
   const { t } = useTranslation();
@@ -51,6 +53,7 @@ function ReportTab({ startDate, endDate, label }: { startDate: string; endDate: 
 
 const Reports = () => {
   const { t, i18n } = useTranslation();
+  const { consentDataProcessing } = usePreferences();
   const today = new Date();
   const currentYear = today.getFullYear();
   const endDate = today.toISOString().split('T')[0];
@@ -100,6 +103,14 @@ const Reports = () => {
     { value: '1m', label: t('reports.lastMonth'), startDate: ranges.months1Start, endDate: ranges.calendarEnd },
     { value: 'current', label: t('reports.currentMonth'), startDate: ranges.currentMonthStart, endDate },
   ];
+
+  if (!consentDataProcessing) {
+    return (
+      <AppLayout title={t('reports.title')}>
+        <ConsentGate type="processing" />
+      </AppLayout>
+    );
+  }
 
   return (
     <AppLayout title={t('reports.title')}>

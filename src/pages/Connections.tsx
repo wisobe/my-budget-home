@@ -10,6 +10,8 @@ import { usePlaidEnvironment } from '@/contexts/PlaidEnvironmentContext';
 import { toast } from '@/components/ui/sonner';
 import { useCallback, useEffect, useState } from 'react';
 import { usePlaidLink } from 'react-plaid-link';
+import { usePreferences } from '@/contexts/PreferencesContext';
+import { ConsentGate } from '@/components/consent/ConsentGate';
 
 function PlaidLinkButton({ linkToken, onSuccess, onExit }: {
   linkToken: string;
@@ -164,6 +166,16 @@ const Connections = () => {
     setIsConnecting(false);
     setRelinkingId(null);
   }, []);
+
+  const { consentDataCollection } = usePreferences();
+
+  if (!consentDataCollection) {
+    return (
+      <AppLayout title={t('connections.title')}>
+        <ConsentGate type="collection" />
+      </AppLayout>
+    );
+  }
 
   return (
     <AppLayout

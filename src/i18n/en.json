@@ -431,6 +431,31 @@
     "declineAll": "Decline All",
     "savePreferences": "Save Preferences",
     "privacyTitle": "Privacy & Consent",
-    "privacyDescription": "Manage how your data is collected, processed, and stored"
+    "privacyDescription": "Manage how your data is collected, processed, and stored",
+    "gate": {
+      "collectionTitle": "Data Collection Disabled",
+      "collectionDescription": "You have not given consent for data collection. Bank connections and transaction syncing are temporarily disabled. Enable data collection in your privacy settings to resume.",
+      "processingTitle": "Data Processing Disabled",
+      "processingDescription": "You have not given consent for data processing. Dashboard analytics, reports, and spending insights are temporarily disabled. Enable data processing in your privacy settings to view this content.",
+      "goToSettings": "Go to Privacy Settings",
+      "collectionSyncBlocked": "Data syncing is disabled because you have not given consent for data collection. Update your privacy settings to enable syncing.",
+      "collectionHint": "Bank connections and syncing are disabled while this is off.",
+      "processingHint": "Dashboard and reports are disabled while this is off.",
+      "storageHint": "Your data may need to be deleted if storage consent is withdrawn."
+    },
+    "deleteData": {
+      "title": "Delete All Financial Data",
+      "description": "This action is permanent and cannot be undone",
+      "warning": "This will permanently delete all your financial data including transactions, accounts, bank connections, budgets, categories, and categorization rules. Your user account will remain active but all financial data will be erased.",
+      "confirmLabel": "Type DELETE to confirm",
+      "passwordLabel": "Enter your password to confirm",
+      "passwordPlaceholder": "Your current password",
+      "confirm": "Delete All My Data",
+      "success": "All your financial data has been securely deleted.",
+      "failed": "Failed to delete data. Please try again.",
+      "button": "Delete My Data",
+      "manualTitle": "Delete Stored Data",
+      "manualDesc": "Permanently remove all your financial data from our servers"
+    }
   }
 }
