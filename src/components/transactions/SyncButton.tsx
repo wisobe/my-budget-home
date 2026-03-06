@@ -3,12 +3,18 @@ import { Button } from '@/components/ui/button';
 import { RefreshCw, Loader2 } from 'lucide-react';
 import { useSyncAllConnections } from '@/hooks/use-plaid';
 import { toast } from '@/components/ui/sonner';
+import { usePreferences } from '@/contexts/PreferencesContext';
 
 export function SyncButton() {
   const { t } = useTranslation();
   const syncAll = useSyncAllConnections();
+  const { consentDataCollection } = usePreferences();
 
   const handleSync = async () => {
+    if (!consentDataCollection) {
+      toast.error(t('consent.gate.collectionSyncBlocked'));
+      return;
+    }
     try {
       const result = await syncAll.mutateAsync();
       if (result.added === 0 && result.modified === 0 && result.removed === 0) {
@@ -22,7 +28,7 @@ export function SyncButton() {
   };
 
   return (
-    <Button variant="outline" size="sm" onClick={handleSync} disabled={syncAll.isPending}>
+    <Button variant="outline" size="sm" onClick={handleSync} disabled={syncAll.isPending || !consentDataCollection}>
       {syncAll.isPending ? (
         <Loader2 className="h-4 w-4 mr-2 animate-spin" />
       ) : (
