@@ -23,7 +23,7 @@ const Dashboard = () => {
   const hasSynced = useRef(false);
 
   useEffect(() => {
-    if (prefsLoaded && autoSync && !hasSynced.current) {
+    if (prefsLoaded && autoSync && consentDataProcessing && !hasSynced.current) {
       hasSynced.current = true;
       syncAll.mutate(undefined, { onError: () => {} });
     }
