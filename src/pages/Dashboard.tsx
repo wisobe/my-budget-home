@@ -48,7 +48,7 @@ const Dashboard = () => {
 
   const monthlyIncome = thisMonthTransactions
     .filter(t => isIncomeTransaction(t))
-    .reduce((sum, t) => sum + getEffectiveAmount(t), 0);
+    .reduce((sum, t) => sum + Math.abs(getEffectiveAmount(t)), 0);
   
   const monthlyExpenses = thisMonthTransactions
     .filter(t => !isIncomeTransaction(t))
