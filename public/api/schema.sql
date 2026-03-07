@@ -8,6 +8,7 @@ CREATE TABLE IF NOT EXISTS users (
     name VARCHAR(255) NOT NULL,
     password_hash VARCHAR(255) NOT NULL,
     role ENUM('admin', 'user') NOT NULL DEFAULT 'user',
+    allow_sandbox BOOLEAN DEFAULT FALSE,
     totp_secret VARCHAR(64) DEFAULT NULL,
     totp_enabled BOOLEAN DEFAULT FALSE,
     recovery_codes TEXT DEFAULT NULL,

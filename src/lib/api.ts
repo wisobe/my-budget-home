@@ -107,13 +107,13 @@ export const authApi = {
   listUsers: () =>
     request<ApiResponse<User[]>>('/auth/users.php'),
 
-  createUser: (data: { email: string; name: string; password: string; role?: string }) =>
+  createUser: (data: { email: string; name: string; password: string; role?: string; allow_sandbox?: boolean }) =>
     request<ApiResponse<User>>('/auth/users.php', {
       method: 'POST',
       body: JSON.stringify(data),
     }),
 
-  updateUser: (data: { id: string; email?: string; name?: string; password?: string; role?: string }) =>
+  updateUser: (data: { id: string; email?: string; name?: string; password?: string; role?: string; allow_sandbox?: boolean }) =>
     request<ApiResponse<User>>('/auth/users.php', {
       method: 'PUT',
       body: JSON.stringify(data),
