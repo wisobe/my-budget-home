@@ -295,6 +295,8 @@
     "userRole": "User",
     "adminRole": "Admin",
     "roleDescription": "Admins can manage users, access sandbox environment, and configure system settings.",
+    "allowSandbox": "Allow Sandbox Access",
+    "allowSandboxDescription": "When enabled, this user can switch between Sandbox and Production Plaid environments.",
     "createUser": "Create User",
     "saveChanges": "Save Changes",
     "userCreated": "User created successfully",
