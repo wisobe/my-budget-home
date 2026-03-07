@@ -14,7 +14,7 @@ try {
     if ($_SERVER['REQUEST_METHOD'] === 'GET') {
         requireAdmin();
         
-        $stmt = $pdo->query('SELECT id, email, name, role, created_at FROM users ORDER BY created_at');
+        $stmt = $pdo->query('SELECT id, email, name, role, allow_sandbox, created_at FROM users ORDER BY created_at');
         Response::success($stmt->fetchAll());
 
     } elseif ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -41,13 +41,14 @@ try {
         }
         
         $role = in_array($body['role'] ?? 'user', ['admin', 'user']) ? ($body['role'] ?? 'user') : 'user';
+        $allowSandbox = !empty($body['allow_sandbox']) ? 1 : 0;
         
         $id = 'user_' . uniqid();
         $hash = password_hash($body['password'], PASSWORD_BCRYPT);
         
         $stmt = $pdo->prepare('
-            INSERT INTO users (id, email, name, password_hash, role, created_at)
-            VALUES (:id, :email, :name, :hash, :role, NOW())
+            INSERT INTO users (id, email, name, password_hash, role, allow_sandbox, created_at)
+            VALUES (:id, :email, :name, :hash, :role, :allow_sandbox, NOW())
         ');
         $stmt->execute([
             'id' => $id,
@@ -55,6 +56,7 @@ try {
             'name' => trim($body['name']),
             'hash' => $hash,
             'role' => $role,
+            'allow_sandbox' => $allowSandbox,
         ]);
         
         Response::success([
@@ -62,6 +64,7 @@ try {
             'email' => $email,
             'name' => trim($body['name']),
             'role' => $role,
+            'allow_sandbox' => $allowSandbox,
         ], 'User created');
 
     } elseif ($_SERVER['REQUEST_METHOD'] === 'PUT') {
@@ -110,6 +113,12 @@ try {
             $params['role'] = $body['role'];
         }
         
+        // Update allow_sandbox
+        if (isset($body['allow_sandbox'])) {
+            $updates[] = 'allow_sandbox = :allow_sandbox';
+            $params['allow_sandbox'] = !empty($body['allow_sandbox']) ? 1 : 0;
+        }
+        
         if (empty($updates)) {
             Response::error('No fields to update');
         }
@@ -122,7 +131,7 @@ try {
             Response::notFound('User not found');
         }
         
-        $fetchStmt = $pdo->prepare('SELECT id, email, name, role, created_at FROM users WHERE id = :id');
+        $fetchStmt = $pdo->prepare('SELECT id, email, name, role, allow_sandbox, created_at FROM users WHERE id = :id');
         $fetchStmt->execute(['id' => $body['id']]);
         Response::success($fetchStmt->fetch(), 'User updated');
 

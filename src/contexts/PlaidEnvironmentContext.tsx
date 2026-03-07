@@ -52,7 +52,8 @@ export function PlaidEnvironmentProvider({ children }: { children: React.ReactNo
   const queryClient = useQueryClient();
   const { isAdmin, isAuthenticated } = useAuth();
 
-  const canUseSandbox = isAdmin;
+  const { user } = useAuth();
+  const canUseSandbox = isAdmin || !!user?.allow_sandbox;
   const effectiveEnvironment = canUseSandbox ? plaidEnvironment : 'production';
 
   // Load preference from server on mount

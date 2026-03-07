@@ -5,6 +5,7 @@ export interface User {
   email: string;
   name: string;
   role: 'admin' | 'user';
+  allow_sandbox?: boolean;
   created_at?: string;
 }
 

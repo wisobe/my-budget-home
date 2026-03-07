@@ -295,6 +295,8 @@
     "userRole": "Utilisateur",
     "adminRole": "Admin",
     "roleDescription": "Les admins peuvent gérer les utilisateurs, accéder au bac à sable et configurer les paramètres système.",
+    "allowSandbox": "Autoriser l'accès au bac à sable",
+    "allowSandboxDescription": "Lorsqu'activé, cet utilisateur peut basculer entre les environnements Plaid Sandbox et Production.",
     "createUser": "Créer l'utilisateur",
     "saveChanges": "Enregistrer les modifications",
     "userCreated": "Utilisateur créé avec succès",

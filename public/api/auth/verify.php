@@ -31,7 +31,7 @@ try {
     if (preg_match('/Bearer\s+(.+)/i', $authHeader, $matches)) {
         try {
             $stmt = $pdo->prepare('
-                SELECT u.id, u.email, u.name, u.role
+                SELECT u.id, u.email, u.name, u.role, u.allow_sandbox
                 FROM auth_tokens at
                 INNER JOIN users u ON at.user_id = u.id
                 WHERE at.token = :token AND at.expires_at > NOW()

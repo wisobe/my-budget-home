@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Switch } from '@/components/ui/switch';
 import { useAuth } from '@/contexts/AuthContext';
 import { authApi } from '@/lib/api';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
@@ -26,6 +27,7 @@ const AdminUsers = () => {
   const [newName, setNewName] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [newRole, setNewRole] = useState('user');
+  const [newAllowSandbox, setNewAllowSandbox] = useState(false);
   const [creating, setCreating] = useState(false);
 
   // Edit state
@@ -35,6 +37,7 @@ const AdminUsers = () => {
   const [editName, setEditName] = useState('');
   const [editPassword, setEditPassword] = useState('');
   const [editRole, setEditRole] = useState('user');
+  const [editAllowSandbox, setEditAllowSandbox] = useState(false);
   const [saving, setSaving] = useState(false);
 
   const { data: usersData, isLoading } = useQuery({
@@ -53,10 +56,10 @@ const AdminUsers = () => {
     if (!newEmail || !newName || !newPassword) return;
     setCreating(true);
     try {
-      await authApi.createUser({ email: newEmail, name: newName, password: newPassword, role: newRole });
+      await authApi.createUser({ email: newEmail, name: newName, password: newPassword, role: newRole, allow_sandbox: newAllowSandbox });
       queryClient.invalidateQueries({ queryKey: ['admin-users'] });
       toast.success(t('adminUsers.userCreated'));
-      setNewEmail(''); setNewName(''); setNewPassword(''); setNewRole('user'); setAddOpen(false);
+      setNewEmail(''); setNewName(''); setNewPassword(''); setNewRole('user'); setNewAllowSandbox(false); setAddOpen(false);
     } catch (err: any) {
       toast.error(err.message || t('adminUsers.failedCreateUser'));
     } finally { setCreating(false); }
@@ -68,6 +71,7 @@ const AdminUsers = () => {
     setEditName(user.name);
     setEditPassword('');
     setEditRole(user.role);
+    setEditAllowSandbox(!!user.allow_sandbox);
     setEditOpen(true);
   };
 
@@ -80,6 +84,7 @@ const AdminUsers = () => {
       if (editName !== editUser.name) data.name = editName;
       if (editPassword) data.password = editPassword;
       if (editRole !== editUser.role) data.role = editRole;
+      data.allow_sandbox = editAllowSandbox;
       await authApi.updateUser(data);
       queryClient.invalidateQueries({ queryKey: ['admin-users'] });
       toast.success(t('adminUsers.userUpdated'));
@@ -100,11 +105,12 @@ const AdminUsers = () => {
     }
   };
 
-  const UserFormFields = ({ email, setEmail, name, setName, password, setPassword, role, setRole, isEdit }: {
+  const UserFormFields = ({ email, setEmail, name, setName, password, setPassword, role, setRole, allowSandbox, setAllowSandbox, isEdit }: {
     email: string; setEmail: (v: string) => void;
     name: string; setName: (v: string) => void;
     password: string; setPassword: (v: string) => void;
     role: string; setRole: (v: string) => void;
+    allowSandbox: boolean; setAllowSandbox: (v: boolean) => void;
     isEdit?: boolean;
   }) => (
     <div className="space-y-4">
@@ -136,6 +142,15 @@ const AdminUsers = () => {
         </Select>
         <p className="text-xs text-muted-foreground">{t('adminUsers.roleDescription')}</p>
       </div>
+      {role !== 'admin' && (
+        <div className="flex items-center justify-between rounded-lg border p-3">
+          <div className="space-y-0.5">
+            <Label>{t('adminUsers.allowSandbox')}</Label>
+            <p className="text-xs text-muted-foreground">{t('adminUsers.allowSandboxDescription')}</p>
+          </div>
+          <Switch checked={allowSandbox} onCheckedChange={setAllowSandbox} />
+        </div>
+      )}
     </div>
   );
 
@@ -158,7 +173,8 @@ const AdminUsers = () => {
                 <DialogContent>
                   <DialogHeader><DialogTitle>{t('adminUsers.createNewUser')}</DialogTitle></DialogHeader>
                   <UserFormFields email={newEmail} setEmail={setNewEmail} name={newName} setName={setNewName}
-                    password={newPassword} setPassword={setNewPassword} role={newRole} setRole={setNewRole} />
+                    password={newPassword} setPassword={setNewPassword} role={newRole} setRole={setNewRole}
+                    allowSandbox={newAllowSandbox} setAllowSandbox={setNewAllowSandbox} />
                   <Button className="w-full" disabled={!newEmail || !newName || !newPassword || newPassword.length < 6 || creating} onClick={handleCreateUser}>
                     {creating && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
                     {t('adminUsers.createUser')}
@@ -208,7 +224,8 @@ const AdminUsers = () => {
           <DialogContent>
             <DialogHeader><DialogTitle>{t('adminUsers.editUser')}</DialogTitle></DialogHeader>
             <UserFormFields email={editEmail} setEmail={setEditEmail} name={editName} setName={setEditName}
-              password={editPassword} setPassword={setEditPassword} role={editRole} setRole={setEditRole} isEdit />
+              password={editPassword} setPassword={setEditPassword} role={editRole} setRole={setEditRole}
+              allowSandbox={editAllowSandbox} setAllowSandbox={setEditAllowSandbox} isEdit />
             <Button className="w-full" disabled={!editEmail || !editName || saving} onClick={handleSaveEdit}>
               {saving && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
               {t('adminUsers.saveChanges')}
