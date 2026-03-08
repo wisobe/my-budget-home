@@ -59,6 +59,9 @@ try {
             'allow_sandbox' => $allowSandbox,
         ]);
         
+        $adminUser = getCurrentUser();
+        AuditLog::log('user_created', $adminUser['id'], $id, json_encode(['email' => $email, 'role' => $role]));
+        
         Response::success([
             'id' => $id,
             'email' => $email,
