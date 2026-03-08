@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
-import { Wallet, Loader2, Eye, EyeOff, ShieldCheck } from 'lucide-react';
+import { Wallet, Loader2, Eye, EyeOff, ShieldCheck, Globe } from 'lucide-react';
 
 const Login = () => {
   const { t } = useTranslation();
