@@ -172,7 +172,7 @@ const Settings = () => {
         {/* Two-Factor Authentication */}
         <AccordionItem value="twoFactor" className="border-none">
           <Card>
-            <CardHeader className="pb-0">
+            <CardHeader className="pb-4">
               <AccordionTrigger className="hover:no-underline py-0">
                 <TwoFactorHeader />
               </AccordionTrigger>
