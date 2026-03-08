@@ -91,6 +91,15 @@ const AdminAuditLog = () => {
   const totalPages = auditData?.total_pages || 1;
   const total = auditData?.total || 0;
 
+  const { data: securityStats, isLoading: statsLoading } = useQuery({
+    queryKey: ['security-stats'],
+    queryFn: () => auditApi.securityStats(),
+    enabled: isAdmin,
+    refetchInterval: 60000,
+  });
+
+  const stats = securityStats?.data;
+
   if (!isAdmin) {
     return <Navigate to="/" replace />;
   }
@@ -112,15 +121,6 @@ const AdminAuditLog = () => {
     if (d.name) parts.push(d.name);
     return parts.length > 0 ? parts.join(' · ') : null;
   };
-
-  const { data: securityStats, isLoading: statsLoading } = useQuery({
-    queryKey: ['security-stats'],
-    queryFn: () => auditApi.securityStats(),
-    enabled: isAdmin,
-    refetchInterval: 60000, // refresh every minute
-  });
-
-  const stats = securityStats?.data;
 
   const statusIcon = (status?: string) => {
     switch (status) {
