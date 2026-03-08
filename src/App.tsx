@@ -83,30 +83,34 @@ const App = () => (
             <Toaster />
             <Sonner />
             <CookieConsentBanner />
-            <CookieGate>
-            <AuthGate>
-              <PreferencesProvider>
-                <DataConsentDialog />
-                <BrowserRouter basename={BASE_PATH}>
-                  <Routes>
-                    <Route path="/" element={<Dashboard />} />
-                    <Route path="/transactions" element={<Transactions />} />
-                    <Route path="/budgets" element={<Budgets />} />
-                    <Route path="/reports" element={<Reports />} />
-                    <Route path="/accounts" element={<Accounts />} />
-                    <Route path="/connections" element={<Connections />} />
-                    <Route path="/settings" element={<Settings />} />
-                    <Route path="/admin/users" element={<AdminUsers />} />
-                    <Route path="/admin/plaid" element={<AdminPlaid />} />
-                    <Route path="/admin/backend" element={<AdminBackend />} />
-                    <Route path="/admin/audit" element={<AdminAuditLog />} />
-                    <Route path="/privacy" element={<PrivacyPolicy />} />
-                    <Route path="*" element={<NotFound />} />
-                  </Routes>
-                </BrowserRouter>
-              </PreferencesProvider>
-            </AuthGate>
-            </CookieGate>
+            <BrowserRouter basename={BASE_PATH}>
+              <Routes>
+                <Route path="/privacy" element={<PrivacyPolicy />} />
+                <Route path="*" element={
+                  <CookieGate>
+                    <AuthGate>
+                      <PreferencesProvider>
+                        <DataConsentDialog />
+                        <Routes>
+                          <Route path="/" element={<Dashboard />} />
+                          <Route path="/transactions" element={<Transactions />} />
+                          <Route path="/budgets" element={<Budgets />} />
+                          <Route path="/reports" element={<Reports />} />
+                          <Route path="/accounts" element={<Accounts />} />
+                          <Route path="/connections" element={<Connections />} />
+                          <Route path="/settings" element={<Settings />} />
+                          <Route path="/admin/users" element={<AdminUsers />} />
+                          <Route path="/admin/plaid" element={<AdminPlaid />} />
+                          <Route path="/admin/backend" element={<AdminBackend />} />
+                          <Route path="/admin/audit" element={<AdminAuditLog />} />
+                          <Route path="*" element={<NotFound />} />
+                        </Routes>
+                      </PreferencesProvider>
+                    </AuthGate>
+                  </CookieGate>
+                } />
+              </Routes>
+            </BrowserRouter>
           </TooltipProvider>
         </PlaidEnvironmentProvider>
       </AuthProvider>
