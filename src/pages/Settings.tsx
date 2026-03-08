@@ -731,10 +731,10 @@ const Settings = () => {
                 <PrivacyConsentSettings />
                 <Separator />
                 <div>
-                  <a href="privacy" className="text-sm text-primary hover:underline inline-flex items-center gap-1">
+                  <Link to="/privacy" className="text-sm text-primary hover:underline inline-flex items-center gap-1">
                     <ShieldCheck className="h-4 w-4" />
                     {t('privacy.viewPolicy')}
-                  </a>
+                  </Link>
                 </div>
               </CardContent>
             </AccordionContent>
