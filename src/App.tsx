@@ -28,6 +28,7 @@ import Login from "./pages/Login";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import SecurityPolicy from "./pages/SecurityPolicy";
 import AccessControlPolicy from "./pages/AccessControlPolicy";
+import DataRetentionPolicy from "./pages/DataRetentionPolicy";
 
 const queryClient = new QueryClient();
 
