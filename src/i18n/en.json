@@ -44,6 +44,7 @@
     "recentTransactions": "Recent Transactions",
     "spendingByCategory": "Spending by Category",
     "noSpendingData": "No spending data for this month",
+    "totalSpending": "Total",
     "uncategorized": "Uncategorized",
     "unknown": "Unknown"
   },

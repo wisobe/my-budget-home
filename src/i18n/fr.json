@@ -44,6 +44,7 @@
     "recentTransactions": "Transactions récentes",
     "spendingByCategory": "Dépenses par catégorie",
     "noSpendingData": "Aucune donnée de dépenses pour ce mois",
+    "totalSpending": "Total",
     "uncategorized": "Non catégorisé",
     "unknown": "Inconnu"
   },
