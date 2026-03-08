@@ -54,6 +54,7 @@ try {
     }
 
     if (!$valid) {
+        AuditLog::log('login_failed', $row['user_id'], null, json_encode(['reason' => '2fa_invalid_code']));
         Response::error('Invalid verification code.', 401);
     }
 
@@ -68,6 +69,8 @@ try {
 
     $pdo->prepare("INSERT INTO auth_tokens (token, user_id, expires_at) VALUES (:token, :user_id, :expires)")
         ->execute(['token' => $token, 'user_id' => $row['user_id'], 'expires' => $expiresAt]);
+
+    AuditLog::log('login_success', $row['user_id'], null, json_encode(['method' => '2fa']));
 
     Response::success([
         'token' => $token,
