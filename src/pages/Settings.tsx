@@ -12,7 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { useCategories, useDeleteCategory, useUpdateCategory, useCategoryRules, useCreateCategoryRule, useDeleteCategoryRule, useUpdateCategoryRule } from '@/hooks/use-transactions';
 import { useAuth } from '@/contexts/AuthContext';
-import { Plus, Trash2, Loader2, Lock, LogOut, Sparkles, Globe, ChevronRight, Pencil, ArrowLeft, FlaskConical, Building2, Key, ShieldCheck, Download, Tags, SlidersHorizontal } from 'lucide-react';
+import { Plus, Trash2, Loader2, Lock, LogOut, Sparkles, Globe, ChevronRight, Pencil, ArrowLeft, FlaskConical, Building2, Key, ShieldCheck, Download, Tags, SlidersHorizontal, ChevronsDownUp } from 'lucide-react';
 import { usePlaidEnvironment } from '@/contexts/PlaidEnvironmentContext';
 import { TwoFactorSettings, TwoFactorHeader } from '@/components/settings/TwoFactorSettings';
 import { useState, useRef } from 'react';
@@ -109,6 +109,16 @@ const Settings = () => {
 
   return (
     <AppLayout title={t('settings.title')}>
+      <div className="flex justify-end gap-2 max-w-2xl mb-4">
+        <Button variant="outline" size="sm" onClick={() => setSettingsExpandedSections(['account', 'twoFactor', 'categories', 'rules', 'preferences', 'plaidEnv', 'privacy', 'export'])}>
+          <ChevronsDownUp className="h-4 w-4 mr-2 rotate-180" />
+          {t('settings.expandAll')}
+        </Button>
+        <Button variant="outline" size="sm" onClick={() => setSettingsExpandedSections([])}>
+          <ChevronsDownUp className="h-4 w-4 mr-2" />
+          {t('settings.collapseAll')}
+        </Button>
+      </div>
       <Accordion
         type="multiple"
         value={settingsExpandedSections}

@@ -277,7 +277,9 @@
     "dataExport": "Data Export",
     "exportData": "Export your financial data",
     "exportCSV": "Export Transactions (CSV)",
-    "exportJSON": "Export All Data (JSON)"
+    "exportJSON": "Export All Data (JSON)",
+    "expandAll": "Expand All",
+    "collapseAll": "Collapse All"
   },
   "adminUsers": {
     "title": "User Management",

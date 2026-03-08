@@ -277,7 +277,9 @@
     "dataExport": "Exportation de données",
     "exportData": "Exporter vos données financières",
     "exportCSV": "Exporter les transactions (CSV)",
-    "exportJSON": "Exporter toutes les données (JSON)"
+    "exportJSON": "Exporter toutes les données (JSON)",
+    "expandAll": "Tout développer",
+    "collapseAll": "Tout réduire"
   },
   "adminUsers": {
     "title": "Gestion des utilisateurs",
