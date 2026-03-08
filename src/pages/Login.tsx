@@ -6,10 +6,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
-import { Wallet, Loader2, Eye, EyeOff, ShieldCheck } from 'lucide-react';
+import { Wallet, Loader2, Eye, EyeOff, ShieldCheck, Globe } from 'lucide-react';
 
 const Login = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { login, verify2fa } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -106,8 +106,19 @@ const Login = () => {
     );
   }
 
+  const toggleLanguage = () => {
+    const newLang = i18n.language === 'fr' ? 'en' : 'fr';
+    i18n.changeLanguage(newLang);
+  };
+
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
+      <div className="absolute top-4 right-4">
+        <Button variant="ghost" size="sm" onClick={toggleLanguage} className="gap-2 text-muted-foreground hover:text-foreground">
+          <Globe className="h-4 w-4" />
+          {i18n.language === 'fr' ? 'English' : 'Français'}
+        </Button>
+      </div>
       <Card className="w-full max-w-sm">
         <CardHeader className="text-center">
           <div className="flex justify-center mb-4">
