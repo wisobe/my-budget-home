@@ -29,6 +29,13 @@ export function useUpdateAccount() {
   });
 }
 
+const LIABILITY_TYPES = ['credit', 'loan'];
+
+function accountBalanceContribution(account: { type: string; current_balance: number | string | null }) {
+  const balance = Number(account.current_balance || 0);
+  return LIABILITY_TYPES.includes(account.type) ? -Math.abs(balance) : balance;
+}
+
 export function useTotalBalance() {
   const { data: accountsData } = useAccounts();
   const { balanceAccounts } = usePreferences();
@@ -37,13 +44,13 @@ export function useTotalBalance() {
   if (balanceAccounts.length > 0) {
     return accounts
       .filter(a => balanceAccounts.includes(String(a.id)))
-      .reduce((sum, a) => sum + Number(a.current_balance || 0), 0);
+      .reduce((sum, a) => sum + accountBalanceContribution(a), 0);
   }
-  return accounts.reduce((sum, a) => sum + Number(a.current_balance || 0), 0);
+  return accounts.reduce((sum, a) => sum + accountBalanceContribution(a), 0);
 }
 
 export function useAllAccountsBalance() {
   const { data: accountsData } = useAccounts();
   const accounts = accountsData?.data?.filter(a => !a.excluded) ?? [];
-  return accounts.reduce((sum, a) => sum + Number(a.current_balance || 0), 0);
+  return accounts.reduce((sum, a) => sum + accountBalanceContribution(a), 0);
 }
