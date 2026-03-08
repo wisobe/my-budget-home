@@ -510,7 +510,23 @@
       "2fa_enabled": "2FA Enabled",
       "2fa_disabled": "2FA Disabled",
       "password_changed": "Password Changed"
-    }
+    },
+    "securityMonitoring": "Security Monitoring",
+    "securityMonitoringDesc": "Real-time security posture overview based on authentication events and anomaly detection.",
+    "statusHealthy": "Healthy",
+    "statusWarning": "Warning",
+    "statusCritical": "Critical",
+    "failedLogins24h": "Failed Logins (24h)",
+    "failedLogins7d": "Failed Logins (7d)",
+    "failedLogins30d": "Failed Logins (30d)",
+    "successfulLogins24h": "Successful Logins (24h)",
+    "activeAlerts": "Active Alerts",
+    "noAlerts": "No security alerts — all systems healthy.",
+    "suspiciousIps": "Suspicious IPs (7d)",
+    "targetedAccounts": "Targeted Accounts (7d)",
+    "attempts": "{{count}} attempts",
+    "securityEvents30d": "Security Events (30d)",
+    "overallStatus": "Overall Status"
   },
   "privacy": {
     "title": "Privacy Policy",
