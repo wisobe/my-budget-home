@@ -4,10 +4,11 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { AlertTriangle, Loader2 } from 'lucide-react';
+import { AlertTriangle, Loader2, Download } from 'lucide-react';
 import { toast } from '@/components/ui/sonner';
 import { usePreferences } from '@/contexts/PreferencesContext';
 import { API_BASE_URL } from '@/lib/config';
+import { ExportDialog } from '@/components/export/ExportDialog';
 
 interface DeleteDataDialogProps {
   open: boolean;
