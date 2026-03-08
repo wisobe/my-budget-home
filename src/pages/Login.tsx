@@ -161,7 +161,7 @@ const Login = () => {
             </Button>
           </form>
           <div className="mt-4 text-center">
-            <a href={`${window.location.pathname.replace(/\/$/, '')}/privacy`} className="text-xs text-muted-foreground hover:text-primary hover:underline">
+            <a href={`${import.meta.env.BASE_URL}privacy`} className="text-xs text-muted-foreground hover:text-primary hover:underline">
               {t('privacy.viewPolicy')}
             </a>
           </div>
