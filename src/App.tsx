@@ -25,6 +25,7 @@ import AdminBackend from "./pages/AdminBackend";
 import AdminAuditLog from "./pages/AdminAuditLog";
 import NotFound from "./pages/NotFound";
 import Login from "./pages/Login";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
 
 const queryClient = new QueryClient();
 
@@ -99,6 +100,7 @@ const App = () => (
                     <Route path="/admin/plaid" element={<AdminPlaid />} />
                     <Route path="/admin/backend" element={<AdminBackend />} />
                     <Route path="/admin/audit" element={<AdminAuditLog />} />
+                    <Route path="/privacy" element={<PrivacyPolicy />} />
                     <Route path="*" element={<NotFound />} />
                   </Routes>
                 </BrowserRouter>

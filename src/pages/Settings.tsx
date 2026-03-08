@@ -727,8 +727,15 @@ const Settings = () => {
               </AccordionTrigger>
             </CardHeader>
             <AccordionContent>
-              <CardContent className="pt-4">
+              <CardContent className="pt-4 space-y-4">
                 <PrivacyConsentSettings />
+                <Separator />
+                <div>
+                  <a href="privacy" className="text-sm text-primary hover:underline inline-flex items-center gap-1">
+                    <ShieldCheck className="h-4 w-4" />
+                    {t('privacy.viewPolicy')}
+                  </a>
+                </div>
               </CardContent>
             </AccordionContent>
           </Card>
