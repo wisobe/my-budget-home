@@ -81,6 +81,7 @@ const App = () => (
             <Toaster />
             <Sonner />
             <CookieConsentBanner />
+            <CookieGate>
             <AuthGate>
               <PreferencesProvider>
                 <DataConsentDialog />
