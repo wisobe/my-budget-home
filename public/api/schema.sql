@@ -177,6 +177,23 @@ CREATE TABLE IF NOT EXISTS app_settings (
     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- Consent Audit Log (tracks all consent changes for compliance)
+CREATE TABLE IF NOT EXISTS consent_audit_log (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    user_id VARCHAR(50) NOT NULL,
+    consent_type ENUM('data_collection', 'data_processing', 'data_storage') NOT NULL,
+    old_value VARCHAR(10) DEFAULT NULL,
+    new_value VARCHAR(10) NOT NULL,
+    source VARCHAR(50) DEFAULT 'settings',
+    ip_address VARCHAR(45) DEFAULT NULL,
+    user_agent TEXT DEFAULT NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_user (user_id),
+    INDEX idx_consent_type (consent_type),
+    INDEX idx_created (created_at),
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 -- Default categories are now seeded per-user on first login (see categories/index.php)
 -- No global INSERT needed.
 
