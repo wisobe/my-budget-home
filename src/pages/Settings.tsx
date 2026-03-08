@@ -381,141 +381,149 @@ const Settings = () => {
               onOpenChange={setEditCatOpen}
               category={editCategory}
             />
-          </CardContent>
-        </Card>
+              </CardContent>
+            </AccordionContent>
+          </Card>
+        </AccordionItem>
 
         {/* Auto-Categorization Rules */}
-        <Card>
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <div>
-                <CardTitle className="flex items-center gap-2">
+        <AccordionItem value="rules" className="border-none">
+          <Card>
+            <CardHeader className="pb-0 relative">
+              <AccordionTrigger className="hover:no-underline py-0">
+                <div className="flex items-center gap-2">
                   <Sparkles className="h-5 w-5" />
-                  {t('settings.autoCategorization')}
-                </CardTitle>
-                <CardDescription>{t('settings.autoCategorizationDesc')}</CardDescription>
-              </div>
-              <Dialog open={addRuleOpen} onOpenChange={setAddRuleOpen}>
-                <DialogTrigger asChild>
-                  <Button size="sm"><Plus className="h-4 w-4 mr-2" />{t('settings.addRule')}</Button>
-                </DialogTrigger>
-                <DialogContent>
-                  <DialogHeader><DialogTitle>{t('settings.addCategorizationRule')}</DialogTitle></DialogHeader>
-                  <div className="space-y-4">
-                    <div className="space-y-2">
-                      <Label>{t('settings.keyword')}</Label>
-                      <Input value={newRuleKeyword} onChange={e => setNewRuleKeyword(e.target.value)} placeholder={t('settings.keywordPlaceholder')} />
-                      <p className="text-xs text-muted-foreground">{t('settings.keywordDesc')}</p>
-                    </div>
-                    <div className="space-y-2">
-                      <Label>{t('transactions.category')}</Label>
-                      <RuleCategoryPicker
-                        categories={categories}
-                        value={newRuleCategoryId}
-                        onChange={setNewRuleCategoryId}
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>{t('settings.matchType')}</Label>
-                      <Select value={newRuleMatchType} onValueChange={setNewRuleMatchType}>
-                        <SelectTrigger><SelectValue /></SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="contains">{t('settings.contains')}</SelectItem>
-                          <SelectItem value="exact">{t('settings.exactMatch')}</SelectItem>
-                          <SelectItem value="starts_with">{t('settings.startsWith')}</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Checkbox id="new-rule-apply" checked={newRuleApplyExisting} onCheckedChange={(v) => setNewRuleApplyExisting(!!v)} />
-                      <Label htmlFor="new-rule-apply" className="text-sm font-normal cursor-pointer">{t('settings.applyToExisting')}</Label>
-                    </div>
-                    <Button
-                      className="w-full"
-                      disabled={!newRuleKeyword.trim() || !newRuleCategoryId || createRuleMutation.isPending}
-                      onClick={async () => {
-                        try {
-                          await createRuleMutation.mutateAsync({
-                            category_id: newRuleCategoryId,
-                            keyword: newRuleKeyword.trim(),
-                            match_type: newRuleMatchType,
-                            apply_to_existing: newRuleApplyExisting,
-                          });
-                          toast.success(t('settings.ruleCreated'));
-                          setNewRuleKeyword('');
-                          setNewRuleCategoryId('');
-                          setNewRuleMatchType('contains');
-                          setNewRuleApplyExisting(false);
-                          setAddRuleOpen(false);
-                        } catch (e: any) {
-                          toast.error(e.message || t('settings.failedCreateRule'));
-                        }
-                      }}
-                    >
-                      {createRuleMutation.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-                      {t('settings.createRule')}
-                    </Button>
+                  <div className="text-left">
+                    <CardTitle className="text-base">{t('settings.autoCategorization')}</CardTitle>
+                    <CardDescription>{t('settings.autoCategorizationDesc')}</CardDescription>
                   </div>
-                </DialogContent>
-              </Dialog>
-            </div>
-          </CardHeader>
-          <CardContent>
-            {rules.length === 0 ? (
-              <p className="text-sm text-muted-foreground text-center py-4">{t('settings.noRulesYet')}</p>
-            ) : (
-              <div className="space-y-2">
-                {rules.map(rule => (
-                  <div key={rule.id} className="flex items-center justify-between p-3 rounded-lg hover:bg-muted/50 transition-colors group">
-                    <div className="flex items-center gap-3 min-w-0">
-                      <div className="h-3 w-3 rounded-full shrink-0" style={{ backgroundColor: rule.category_color || '#6b7280' }} />
-                      <div className="min-w-0">
-                        <div className="flex items-center gap-2">
-                          <span className="font-medium font-mono text-sm">{rule.keyword}</span>
-                          <Badge variant="outline" className="text-xs shrink-0">{rule.match_type}</Badge>
-                          {!!rule.auto_learned && <Badge variant="secondary" className="text-xs shrink-0">{t('common.auto')}</Badge>}
-                        </div>
-                        <p className="text-xs text-muted-foreground truncate">→ {rule.category_name || t('dashboard.unknown')}</p>
+                </div>
+              </AccordionTrigger>
+              <div className="absolute right-6 top-6">
+                <Dialog open={addRuleOpen} onOpenChange={setAddRuleOpen}>
+                  <DialogTrigger asChild>
+                    <Button size="sm" onClick={(e) => e.stopPropagation()}><Plus className="h-4 w-4 mr-2" />{t('settings.addRule')}</Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader><DialogTitle>{t('settings.addCategorizationRule')}</DialogTitle></DialogHeader>
+                    <div className="space-y-4">
+                      <div className="space-y-2">
+                        <Label>{t('settings.keyword')}</Label>
+                        <Input value={newRuleKeyword} onChange={e => setNewRuleKeyword(e.target.value)} placeholder={t('settings.keywordPlaceholder')} />
+                        <p className="text-xs text-muted-foreground">{t('settings.keywordDesc')}</p>
                       </div>
-                    </div>
-                    <div className="flex items-center gap-1">
+                      <div className="space-y-2">
+                        <Label>{t('transactions.category')}</Label>
+                        <RuleCategoryPicker
+                          categories={categories}
+                          value={newRuleCategoryId}
+                          onChange={setNewRuleCategoryId}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>{t('settings.matchType')}</Label>
+                        <Select value={newRuleMatchType} onValueChange={setNewRuleMatchType}>
+                          <SelectTrigger><SelectValue /></SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="contains">{t('settings.contains')}</SelectItem>
+                            <SelectItem value="exact">{t('settings.exactMatch')}</SelectItem>
+                            <SelectItem value="starts_with">{t('settings.startsWith')}</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Checkbox id="new-rule-apply" checked={newRuleApplyExisting} onCheckedChange={(v) => setNewRuleApplyExisting(!!v)} />
+                        <Label htmlFor="new-rule-apply" className="text-sm font-normal cursor-pointer">{t('settings.applyToExisting')}</Label>
+                      </div>
                       <Button
-                        variant="ghost"
-                        size="sm"
-                        className="text-muted-foreground hover:text-foreground opacity-0 group-hover:opacity-100 transition-opacity"
-                        onClick={() => {
-                          setEditRuleId(rule.id);
-                          setEditRuleKeyword(rule.keyword);
-                          setEditRuleCategoryId(rule.category_id);
-                          setEditRuleMatchType(rule.match_type);
-                        }}
-                      >
-                        <Pencil className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="text-muted-foreground hover:text-destructive opacity-0 group-hover:opacity-100 transition-opacity"
+                        className="w-full"
+                        disabled={!newRuleKeyword.trim() || !newRuleCategoryId || createRuleMutation.isPending}
                         onClick={async () => {
-                          if (!confirm(t('settings.deleteRuleConfirm', { keyword: rule.keyword }))) return;
                           try {
-                            await deleteRuleMutation.mutateAsync(rule.id);
-                            toast.success(t('settings.ruleDeleted'));
+                            await createRuleMutation.mutateAsync({
+                              category_id: newRuleCategoryId,
+                              keyword: newRuleKeyword.trim(),
+                              match_type: newRuleMatchType,
+                              apply_to_existing: newRuleApplyExisting,
+                            });
+                            toast.success(t('settings.ruleCreated'));
+                            setNewRuleKeyword('');
+                            setNewRuleCategoryId('');
+                            setNewRuleMatchType('contains');
+                            setNewRuleApplyExisting(false);
+                            setAddRuleOpen(false);
                           } catch (e: any) {
-                            toast.error(e.message || t('settings.failedDeleteRule'));
+                            toast.error(e.message || t('settings.failedCreateRule'));
                           }
                         }}
-                        disabled={deleteRuleMutation.isPending}
                       >
-                        <Trash2 className="h-4 w-4" />
+                        {createRuleMutation.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                        {t('settings.createRule')}
                       </Button>
                     </div>
-                  </div>
-                ))}
+                  </DialogContent>
+                </Dialog>
               </div>
-            )}
-          </CardContent>
-        </Card>
+            </CardHeader>
+            <AccordionContent>
+              <CardContent className="pt-4">
+                {rules.length === 0 ? (
+                  <p className="text-sm text-muted-foreground text-center py-4">{t('settings.noRulesYet')}</p>
+                ) : (
+                  <div className="space-y-2">
+                    {rules.map(rule => (
+                      <div key={rule.id} className="flex items-center justify-between p-3 rounded-lg hover:bg-muted/50 transition-colors group">
+                        <div className="flex items-center gap-3 min-w-0">
+                          <div className="h-3 w-3 rounded-full shrink-0" style={{ backgroundColor: rule.category_color || '#6b7280' }} />
+                          <div className="min-w-0">
+                            <div className="flex items-center gap-2">
+                              <span className="font-medium font-mono text-sm">{rule.keyword}</span>
+                              <Badge variant="outline" className="text-xs shrink-0">{rule.match_type}</Badge>
+                              {!!rule.auto_learned && <Badge variant="secondary" className="text-xs shrink-0">{t('common.auto')}</Badge>}
+                            </div>
+                            <p className="text-xs text-muted-foreground truncate">→ {rule.category_name || t('dashboard.unknown')}</p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="text-muted-foreground hover:text-foreground opacity-0 group-hover:opacity-100 transition-opacity"
+                            onClick={() => {
+                              setEditRuleId(rule.id);
+                              setEditRuleKeyword(rule.keyword);
+                              setEditRuleCategoryId(rule.category_id);
+                              setEditRuleMatchType(rule.match_type);
+                            }}
+                          >
+                            <Pencil className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="text-muted-foreground hover:text-destructive opacity-0 group-hover:opacity-100 transition-opacity"
+                            onClick={async () => {
+                              if (!confirm(t('settings.deleteRuleConfirm', { keyword: rule.keyword }))) return;
+                              try {
+                                await deleteRuleMutation.mutateAsync(rule.id);
+                                toast.success(t('settings.ruleDeleted'));
+                              } catch (e: any) {
+                                toast.error(e.message || t('settings.failedDeleteRule'));
+                              }
+                            }}
+                            disabled={deleteRuleMutation.isPending}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </AccordionContent>
+          </Card>
+        </AccordionItem>
 
         {/* Edit Rule Dialog */}
         <Dialog open={!!editRuleId} onOpenChange={(open) => { if (!open) setEditRuleId(null); }}>
@@ -577,118 +585,164 @@ const Settings = () => {
         </Dialog>
 
         {/* Preferences */}
-        <Card>
-          <CardHeader>
-            <CardTitle>{t('settings.preferences')}</CardTitle>
-            <CardDescription>{t('settings.customizeExperience')}</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="font-medium">{t('settings.darkMode')}</p>
-                <p className="text-sm text-muted-foreground">{t('settings.toggleDarkTheme')}</p>
-              </div>
-              <Switch checked={darkMode} onCheckedChange={setDarkMode} />
-            </div>
-            <Separator />
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="font-medium">{t('settings.autoSyncTransactions')}</p>
-                <p className="text-sm text-muted-foreground">{t('settings.syncOnLoad')}</p>
-              </div>
-              <Switch checked={autoSync} onCheckedChange={setAutoSync} />
-            </div>
-            <Separator />
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="font-medium">{t('settings.showPendingTransactions')}</p>
-                <p className="text-sm text-muted-foreground">{t('settings.includePending')}</p>
-              </div>
-              <Switch checked={showPending} onCheckedChange={setShowPending} />
-            </div>
-            <Separator />
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Globe className="h-4 w-4 text-muted-foreground" />
-                <div>
-                  <p className="font-medium">{t('settings.language')}</p>
-                  <p className="text-sm text-muted-foreground">{t('settings.languageDesc')}</p>
+        <AccordionItem value="preferences" className="border-none">
+          <Card>
+            <CardHeader className="pb-0">
+              <AccordionTrigger className="hover:no-underline py-0">
+                <div className="text-left">
+                  <CardTitle className="text-base">{t('settings.preferences')}</CardTitle>
+                  <CardDescription>{t('settings.customizeExperience')}</CardDescription>
                 </div>
-              </div>
-              <Select value={language} onValueChange={setLanguage}>
-                <SelectTrigger className="w-[140px]">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="en">English</SelectItem>
-                  <SelectItem value="fr">Français</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </CardContent>
-        </Card>
+              </AccordionTrigger>
+            </CardHeader>
+            <AccordionContent>
+              <CardContent className="pt-4 space-y-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="font-medium">{t('settings.darkMode')}</p>
+                    <p className="text-sm text-muted-foreground">{t('settings.toggleDarkTheme')}</p>
+                  </div>
+                  <Switch checked={darkMode} onCheckedChange={setDarkMode} />
+                </div>
+                <Separator />
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="font-medium">{t('settings.autoSyncTransactions')}</p>
+                    <p className="text-sm text-muted-foreground">{t('settings.syncOnLoad')}</p>
+                  </div>
+                  <Switch checked={autoSync} onCheckedChange={setAutoSync} />
+                </div>
+                <Separator />
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="font-medium">{t('settings.showPendingTransactions')}</p>
+                    <p className="text-sm text-muted-foreground">{t('settings.includePending')}</p>
+                  </div>
+                  <Switch checked={showPending} onCheckedChange={setShowPending} />
+                </div>
+                <Separator />
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Globe className="h-4 w-4 text-muted-foreground" />
+                    <div>
+                      <p className="font-medium">{t('settings.language')}</p>
+                      <p className="text-sm text-muted-foreground">{t('settings.languageDesc')}</p>
+                    </div>
+                  </div>
+                  <Select value={language} onValueChange={setLanguage}>
+                    <SelectTrigger className="w-[140px]">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="en">English</SelectItem>
+                      <SelectItem value="fr">Français</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </CardContent>
+            </AccordionContent>
+          </Card>
+        </AccordionItem>
 
         {/* Plaid Environment - for non-admin users with sandbox access */}
         {canUseSandbox && !isAdmin && (
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Key className="h-5 w-5" />
-                {t('settings.plaidEnvironment')}
-              </CardTitle>
-              <CardDescription>{t('settings.plaidEnvDescription')}</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-2 gap-3">
-                <button
-                  onClick={() => setPlaidEnvironment('sandbox')}
-                  className={cn(
-                    "flex items-center gap-3 p-4 rounded-lg border-2 transition-all text-left",
-                    plaidEnvironment === 'sandbox' ? "border-primary bg-primary/5" : "border-border hover:border-muted-foreground/30"
-                  )}
-                >
-                  <FlaskConical className={cn("h-5 w-5", plaidEnvironment === 'sandbox' ? "text-primary" : "text-muted-foreground")} />
-                  <div>
-                    <p className="font-medium">{t('settings.sandboxLabel')}</p>
-                    <p className="text-xs text-muted-foreground">{t('settings.sandboxDesc')}</p>
+          <AccordionItem value="plaidEnv" className="border-none">
+            <Card>
+              <CardHeader className="pb-0">
+                <AccordionTrigger className="hover:no-underline py-0">
+                  <div className="flex items-center gap-2">
+                    <Key className="h-5 w-5" />
+                    <div className="text-left">
+                      <CardTitle className="text-base">{t('settings.plaidEnvironment')}</CardTitle>
+                      <CardDescription>{t('settings.plaidEnvDescription')}</CardDescription>
+                    </div>
                   </div>
-                </button>
-                <button
-                  onClick={() => setPlaidEnvironment('production')}
-                  className={cn(
-                    "flex items-center gap-3 p-4 rounded-lg border-2 transition-all text-left",
-                    plaidEnvironment === 'production' ? "border-primary bg-primary/5" : "border-border hover:border-muted-foreground/30"
-                  )}
-                >
-                  <Building2 className={cn("h-5 w-5", plaidEnvironment === 'production' ? "text-primary" : "text-muted-foreground")} />
-                  <div>
-                    <p className="font-medium">{t('settings.productionLabel')}</p>
-                    <p className="text-xs text-muted-foreground">{t('settings.productionDesc')}</p>
+                </AccordionTrigger>
+              </CardHeader>
+              <AccordionContent>
+                <CardContent className="pt-4">
+                  <div className="grid grid-cols-2 gap-3">
+                    <button
+                      onClick={() => setPlaidEnvironment('sandbox')}
+                      className={cn(
+                        "flex items-center gap-3 p-4 rounded-lg border-2 transition-all text-left",
+                        plaidEnvironment === 'sandbox' ? "border-primary bg-primary/5" : "border-border hover:border-muted-foreground/30"
+                      )}
+                    >
+                      <FlaskConical className={cn("h-5 w-5", plaidEnvironment === 'sandbox' ? "text-primary" : "text-muted-foreground")} />
+                      <div>
+                        <p className="font-medium">{t('settings.sandboxLabel')}</p>
+                        <p className="text-xs text-muted-foreground">{t('settings.sandboxDesc')}</p>
+                      </div>
+                    </button>
+                    <button
+                      onClick={() => setPlaidEnvironment('production')}
+                      className={cn(
+                        "flex items-center gap-3 p-4 rounded-lg border-2 transition-all text-left",
+                        plaidEnvironment === 'production' ? "border-primary bg-primary/5" : "border-border hover:border-muted-foreground/30"
+                      )}
+                    >
+                      <Building2 className={cn("h-5 w-5", plaidEnvironment === 'production' ? "text-primary" : "text-muted-foreground")} />
+                      <div>
+                        <p className="font-medium">{t('settings.productionLabel')}</p>
+                        <p className="text-xs text-muted-foreground">{t('settings.productionDesc')}</p>
+                      </div>
+                    </button>
                   </div>
-                </button>
-              </div>
-              <p className="text-xs text-muted-foreground mt-3">{t('settings.envSeparate')}</p>
-            </CardContent>
-          </Card>
+                  <p className="text-xs text-muted-foreground mt-3">{t('settings.envSeparate')}</p>
+                </CardContent>
+              </AccordionContent>
+            </Card>
+          </AccordionItem>
         )}
 
         {/* Privacy & Consent */}
-        <PrivacyConsentSettings />
+        <AccordionItem value="privacy" className="border-none">
+          <Card>
+            <CardHeader className="pb-0">
+              <AccordionTrigger className="hover:no-underline py-0">
+                <div className="flex items-center gap-2">
+                  <ShieldCheck className="h-5 w-5" />
+                  <div className="text-left">
+                    <CardTitle className="text-base">{t('consent.privacyTitle')}</CardTitle>
+                    <CardDescription>{t('consent.privacyDescription')}</CardDescription>
+                  </div>
+                </div>
+              </AccordionTrigger>
+            </CardHeader>
+            <AccordionContent>
+              <CardContent className="pt-4">
+                <PrivacyConsentSettings />
+              </CardContent>
+            </AccordionContent>
+          </Card>
+        </AccordionItem>
 
         {/* Data Export */}
-        <Card>
-          <CardHeader>
-            <CardTitle>{t('settings.dataExport')}</CardTitle>
-            <CardDescription>{t('settings.exportData')}</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex gap-4">
-              <ExportDialog format="csv" />
-              <ExportDialog format="json" />
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+        <AccordionItem value="export" className="border-none">
+          <Card>
+            <CardHeader className="pb-0">
+              <AccordionTrigger className="hover:no-underline py-0">
+                <div className="flex items-center gap-2">
+                  <Download className="h-5 w-5" />
+                  <div className="text-left">
+                    <CardTitle className="text-base">{t('settings.dataExport')}</CardTitle>
+                    <CardDescription>{t('settings.exportData')}</CardDescription>
+                  </div>
+                </div>
+              </AccordionTrigger>
+            </CardHeader>
+            <AccordionContent>
+              <CardContent className="pt-4 space-y-4">
+                <div className="flex gap-4">
+                  <ExportDialog format="csv" />
+                  <ExportDialog format="json" />
+                </div>
+              </CardContent>
+            </AccordionContent>
+          </Card>
+        </AccordionItem>
+      </Accordion>
     </AppLayout>
   );
 };
