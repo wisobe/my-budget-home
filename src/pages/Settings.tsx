@@ -259,6 +259,7 @@ const Settings = () => {
                   </DialogContent>
                 </Dialog>
               </div>
+              )}
             </CardHeader>
             <AccordionContent>
               <CardContent className="pt-4">
