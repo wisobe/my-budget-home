@@ -34,7 +34,7 @@ try {
 
         // Sum transactions for this category (and children) in this month
         $stmt = $pdo->prepare('
-            SELECT COALESCE(SUM(ABS(t.amount)), 0) as spent
+            SELECT COALESCE(SUM(t.amount), 0) as spent
             FROM transactions t
             JOIN accounts a ON t.account_id = a.id
             WHERE a.user_id = :uid
