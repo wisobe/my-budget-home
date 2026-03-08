@@ -2,6 +2,8 @@ import React, { createContext, useContext, useState, useEffect, useCallback, use
 import i18n from '@/i18n';
 import { preferencesApi } from '@/lib/api';
 
+const ALL_SETTINGS_SECTIONS = ['account', 'twoFactor', 'categories', 'rules', 'preferences', 'plaidEnv', 'privacy', 'export'];
+
 interface Preferences {
   darkMode: boolean;
   autoSync: boolean;
@@ -12,6 +14,7 @@ interface Preferences {
   consentDataProcessing: boolean;
   consentDataStorage: boolean;
   consentRecorded: boolean;
+  settingsExpandedSections: string[];
 }
 
 interface PreferencesContextType extends Preferences {
@@ -23,6 +26,7 @@ interface PreferencesContextType extends Preferences {
   setConsentDataCollection: (v: boolean) => void;
   setConsentDataProcessing: (v: boolean) => void;
   setConsentDataStorage: (v: boolean) => void;
+  setSettingsExpandedSections: (v: string[]) => void;
   isLoaded: boolean;
 }
 
@@ -36,6 +40,7 @@ const defaults: Preferences = {
   consentDataProcessing: false,
   consentDataStorage: false,
   consentRecorded: false,
+  settingsExpandedSections: [...ALL_SETTINGS_SECTIONS],
 };
 
 function fromApi(data: Record<string, string>): Partial<Preferences> {
@@ -48,6 +53,7 @@ function fromApi(data: Record<string, string>): Partial<Preferences> {
   if (data.consent_data_collection !== undefined) { p.consentDataCollection = data.consent_data_collection === '1'; p.consentRecorded = true; }
   if (data.consent_data_processing !== undefined) { p.consentDataProcessing = data.consent_data_processing === '1'; p.consentRecorded = true; }
   if (data.consent_data_storage !== undefined) { p.consentDataStorage = data.consent_data_storage === '1'; p.consentRecorded = true; }
+  if (data.settings_expanded_sections !== undefined) p.settingsExpandedSections = data.settings_expanded_sections ? data.settings_expanded_sections.split(',') : [];
   return p;
 }
 
@@ -61,6 +67,7 @@ function toApi(prefs: Preferences): Record<string, string> {
     consent_data_collection: prefs.consentDataCollection ? '1' : '0',
     consent_data_processing: prefs.consentDataProcessing ? '1' : '0',
     consent_data_storage: prefs.consentDataStorage ? '1' : '0',
+    settings_expanded_sections: prefs.settingsExpandedSections.join(','),
   };
 }
 
@@ -121,9 +128,10 @@ export function PreferencesProvider({ children }: { children: React.ReactNode })
   const setConsentDataCollection = useCallback((v: boolean) => setPrefs(p => ({ ...p, consentDataCollection: v, consentRecorded: true })), []);
   const setConsentDataProcessing = useCallback((v: boolean) => setPrefs(p => ({ ...p, consentDataProcessing: v, consentRecorded: true })), []);
   const setConsentDataStorage = useCallback((v: boolean) => setPrefs(p => ({ ...p, consentDataStorage: v, consentRecorded: true })), []);
+  const setSettingsExpandedSections = useCallback((v: string[]) => setPrefs(p => ({ ...p, settingsExpandedSections: v })), []);
 
   return (
-    <PreferencesContext.Provider value={{ ...prefs, setDarkMode, setAutoSync, setShowPending, setLanguage, setBalanceAccounts, setConsentDataCollection, setConsentDataProcessing, setConsentDataStorage, isLoaded }}>
+    <PreferencesContext.Provider value={{ ...prefs, setDarkMode, setAutoSync, setShowPending, setLanguage, setBalanceAccounts, setConsentDataCollection, setConsentDataProcessing, setConsentDataStorage, setSettingsExpandedSections, isLoaded }}>
       {children}
     </PreferencesContext.Provider>
   );

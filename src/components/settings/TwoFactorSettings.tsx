@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -9,6 +8,29 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { ShieldCheck, ShieldOff, Loader2, Copy, Check } from 'lucide-react';
 import { authApi } from '@/lib/api';
 import { toast } from '@/components/ui/sonner';
+
+/** Header actions for the 2FA section (used by parent accordion) */
+export function TwoFactorHeader() {
+  const { t } = useTranslation();
+  const [enabled, setEnabled] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    authApi.get2faStatus().then(r => {
+      setEnabled(r.data.totp_enabled);
+    }).catch(() => {}).finally(() => setLoading(false));
+  }, []);
+
+  if (loading) return null;
+
+  return (
+    <div className="flex items-center gap-2">
+      <ShieldCheck className="h-5 w-5" />
+      <span>{t('twoFactor.title')}</span>
+      {enabled && <Badge variant="default" className="ml-2">{t('twoFactor.active')}</Badge>}
+    </div>
+  );
+}
 
 export function TwoFactorSettings() {
   const { t } = useTranslation();
@@ -98,38 +120,27 @@ export function TwoFactorSettings() {
 
   return (
     <>
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle className="flex items-center gap-2">
-                <ShieldCheck className="h-5 w-5" />
-                {t('twoFactor.title')}
-              </CardTitle>
-              <CardDescription>{t('twoFactor.description')}</CardDescription>
-            </div>
-            <div className="flex items-center gap-2">
-              {enabled && <Badge variant="default">{t('twoFactor.active')}</Badge>}
-              {enabled ? (
-                <Button variant="outline" size="sm" onClick={() => { setDisableOpen(true); setDisableCode(''); }}>
-                  <ShieldOff className="h-4 w-4 mr-2" />
-                  {t('twoFactor.disable')}
-                </Button>
-              ) : (
-                <Button size="sm" onClick={handleStartSetup}>
-                  <ShieldCheck className="h-4 w-4 mr-2" />
-                  {t('twoFactor.enable')}
-                </Button>
-              )}
-            </div>
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <p className="text-sm text-muted-foreground">{t('twoFactor.description')}</p>
+          <div className="flex items-center gap-2 shrink-0">
+            {enabled ? (
+              <Button variant="outline" size="sm" onClick={() => { setDisableOpen(true); setDisableCode(''); }}>
+                <ShieldOff className="h-4 w-4 mr-2" />
+                {t('twoFactor.disable')}
+              </Button>
+            ) : (
+              <Button size="sm" onClick={handleStartSetup}>
+                <ShieldCheck className="h-4 w-4 mr-2" />
+                {t('twoFactor.enable')}
+              </Button>
+            )}
           </div>
-        </CardHeader>
+        </div>
         {!enabled && (
-          <CardContent>
-            <p className="text-sm text-muted-foreground">{t('twoFactor.notEnabledHint')}</p>
-          </CardContent>
+          <p className="text-sm text-muted-foreground">{t('twoFactor.notEnabledHint')}</p>
         )}
-      </Card>
+      </div>
 
       {/* Setup Dialog */}
       <Dialog open={setupOpen} onOpenChange={(o) => { if (!o && step === 'recovery') { setSetupOpen(false); } else if (!o) { setSetupOpen(false); } }}>
