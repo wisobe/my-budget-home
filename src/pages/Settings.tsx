@@ -744,6 +744,10 @@ const Settings = () => {
                     <ShieldCheck className="h-4 w-4" />
                     {t('accessControlPolicy.viewPolicy')}
                   </Link>
+                  <Link to="/data-retention-policy" className="text-sm text-primary hover:underline inline-flex items-center gap-1">
+                    <ShieldCheck className="h-4 w-4" />
+                    {t('dataRetentionPolicy.viewPolicy')}
+                  </Link>
                 </div>
               </CardContent>
             </AccordionContent>
