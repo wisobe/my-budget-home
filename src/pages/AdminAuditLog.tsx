@@ -113,9 +113,161 @@ const AdminAuditLog = () => {
     return parts.length > 0 ? parts.join(' · ') : null;
   };
 
+  const { data: securityStats, isLoading: statsLoading } = useQuery({
+    queryKey: ['security-stats'],
+    queryFn: () => auditApi.securityStats(),
+    enabled: isAdmin,
+    refetchInterval: 60000, // refresh every minute
+  });
+
+  const stats = securityStats?.data;
+
+  const statusIcon = (status?: string) => {
+    switch (status) {
+      case 'healthy': return <CheckCircle2 className="h-5 w-5 text-income" />;
+      case 'warning': return <AlertTriangle className="h-5 w-5 text-yellow-500" />;
+      case 'critical': return <AlertCircle className="h-5 w-5 text-destructive" />;
+      default: return <Activity className="h-5 w-5 text-muted-foreground" />;
+    }
+  };
+
+  const statusColor = (status?: string) => {
+    switch (status) {
+      case 'healthy': return 'bg-income/10 text-income border-income/20';
+      case 'warning': return 'bg-yellow-500/10 text-yellow-600 border-yellow-500/20';
+      case 'critical': return 'bg-destructive/10 text-destructive border-destructive/20';
+      default: return 'bg-muted text-muted-foreground';
+    }
+  };
+
   return (
     <AppLayout title={t('auditLog.title')}>
       <div className="space-y-4 max-w-6xl">
+        {/* Security Monitoring Card */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Shield className="h-5 w-5" />
+              {t('auditLog.securityMonitoring')}
+            </CardTitle>
+            <CardDescription>{t('auditLog.securityMonitoringDesc')}</CardDescription>
+          </CardHeader>
+          <CardContent>
+            {statsLoading ? (
+              <div className="flex items-center justify-center py-8">
+                <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+              </div>
+            ) : stats ? (
+              <div className="space-y-4">
+                {/* Overall Status */}
+                <div className={cn("flex items-center gap-3 p-4 rounded-lg border", statusColor(stats.status))}>
+                  {statusIcon(stats.status)}
+                  <div>
+                    <p className="font-semibold">{t('auditLog.overallStatus')}: {t(`auditLog.status${stats.status.charAt(0).toUpperCase() + stats.status.slice(1)}`)}</p>
+                    {stats.alerts.length === 0 && (
+                      <p className="text-sm opacity-80">{t('auditLog.noAlerts')}</p>
+                    )}
+                  </div>
+                </div>
+
+                {/* Alerts */}
+                {stats.alerts.length > 0 && (
+                  <div className="space-y-2">
+                    <h4 className="text-sm font-semibold">{t('auditLog.activeAlerts')}</h4>
+                    {stats.alerts.map((alert, i) => (
+                      <div key={i} className="flex items-start gap-2 p-3 rounded-md bg-destructive/5 border border-destructive/10">
+                        <AlertTriangle className="h-4 w-4 text-destructive mt-0.5 shrink-0" />
+                        <p className="text-sm">{alert}</p>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Stats Grid */}
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <div className="p-3 rounded-lg border bg-card">
+                    <p className="text-xs text-muted-foreground">{t('auditLog.failedLogins24h')}</p>
+                    <p className={cn("text-2xl font-bold", stats.failed_logins.last_24h > 0 ? 'text-destructive' : 'text-foreground')}>
+                      {stats.failed_logins.last_24h}
+                    </p>
+                  </div>
+                  <div className="p-3 rounded-lg border bg-card">
+                    <p className="text-xs text-muted-foreground">{t('auditLog.successfulLogins24h')}</p>
+                    <p className="text-2xl font-bold text-income">{stats.successful_logins.last_24h}</p>
+                  </div>
+                  <div className="p-3 rounded-lg border bg-card">
+                    <p className="text-xs text-muted-foreground">{t('auditLog.failedLogins7d')}</p>
+                    <p className={cn("text-2xl font-bold", stats.failed_logins.last_7d > 5 ? 'text-destructive' : 'text-foreground')}>
+                      {stats.failed_logins.last_7d}
+                    </p>
+                  </div>
+                  <div className="p-3 rounded-lg border bg-card">
+                    <p className="text-xs text-muted-foreground">{t('auditLog.failedLogins30d')}</p>
+                    <p className="text-2xl font-bold">{stats.failed_logins.last_30d}</p>
+                  </div>
+                </div>
+
+                {/* Suspicious IPs & Targeted Accounts */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {stats.suspicious_ips.length > 0 && (
+                    <div className="p-4 rounded-lg border">
+                      <h4 className="text-sm font-semibold flex items-center gap-2 mb-3">
+                        <Globe className="h-4 w-4" />
+                        {t('auditLog.suspiciousIps')}
+                      </h4>
+                      <div className="space-y-2">
+                        {stats.suspicious_ips.map((ip, i) => (
+                          <div key={i} className="flex justify-between items-center text-sm">
+                            <code className="text-xs font-mono">{ip.ip_address}</code>
+                            <Badge variant="destructive" className="text-xs">
+                              {t('auditLog.attempts', { count: ip.failure_count })}
+                            </Badge>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  {stats.targeted_accounts.length > 0 && (
+                    <div className="p-4 rounded-lg border">
+                      <h4 className="text-sm font-semibold flex items-center gap-2 mb-3">
+                        <UserCog className="h-4 w-4" />
+                        {t('auditLog.targetedAccounts')}
+                      </h4>
+                      <div className="space-y-2">
+                        {stats.targeted_accounts.map((acct, i) => (
+                          <div key={i} className="flex justify-between items-center text-sm">
+                            <span className="text-muted-foreground">{acct.email}</span>
+                            <Badge variant="destructive" className="text-xs">
+                              {t('auditLog.attempts', { count: acct.failure_count })}
+                            </Badge>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Security Events */}
+                {Object.keys(stats.security_events).length > 0 && (
+                  <div className="p-4 rounded-lg border">
+                    <h4 className="text-sm font-semibold mb-3">{t('auditLog.securityEvents30d')}</h4>
+                    <div className="flex flex-wrap gap-3">
+                      {Object.entries(stats.security_events).map(([event, count]) => (
+                        <div key={event} className="flex items-center gap-2">
+                          {eventIcon(event)}
+                          <span className="text-sm">{t(`auditLog.events.${event}`, { defaultValue: event })}</span>
+                          <Badge variant="secondary">{count}</Badge>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            ) : null}
+          </CardContent>
+        </Card>
+
+        {/* Existing Audit Log Card */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
