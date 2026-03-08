@@ -82,7 +82,7 @@ try {
 
         $months[] = [
             'month' => $label,
-            'spent' => round($spent, 2),
+            'spent' => round(abs($spent), 2),
         ];
     }
 
