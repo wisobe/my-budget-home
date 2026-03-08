@@ -461,6 +461,8 @@
       "title": "Supprimer toutes les données financières",
       "description": "Cette action est permanente et ne peut pas être annulée",
       "warning": "Cela supprimera définitivement toutes vos données financières, y compris les transactions, comptes, connexions bancaires, budgets, catégories et règles de catégorisation. Votre compte utilisateur restera actif mais toutes les données financières seront effacées.",
+      "exportReminder": "Nous vous recommandons fortement d'exporter vos données avant de continuer. Une fois supprimées, vos données ne pourront pas être récupérées.",
+      "exportButton": "Exporter mes données d'abord",
       "confirmLabel": "Tapez DELETE pour confirmer",
       "passwordLabel": "Entrez votre mot de passe pour confirmer",
       "passwordPlaceholder": "Votre mot de passe actuel",

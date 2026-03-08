@@ -72,6 +72,32 @@ export function DeleteDataDialog({ open, onOpenChange }: DeleteDataDialogProps) 
             {t('consent.deleteData.warning')}
           </div>
 
+          <div className="rounded-lg border border-border bg-muted/50 p-4 space-y-3">
+            <p className="text-sm text-muted-foreground font-medium">
+              {t('consent.deleteData.exportReminder')}
+            </p>
+            <div className="flex gap-2">
+              <ExportDialog
+                format="csv"
+                trigger={
+                  <Button variant="outline" size="sm" type="button">
+                    <Download className="h-4 w-4 mr-2" />
+                    CSV
+                  </Button>
+                }
+              />
+              <ExportDialog
+                format="json"
+                trigger={
+                  <Button variant="outline" size="sm" type="button">
+                    <Download className="h-4 w-4 mr-2" />
+                    JSON
+                  </Button>
+                }
+              />
+            </div>
+          </div>
+
           <div className="space-y-2">
             <Label>{t('consent.deleteData.confirmLabel')}</Label>
             <Input

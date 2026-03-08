@@ -60,6 +60,12 @@ try {
 
         $pdo->commit();
 
+        // Log the deletion event for compliance
+        AuditLog::log('user_data_deleted', $userId, null, json_encode([
+            'scope' => 'all_financial_data',
+            'tables' => ['transaction_splits', 'transactions', 'accounts', 'plaid_connections', 'budgets', 'category_rules', 'categories'],
+        ]));
+
         Response::success(['deleted' => true, 'message' => 'All financial data has been securely deleted']);
     } catch (Exception $e) {
         $pdo->rollBack();
