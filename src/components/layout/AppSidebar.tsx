@@ -40,7 +40,7 @@ const navigationKeys = [
 const adminNavigationKeys = [
   { key: 'nav.users', href: '/admin/users', icon: Users },
   { key: 'nav.plaidConfig', href: '/admin/plaid', icon: Link2 },
-  { key: 'nav.backendSetup', href: '/admin/backend', icon: Settings },
+  { key: 'nav.dbConnection', href: '/admin/backend', icon: Database },
   { key: 'nav.auditLog', href: '/admin/audit', icon: ClipboardList },
 ];
 
