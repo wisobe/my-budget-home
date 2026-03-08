@@ -8,6 +8,7 @@
  */
 
 require_once __DIR__ . '/../includes/bootstrap.php';
+require_once __DIR__ . '/../includes/AuditLog.php';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     Response::error('Method not allowed', 405);
@@ -58,6 +59,12 @@ try {
         $pdo->prepare("DELETE FROM categories WHERE user_id = :uid")->execute(['uid' => $userId]);
 
         $pdo->commit();
+
+        // Log the deletion event for compliance
+        AuditLog::log('user_data_deleted', $userId, null, json_encode([
+            'scope' => 'all_financial_data',
+            'tables' => ['transaction_splits', 'transactions', 'accounts', 'plaid_connections', 'budgets', 'category_rules', 'categories'],
+        ]));
 
         Response::success(['deleted' => true, 'message' => 'All financial data has been securely deleted']);
     } catch (Exception $e) {

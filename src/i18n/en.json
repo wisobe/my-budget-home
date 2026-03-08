@@ -461,6 +461,8 @@
       "title": "Delete All Financial Data",
       "description": "This action is permanent and cannot be undone",
       "warning": "This will permanently delete all your financial data including transactions, accounts, bank connections, budgets, categories, and categorization rules. Your user account will remain active but all financial data will be erased.",
+      "exportReminder": "We strongly recommend exporting your data before proceeding. Once deleted, your data cannot be recovered.",
+      "exportButton": "Export my data first",
       "confirmLabel": "Type DELETE to confirm",
       "passwordLabel": "Enter your password to confirm",
       "passwordPlaceholder": "Your current password",

@@ -4,10 +4,11 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { AlertTriangle, Loader2 } from 'lucide-react';
+import { AlertTriangle, Loader2, Download } from 'lucide-react';
 import { toast } from '@/components/ui/sonner';
 import { usePreferences } from '@/contexts/PreferencesContext';
 import { API_BASE_URL } from '@/lib/config';
+import { ExportDialog } from '@/components/export/ExportDialog';
 
 interface DeleteDataDialogProps {
   open: boolean;
@@ -69,6 +70,32 @@ export function DeleteDataDialog({ open, onOpenChange }: DeleteDataDialogProps) 
         <div className="space-y-4 py-2">
           <div className="rounded-lg border border-destructive/30 bg-destructive/5 p-4 text-sm text-destructive">
             {t('consent.deleteData.warning')}
+          </div>
+
+          <div className="rounded-lg border border-border bg-muted/50 p-4 space-y-3">
+            <p className="text-sm text-muted-foreground font-medium">
+              {t('consent.deleteData.exportReminder')}
+            </p>
+            <div className="flex gap-2">
+              <ExportDialog
+                format="csv"
+                trigger={
+                  <Button variant="outline" size="sm" type="button">
+                    <Download className="h-4 w-4 mr-2" />
+                    CSV
+                  </Button>
+                }
+              />
+              <ExportDialog
+                format="json"
+                trigger={
+                  <Button variant="outline" size="sm" type="button">
+                    <Download className="h-4 w-4 mr-2" />
+                    JSON
+                  </Button>
+                }
+              />
+            </div>
           </div>
 
           <div className="space-y-2">
