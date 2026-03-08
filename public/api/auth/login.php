@@ -24,6 +24,7 @@ try {
     $user = $stmt->fetch();
     
     if (!$user || !password_verify($body['password'], $user['password_hash'])) {
+        AuditLog::log('login_failed', null, null, json_encode(['email' => strtolower(trim($body['email']))]));
         Response::error('Invalid email or password', 401);
     }
     
