@@ -13,6 +13,7 @@ import {
   Users,
   Target,
   ClipboardList,
+  Database,
 } from 'lucide-react';
 import {
   Sidebar,
