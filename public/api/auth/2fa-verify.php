@@ -22,7 +22,7 @@ try {
 
     // Find the pending 2FA token
     $stmt = $pdo->prepare('
-        SELECT at.user_id, at.token, u.totp_secret, u.recovery_codes, u.email, u.name, u.role
+        SELECT at.user_id, at.token, u.totp_secret, u.recovery_codes, u.email, u.name, u.role, u.allow_sandbox
         FROM auth_tokens at
         INNER JOIN users u ON at.user_id = u.id
         WHERE at.token = :token AND at.expires_at > NOW() AND at.is_2fa_pending = 1
