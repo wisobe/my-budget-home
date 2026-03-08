@@ -4,8 +4,10 @@ import { preferencesApi } from '@/lib/api';
 
 const ALL_SETTINGS_SECTIONS = ['account', 'twoFactor', 'categories', 'rules', 'preferences', 'plaidEnv', 'privacy', 'export'];
 
+export type ThemeMode = 'light' | 'dark' | 'system';
+
 interface Preferences {
-  darkMode: boolean;
+  themeMode: ThemeMode;
   autoSync: boolean;
   showPending: boolean;
   language: string;
@@ -18,7 +20,9 @@ interface Preferences {
 }
 
 interface PreferencesContextType extends Preferences {
-  setDarkMode: (v: boolean) => void;
+  darkMode: boolean; // resolved value for components that need it
+  setThemeMode: (v: ThemeMode) => void;
+  setDarkMode: (v: boolean) => void; // kept for backward compat
   setAutoSync: (v: boolean) => void;
   setShowPending: (v: boolean) => void;
   setLanguage: (v: string) => void;
@@ -31,7 +35,7 @@ interface PreferencesContextType extends Preferences {
 }
 
 const defaults: Preferences = {
-  darkMode: false,
+  themeMode: 'system',
   autoSync: true,
   showPending: true,
   language: 'en',
@@ -45,7 +49,13 @@ const defaults: Preferences = {
 
 function fromApi(data: Record<string, string>): Partial<Preferences> {
   const p: Partial<Preferences> = {};
-  if (data.dark_mode !== undefined) p.darkMode = data.dark_mode === '1';
+  if (data.dark_mode !== undefined) {
+    // Support legacy '0'/'1' values and new 'light'/'dark'/'system'
+    if (data.dark_mode === '0') p.themeMode = 'light';
+    else if (data.dark_mode === '1') p.themeMode = 'dark';
+    else if (['light', 'dark', 'system'].includes(data.dark_mode)) p.themeMode = data.dark_mode as ThemeMode;
+    else p.themeMode = 'system';
+  }
   if (data.auto_sync !== undefined) p.autoSync = data.auto_sync === '1';
   if (data.show_pending !== undefined) p.showPending = data.show_pending === '1';
   if (data.language !== undefined) p.language = data.language;
@@ -59,7 +69,7 @@ function fromApi(data: Record<string, string>): Partial<Preferences> {
 
 function toApi(prefs: Preferences): Record<string, string> {
   return {
-    dark_mode: prefs.darkMode ? '1' : '0',
+    dark_mode: prefs.themeMode,
     auto_sync: prefs.autoSync ? '1' : '0',
     show_pending: prefs.showPending ? '1' : '0',
     language: prefs.language,
@@ -71,6 +81,21 @@ function toApi(prefs: Preferences): Record<string, string> {
   };
 }
 
+function useSystemDarkMode() {
+  const [systemDark, setSystemDark] = useState(() =>
+    typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches
+  );
+
+  useEffect(() => {
+    const mql = window.matchMedia('(prefers-color-scheme: dark)');
+    const handler = (e: MediaQueryListEvent) => setSystemDark(e.matches);
+    mql.addEventListener('change', handler);
+    return () => mql.removeEventListener('change', handler);
+  }, []);
+
+  return systemDark;
+}
+
 const PreferencesContext = createContext<PreferencesContextType | null>(null);
 
 export function PreferencesProvider({ children }: { children: React.ReactNode }) {
@@ -78,6 +103,10 @@ export function PreferencesProvider({ children }: { children: React.ReactNode })
   const [isLoaded, setIsLoaded] = useState(false);
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const initialLoad = useRef(true);
+  const systemDark = useSystemDarkMode();
+
+  // Resolved dark mode value
+  const darkMode = prefs.themeMode === 'system' ? systemDark : prefs.themeMode === 'dark';
 
   // Load from API on mount
   useEffect(() => {
@@ -110,8 +139,8 @@ export function PreferencesProvider({ children }: { children: React.ReactNode })
 
   // Apply dark mode class to <html>
   useEffect(() => {
-    document.documentElement.classList.toggle('dark', prefs.darkMode);
-  }, [prefs.darkMode]);
+    document.documentElement.classList.toggle('dark', darkMode);
+  }, [darkMode]);
 
   // Sync i18n language
   useEffect(() => {
@@ -120,7 +149,8 @@ export function PreferencesProvider({ children }: { children: React.ReactNode })
     }
   }, [prefs.language]);
 
-  const setDarkMode = useCallback((v: boolean) => setPrefs(p => ({ ...p, darkMode: v })), []);
+  const setThemeMode = useCallback((v: ThemeMode) => setPrefs(p => ({ ...p, themeMode: v })), []);
+  const setDarkMode = useCallback((v: boolean) => setPrefs(p => ({ ...p, themeMode: v ? 'dark' : 'light' })), []);
   const setAutoSync = useCallback((v: boolean) => setPrefs(p => ({ ...p, autoSync: v })), []);
   const setShowPending = useCallback((v: boolean) => setPrefs(p => ({ ...p, showPending: v })), []);
   const setLanguage = useCallback((v: string) => setPrefs(p => ({ ...p, language: v })), []);
@@ -131,7 +161,7 @@ export function PreferencesProvider({ children }: { children: React.ReactNode })
   const setSettingsExpandedSections = useCallback((v: string[]) => setPrefs(p => ({ ...p, settingsExpandedSections: v })), []);
 
   return (
-    <PreferencesContext.Provider value={{ ...prefs, setDarkMode, setAutoSync, setShowPending, setLanguage, setBalanceAccounts, setConsentDataCollection, setConsentDataProcessing, setConsentDataStorage, setSettingsExpandedSections, isLoaded }}>
+    <PreferencesContext.Provider value={{ ...prefs, darkMode, setThemeMode, setDarkMode, setAutoSync, setShowPending, setLanguage, setBalanceAccounts, setConsentDataCollection, setConsentDataProcessing, setConsentDataStorage, setSettingsExpandedSections, isLoaded }}>
       {children}
     </PreferencesContext.Provider>
   );
