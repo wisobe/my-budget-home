@@ -118,7 +118,7 @@ const Settings = () => {
         {/* Account & Security */}
         <AccordionItem value="account" className="border-none">
           <Card>
-            <CardHeader className="pb-0">
+            <CardHeader className="pb-4">
               <AccordionTrigger className="hover:no-underline py-0">
                 <div className="flex items-center gap-2">
                   <Lock className="h-5 w-5" />
