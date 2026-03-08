@@ -53,6 +53,7 @@ function fromApi(data: Record<string, string>): Partial<Preferences> {
   if (data.consent_data_collection !== undefined) { p.consentDataCollection = data.consent_data_collection === '1'; p.consentRecorded = true; }
   if (data.consent_data_processing !== undefined) { p.consentDataProcessing = data.consent_data_processing === '1'; p.consentRecorded = true; }
   if (data.consent_data_storage !== undefined) { p.consentDataStorage = data.consent_data_storage === '1'; p.consentRecorded = true; }
+  if (data.settings_expanded_sections !== undefined) p.settingsExpandedSections = data.settings_expanded_sections ? data.settings_expanded_sections.split(',') : [];
   return p;
 }
 
