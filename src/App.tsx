@@ -27,6 +27,7 @@ import NotFound from "./pages/NotFound";
 import Login from "./pages/Login";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import SecurityPolicy from "./pages/SecurityPolicy";
+import AccessControlPolicy from "./pages/AccessControlPolicy";
 
 const queryClient = new QueryClient();
 
@@ -88,6 +89,7 @@ const App = () => (
               <Routes>
                 <Route path="/privacy" element={<PrivacyPolicy />} />
                 <Route path="/security-policy" element={<SecurityPolicy />} />
+                <Route path="/access-control-policy" element={<AccessControlPolicy />} />
                 <Route path="*" element={
                   <CookieGate>
                     <AuthGate>
