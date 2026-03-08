@@ -1,7 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { AppLayout } from '@/components/layout/AppLayout';
 import { Card, CardContent } from '@/components/ui/card';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -26,8 +24,8 @@ const PrivacyPolicy = () => {
   ];
 
   return (
-    <AppLayout title={t('privacy.title')}>
-      <div className="max-w-3xl">
+    <div className="min-h-screen bg-background p-6">
+      <div className="max-w-3xl mx-auto">
         <Button variant="ghost" size="sm" className="mb-4" onClick={() => navigate(-1)}>
           <ArrowLeft className="h-4 w-4 mr-2" />
           {t('privacy.back')}
@@ -64,7 +62,7 @@ const PrivacyPolicy = () => {
           </CardContent>
         </Card>
       </div>
-    </AppLayout>
+    </div>
   );
 };
 
