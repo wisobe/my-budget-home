@@ -731,10 +731,14 @@ const Settings = () => {
               <CardContent className="pt-4 space-y-4">
                 <PrivacyConsentSettings />
                 <Separator />
-                <div>
+                <div className="flex flex-col gap-2">
                   <Link to="/privacy" className="text-sm text-primary hover:underline inline-flex items-center gap-1">
                     <ShieldCheck className="h-4 w-4" />
                     {t('privacy.viewPolicy')}
+                  </Link>
+                  <Link to="/security-policy" className="text-sm text-primary hover:underline inline-flex items-center gap-1">
+                    <ShieldCheck className="h-4 w-4" />
+                    {t('securityPolicy.viewPolicy')}
                   </Link>
                 </div>
               </CardContent>

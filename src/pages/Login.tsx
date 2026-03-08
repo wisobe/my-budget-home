@@ -176,6 +176,10 @@ const Login = () => {
             <Link to="/privacy" className="text-xs text-muted-foreground hover:text-primary hover:underline">
               {t('privacy.viewPolicy')}
             </Link>
+            <span className="text-xs text-muted-foreground mx-1">·</span>
+            <Link to="/security-policy" className="text-xs text-muted-foreground hover:text-primary hover:underline">
+              {t('securityPolicy.viewPolicy')}
+            </Link>
           </div>
         </CardContent>
       </Card>

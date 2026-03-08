@@ -87,6 +87,7 @@ const App = () => (
             <BrowserRouter basename={BASE_PATH}>
               <Routes>
                 <Route path="/privacy" element={<PrivacyPolicy />} />
+                <Route path="/security-policy" element={<SecurityPolicy />} />
                 <Route path="*" element={
                   <CookieGate>
                     <AuthGate>
