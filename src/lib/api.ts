@@ -382,6 +382,15 @@ export const auditApi = {
     }
     return request<PaginatedResponse<AuditLogEntry>>(`/audit/?${searchParams}`);
   },
+  securityStats: () => request<ApiResponse<{
+    status: 'healthy' | 'warning' | 'critical';
+    alerts: string[];
+    failed_logins: { last_24h: number; last_7d: number; last_30d: number };
+    successful_logins: { last_24h: number; last_7d: number; last_30d: number };
+    suspicious_ips: { ip_address: string; failure_count: number }[];
+    targeted_accounts: { email: string; failure_count: number }[];
+    security_events: Record<string, number>;
+  }>>(`/audit/security-stats.php`),
 };
 
 export { ApiError };
