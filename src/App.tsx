@@ -89,6 +89,7 @@ const App = () => (
               <Routes>
                 <Route path="/privacy" element={<PrivacyPolicy />} />
                 <Route path="/security-policy" element={<SecurityPolicy />} />
+                <Route path="/access-control-policy" element={<AccessControlPolicy />} />
                 <Route path="*" element={
                   <CookieGate>
                     <AuthGate>

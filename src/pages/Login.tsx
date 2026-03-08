@@ -180,6 +180,10 @@ const Login = () => {
             <Link to="/security-policy" className="text-xs text-muted-foreground hover:text-primary hover:underline">
               {t('securityPolicy.viewPolicy')}
             </Link>
+            <span className="text-xs text-muted-foreground mx-1">·</span>
+            <Link to="/access-control-policy" className="text-xs text-muted-foreground hover:text-primary hover:underline">
+              {t('accessControlPolicy.viewPolicy')}
+            </Link>
           </div>
         </CardContent>
       </Card>
