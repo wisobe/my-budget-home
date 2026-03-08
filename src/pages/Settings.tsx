@@ -35,7 +35,7 @@ const Settings = () => {
   const { data: categoriesData } = useCategories();
   const categories = categoriesData?.data || [];
   const { logout, user, isAdmin } = useAuth();
-  const { darkMode, setDarkMode, autoSync, setAutoSync, showPending, setShowPending, language, setLanguage, settingsExpandedSections, setSettingsExpandedSections } = usePreferences();
+  const { themeMode, setThemeMode, autoSync, setAutoSync, showPending, setShowPending, language, setLanguage, settingsExpandedSections, setSettingsExpandedSections } = usePreferences();
   const { plaidEnvironment, setPlaidEnvironment, canUseSandbox } = usePlaidEnvironment();
   const deleteCategoryMutation = useDeleteCategory();
   const { data: rulesData } = useCategoryRules();
@@ -616,10 +616,19 @@ const Settings = () => {
               <CardContent className="pt-4 space-y-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="font-medium">{t('settings.darkMode')}</p>
-                    <p className="text-sm text-muted-foreground">{t('settings.toggleDarkTheme')}</p>
+                    <p className="font-medium">{t('settings.theme')}</p>
+                    <p className="text-sm text-muted-foreground">{t('settings.themeDesc')}</p>
                   </div>
-                  <Switch checked={darkMode} onCheckedChange={setDarkMode} />
+                  <Select value={themeMode} onValueChange={(v) => setThemeMode(v as 'light' | 'dark' | 'system')}>
+                    <SelectTrigger className="w-[140px]">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="light">{t('settings.themeLight')}</SelectItem>
+                      <SelectItem value="dark">{t('settings.themeDark')}</SelectItem>
+                      <SelectItem value="system">{t('settings.themeSystem')}</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
                 <Separator />
                 <div className="flex items-center justify-between">
