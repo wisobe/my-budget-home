@@ -34,7 +34,7 @@ try {
 
         // Sum transactions for this category (and children) in this month
         $stmt = $pdo->prepare('
-            SELECT COALESCE(SUM(ABS(t.amount)), 0) as spent
+            SELECT COALESCE(SUM(t.amount), 0) as spent
             FROM transactions t
             JOIN accounts a ON t.account_id = a.id
             WHERE a.user_id = :uid
@@ -58,7 +58,7 @@ try {
 
         // Add split amounts for this category
         $splitStmt = $pdo->prepare('
-            SELECT COALESCE(SUM(ABS(ts.amount)), 0) as split_spent
+            SELECT COALESCE(SUM(ts.amount), 0) as split_spent
             FROM transaction_splits ts
             JOIN transactions t ON ts.transaction_id = t.id
             JOIN accounts a ON t.account_id = a.id
@@ -82,7 +82,7 @@ try {
 
         $months[] = [
             'month' => $label,
-            'spent' => round($spent, 2),
+            'spent' => round(abs($spent), 2),
         ];
     }
 
