@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { CardTitle } from '@/components/ui/card';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -26,7 +27,7 @@ export function TwoFactorHeader() {
   return (
     <div className="flex items-center gap-2">
       <ShieldCheck className="h-5 w-5" />
-      <span>{t('twoFactor.title')}</span>
+      <CardTitle className="text-lg">{t('twoFactor.title')}</CardTitle>
       {enabled && <Badge variant="default" className="ml-2">{t('twoFactor.active')}</Badge>}
     </div>
   );
