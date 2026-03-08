@@ -20,6 +20,7 @@ const SecurityPolicy = () => {
     { title: t('securityPolicy.section9Title'), content: t('securityPolicy.section9Content') },
     { title: t('securityPolicy.section10Title'), content: t('securityPolicy.section10Content') },
     { title: t('securityPolicy.section11Title'), content: t('securityPolicy.section11Content') },
+    { title: t('securityPolicy.section12Title'), content: t('securityPolicy.section12Content') },
   ];
 
   return (
