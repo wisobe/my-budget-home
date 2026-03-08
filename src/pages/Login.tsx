@@ -184,6 +184,10 @@ const Login = () => {
             <Link to="/access-control-policy" className="text-xs text-muted-foreground hover:text-primary hover:underline">
               {t('accessControlPolicy.viewPolicy')}
             </Link>
+            <span className="text-xs text-muted-foreground mx-1">·</span>
+            <Link to="/data-retention-policy" className="text-xs text-muted-foreground hover:text-primary hover:underline">
+              {t('dataRetentionPolicy.viewPolicy')}
+            </Link>
           </div>
         </CardContent>
       </Card>
