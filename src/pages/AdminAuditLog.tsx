@@ -18,7 +18,8 @@ import { Navigate } from 'react-router-dom';
 import {
   Search, ChevronLeft, ChevronRight, CalendarIcon, X,
   Shield, LogIn, LogOut, UserPlus, UserMinus, UserCog, KeyRound,
-  ClipboardList, Loader2,
+  ClipboardList, Loader2, CheckCircle2, AlertTriangle, AlertCircle,
+  Activity, Globe,
 } from 'lucide-react';
 import type { AuditLogEntry } from '@/types';
 
