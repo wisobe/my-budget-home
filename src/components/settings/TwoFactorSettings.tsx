@@ -141,7 +141,7 @@ export function TwoFactorSettings() {
           <p className="text-sm text-muted-foreground">{t('twoFactor.notEnabledHint')}</p>
         )}
       </div>
-      </Card>
+      </Dialog>
 
       {/* Setup Dialog */}
       <Dialog open={setupOpen} onOpenChange={(o) => { if (!o && step === 'recovery') { setSetupOpen(false); } else if (!o) { setSetupOpen(false); } }}>
