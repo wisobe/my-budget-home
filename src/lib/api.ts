@@ -19,6 +19,7 @@ import type {
   PlaidSyncResult,
   AuthVerifyResponse,
   User,
+  AuditLogEntry,
 } from '@/types';
 
 import { API_BASE_URL } from '@/lib/config';
