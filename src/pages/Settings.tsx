@@ -591,10 +591,10 @@ const Settings = () => {
         {/* Preferences */}
         <AccordionItem value="preferences" className="border-none">
           <Card>
-            <CardHeader className="pb-0">
+            <CardHeader className="pb-4">
               <AccordionTrigger className="hover:no-underline py-0">
                 <div className="text-left">
-                  <CardTitle className="text-base">{t('settings.preferences')}</CardTitle>
+                  <CardTitle className="text-lg">{t('settings.preferences')}</CardTitle>
                   <CardDescription>{t('settings.customizeExperience')}</CardDescription>
                 </div>
               </AccordionTrigger>
