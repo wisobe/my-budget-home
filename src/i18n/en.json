@@ -504,5 +504,36 @@
       "2fa_disabled": "2FA Disabled",
       "password_changed": "Password Changed"
     }
+  },
+  "privacy": {
+    "title": "Privacy Policy",
+    "back": "Back",
+    "lastUpdated": "Last updated: {{date}}",
+    "viewPolicy": "View Privacy Policy",
+    "contact": "If you have any questions about this privacy policy, please contact us:",
+    "section1Title": "Introduction",
+    "section1Content": "BudgetWise (\"we\", \"our\", \"us\") is committed to protecting the privacy of our users. This Privacy Policy explains how we collect, use, store, and protect your personal information when you use the BudgetWise application (the \"Application\"). This policy is designed to comply with the Personal Information Protection and Electronic Documents Act (PIPEDA) and Quebec's Act respecting the protection of personal information in the private sector (Law 25).",
+    "section2Title": "Information We Collect",
+    "section2Content": "We collect the following types of personal information:\n\n• Account information: email address, name, and encrypted password.\n• Financial data: bank account details, transaction history, account balances, and budget information obtained through your connected financial institutions via the Plaid service.\n• Usage data: application preferences, consent records, and audit logs of account activity.\n• Authentication data: session tokens and two-factor authentication configuration.\n\nWe only collect information that is necessary for the operation of the Application.",
+    "section3Title": "How We Collect Information",
+    "section3Content": "We collect your information through:\n\n• Direct input: when you create an account and configure your settings.\n• Plaid integration: when you connect your bank accounts, financial data is retrieved through Plaid's secure API. Plaid's own privacy policy governs their data handling practices.\n• Automatic collection: session and audit data generated through your use of the Application.\n\nWe obtain your explicit consent before collecting, using, or disclosing your personal information. You may withdraw consent at any time through the Privacy & Consent settings.",
+    "section4Title": "How We Use Your Information",
+    "section4Content": "Your personal information is used for the following purposes:\n\n• Providing the Application's core features: displaying your financial accounts, transactions, budgets, and reports.\n• Authentication and security: verifying your identity and protecting your account.\n• Categorization: automatically and manually organizing your transactions.\n• Data export: allowing you to export your financial data in CSV or JSON format.\n\nWe do not use your information for advertising, marketing to third parties, or any purpose beyond operating the Application.",
+    "section5Title": "Data Storage and Security",
+    "section5Content": "Your data is stored in a secure database with the following protections:\n\n• Passwords are hashed using industry-standard algorithms and are never stored in plain text.\n• Authentication tokens are cryptographically generated and have defined expiration periods.\n• Two-factor authentication (TOTP) is available for additional account security.\n• Access to the database is restricted and protected by server-level security measures.\n• Data is isolated per user — you can only access your own data.\n\nWe retain your data only for as long as necessary to provide the Application's services or as required by law.",
+    "section6Title": "Data Sharing and Disclosure",
+    "section6Content": "We do not sell, rent, or trade your personal information to third parties.\n\nYour financial data is shared with Plaid Technologies, Inc. solely for the purpose of connecting to your financial institutions. No other third-party sharing occurs.\n\nWe may disclose your information if required by law, court order, or governmental regulation.",
+    "section7Title": "Your Rights",
+    "section7Content": "Under PIPEDA and Quebec Law 25, you have the following rights:\n\n• Right of access: You may request access to the personal information we hold about you.\n• Right of rectification: You may request correction of inaccurate information.\n• Right of deletion: You may request the deletion of your personal data. The Application provides a secure data deletion feature in Settings that permanently removes all your financial data (transactions, accounts, connections, budgets, and rules).\n• Right to withdraw consent: You may withdraw your consent for data collection, processing, or storage at any time through the Privacy & Consent settings. Withdrawal of certain consents may limit your ability to use specific features.\n• Right to data portability: You may export your data at any time using the built-in export feature.\n• Right to file a complaint: You may file a complaint with the Office of the Privacy Commissioner of Canada or the Commission d'accès à l'information du Québec.",
+    "section8Title": "Consent Management",
+    "section8Content": "The Application implements a granular consent management system:\n\n• Cookie consent: You may accept or decline cookies when first accessing the Application.\n• Data collection consent: Controls whether the Application can connect to and synchronize data from your bank accounts.\n• Data processing consent: Controls whether the Application can process your data for dashboard and reporting features.\n• Data storage consent: Controls whether the Application stores your financial data. Revoking storage consent triggers a secure deletion process.\n\nYou can manage all consent preferences at any time in the Privacy & Consent section of Settings.",
+    "section9Title": "Data Breach Notification",
+    "section9Content": "In the event of a data breach that poses a real risk of significant harm, we will:\n\n• Notify affected users as soon as feasible.\n• Notify the Office of the Privacy Commissioner of Canada.\n• Notify the Commission d'accès à l'information du Québec.\n• Keep a record of the breach as required by law.",
+    "section10Title": "Privacy Officer",
+    "section10Content": "For any questions, concerns, or requests regarding your personal information, you may contact our Privacy Officer:\n\nBudgetWise\n1234 rue de l'Église, Lévis (QC) H0H0H0\nEmail: budgetwise@guisset.ca\n\nWe will respond to your request within 30 days, as required by law.",
+    "section11Title": "Children's Privacy",
+    "section11Content": "The Application is not intended for use by individuals under the age of 14. We do not knowingly collect personal information from children. If we become aware that a child under 14 has provided us with personal information, we will take steps to delete that information.",
+    "section12Title": "Changes to This Policy",
+    "section12Content": "We may update this Privacy Policy from time to time. Any changes will be reflected in the \"Last updated\" date at the top of this policy. We encourage you to review this policy periodically. Continued use of the Application after changes constitutes acceptance of the updated policy."
   }
 }

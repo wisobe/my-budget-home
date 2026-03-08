@@ -100,6 +100,7 @@ const App = () => (
                     <Route path="/admin/plaid" element={<AdminPlaid />} />
                     <Route path="/admin/backend" element={<AdminBackend />} />
                     <Route path="/admin/audit" element={<AdminAuditLog />} />
+                    <Route path="/privacy" element={<PrivacyPolicy />} />
                     <Route path="*" element={<NotFound />} />
                   </Routes>
                 </BrowserRouter>
