@@ -40,6 +40,7 @@ const defaults: Preferences = {
   consentDataProcessing: false,
   consentDataStorage: false,
   consentRecorded: false,
+  settingsExpandedSections: [...ALL_SETTINGS_SECTIONS],
 };
 
 function fromApi(data: Record<string, string>): Partial<Preferences> {
