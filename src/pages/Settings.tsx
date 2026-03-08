@@ -601,6 +601,50 @@ const Settings = () => {
           </CardContent>
         </Card>
 
+        {/* Plaid Environment - for non-admin users with sandbox access */}
+        {canUseSandbox && !isAdmin && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Key className="h-5 w-5" />
+                {t('settings.plaidEnvironment')}
+              </CardTitle>
+              <CardDescription>{t('settings.plaidEnvDescription')}</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-2 gap-3">
+                <button
+                  onClick={() => setPlaidEnvironment('sandbox')}
+                  className={cn(
+                    "flex items-center gap-3 p-4 rounded-lg border-2 transition-all text-left",
+                    plaidEnvironment === 'sandbox' ? "border-primary bg-primary/5" : "border-border hover:border-muted-foreground/30"
+                  )}
+                >
+                  <FlaskConical className={cn("h-5 w-5", plaidEnvironment === 'sandbox' ? "text-primary" : "text-muted-foreground")} />
+                  <div>
+                    <p className="font-medium">{t('settings.sandboxLabel')}</p>
+                    <p className="text-xs text-muted-foreground">{t('settings.sandboxDesc')}</p>
+                  </div>
+                </button>
+                <button
+                  onClick={() => setPlaidEnvironment('production')}
+                  className={cn(
+                    "flex items-center gap-3 p-4 rounded-lg border-2 transition-all text-left",
+                    plaidEnvironment === 'production' ? "border-primary bg-primary/5" : "border-border hover:border-muted-foreground/30"
+                  )}
+                >
+                  <Building2 className={cn("h-5 w-5", plaidEnvironment === 'production' ? "text-primary" : "text-muted-foreground")} />
+                  <div>
+                    <p className="font-medium">{t('settings.productionLabel')}</p>
+                    <p className="text-xs text-muted-foreground">{t('settings.productionDesc')}</p>
+                  </div>
+                </button>
+              </div>
+              <p className="text-xs text-muted-foreground mt-3">{t('settings.envSeparate')}</p>
+            </CardContent>
+          </Card>
+        )}
+
         {/* Privacy & Consent */}
         <PrivacyConsentSettings />
 
