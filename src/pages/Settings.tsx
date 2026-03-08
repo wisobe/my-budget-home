@@ -652,12 +652,12 @@ const Settings = () => {
         {canUseSandbox && !isAdmin && (
           <AccordionItem value="plaidEnv" className="border-none">
             <Card>
-              <CardHeader className="pb-0">
+              <CardHeader className="pb-4">
                 <AccordionTrigger className="hover:no-underline py-0">
                   <div className="flex items-center gap-2">
                     <Key className="h-5 w-5" />
                     <div className="text-left">
-                      <CardTitle className="text-base">{t('settings.plaidEnvironment')}</CardTitle>
+                      <CardTitle className="text-lg">{t('settings.plaidEnvironment')}</CardTitle>
                       <CardDescription>{t('settings.plaidEnvDescription')}</CardDescription>
                     </div>
                   </div>
