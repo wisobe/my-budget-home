@@ -3,7 +3,7 @@ import { AppLayout } from '@/components/layout/AppLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
-import { useAccounts, useTotalBalance, useUpdateAccount } from '@/hooks/use-accounts';
+import { useAccounts, useAllAccountsBalance, useUpdateAccount } from '@/hooks/use-accounts';
 import { SyncButton } from '@/components/transactions/SyncButton';
 import { Plus, CreditCard, Wallet, PiggyBank, TrendingUp } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -32,7 +32,7 @@ const accountIcons: Record<string, typeof Wallet> = {
 const Accounts = () => {
   const { t } = useTranslation();
   const { data: accountsData, isLoading } = useAccounts();
-  const totalBalance = useTotalBalance();
+  const totalBalance = useAllAccountsBalance();
   const updateAccountMutation = useUpdateAccount();
 
   const accounts = accountsData?.data || [];
