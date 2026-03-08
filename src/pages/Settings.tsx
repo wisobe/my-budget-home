@@ -188,7 +188,7 @@ const Settings = () => {
         {/* Categories Management */}
         <AccordionItem value="categories" className="border-none">
           <Card>
-            <CardHeader className="pb-4 relative">
+            <CardHeader className="pb-4">
               <AccordionTrigger className="hover:no-underline py-0">
                 <div className="flex items-center gap-2">
                   <Tags className="h-5 w-5" />
@@ -198,11 +198,13 @@ const Settings = () => {
                   </div>
                 </div>
               </AccordionTrigger>
-              {settingsExpandedSections.includes('categories') && (
-              <div className="absolute right-6 top-6">
+            </CardHeader>
+            <AccordionContent>
+              <CardContent className="pt-4">
+                <div className="flex justify-end mb-4">
                 <Dialog open={addCatOpen} onOpenChange={setAddCatOpen}>
                   <DialogTrigger asChild>
-                    <Button size="sm" onClick={(e) => e.stopPropagation()}><Plus className="h-4 w-4 mr-2" />{t('settings.addCategory')}</Button>
+                    <Button size="sm"><Plus className="h-4 w-4 mr-2" />{t('settings.addCategory')}</Button>
                   </DialogTrigger>
                   <DialogContent>
                     <DialogHeader><DialogTitle>{t('settings.addCategory')}</DialogTitle></DialogHeader>
@@ -261,11 +263,7 @@ const Settings = () => {
                     </div>
                   </DialogContent>
                 </Dialog>
-              </div>
-              )}
-            </CardHeader>
-            <AccordionContent>
-              <CardContent className="pt-4">
+                </div>
             <div className="relative overflow-hidden">
               {/* Parent categories view */}
               <div
