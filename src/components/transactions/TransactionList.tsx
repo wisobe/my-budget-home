@@ -36,12 +36,19 @@ import type { Transaction } from '@/types';
 
 export function TransactionList() {
   const { t } = useTranslation();
+  const [searchParams] = useSearchParams();
+
+  // Read initial filter values from URL query params (for drill-down from budgets)
+  const initialCategory = searchParams.get('category_id') || 'all';
+  const initialStartDate = searchParams.get('start_date');
+  const initialEndDate = searchParams.get('end_date');
+
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
-  const [categoryFilter, setCategoryFilter] = useState<string>('all');
+  const [categoryFilter, setCategoryFilter] = useState<string>(initialCategory);
   const [showExcluded, setShowExcluded] = useState(false);
-  const [startDate, setStartDate] = useState<Date | undefined>(undefined);
-  const [endDate, setEndDate] = useState<Date | undefined>(undefined);
+  const [startDate, setStartDate] = useState<Date | undefined>(initialStartDate ? new Date(initialStartDate + 'T00:00:00') : undefined);
+  const [endDate, setEndDate] = useState<Date | undefined>(initialEndDate ? new Date(initialEndDate + 'T00:00:00') : undefined);
   const [splitTransaction, setSplitTransaction] = useState<Transaction | null>(null);
   const [splitOpen, setSplitOpen] = useState(false);
 
