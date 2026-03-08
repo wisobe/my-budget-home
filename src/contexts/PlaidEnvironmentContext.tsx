@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useCallback, useEffect } fr
 import { useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/contexts/AuthContext';
 import { API_BASE_URL } from '@/lib/config';
+import { EnvironmentSelector } from '@/components/EnvironmentSelector';
 
 type PlaidEnvironment = 'sandbox' | 'production';
 
@@ -49,10 +50,10 @@ async function saveUserPreference(key: string, value: string) {
 export function PlaidEnvironmentProvider({ children }: { children: React.ReactNode }) {
   const [plaidEnvironment, setPlaidEnvState] = useState<PlaidEnvironment>('production');
   const [loaded, setLoaded] = useState(false);
+  const [needsSelection, setNeedsSelection] = useState(false);
   const queryClient = useQueryClient();
-  const { isAdmin, isAuthenticated } = useAuth();
+  const { isAdmin, isAuthenticated, user } = useAuth();
 
-  const { user } = useAuth();
   const canUseSandbox = isAdmin || !!user?.allow_sandbox;
   const effectiveEnvironment = canUseSandbox ? plaidEnvironment : 'production';
 
@@ -63,10 +64,18 @@ export function PlaidEnvironmentProvider({ children }: { children: React.ReactNo
       const env = prefs.plaid_environment;
       if (env === 'sandbox' || env === 'production') {
         setPlaidEnvState(env);
+        setLoaded(true);
+      } else if (canUseSandbox) {
+        // No preference saved and user can use sandbox — prompt them to choose
+        setNeedsSelection(true);
+        setLoaded(true);
+      } else {
+        // No sandbox access — just use production, no need to prompt
+        setPlaidEnvState('production');
+        setLoaded(true);
       }
-      setLoaded(true);
     });
-  }, [isAuthenticated]);
+  }, [isAuthenticated, canUseSandbox]);
 
   const setPlaidEnvironment = useCallback((value: PlaidEnvironment) => {
     const resolvedValue = canUseSandbox ? value : 'production';
@@ -75,9 +84,19 @@ export function PlaidEnvironmentProvider({ children }: { children: React.ReactNo
     queryClient.invalidateQueries();
   }, [queryClient, canUseSandbox]);
 
+  const handleEnvironmentSelect = useCallback((env: PlaidEnvironment) => {
+    setNeedsSelection(false);
+    setPlaidEnvState(env);
+    saveUserPreference('plaid_environment', env);
+    queryClient.invalidateQueries();
+  }, [queryClient]);
+
   return (
     <PlaidEnvironmentContext.Provider value={{ plaidEnvironment: effectiveEnvironment, setPlaidEnvironment, canUseSandbox }}>
       {children}
+      {needsSelection && (
+        <EnvironmentSelector open={true} onSelect={handleEnvironmentSelect} />
+      )}
     </PlaidEnvironmentContext.Provider>
   );
 }
