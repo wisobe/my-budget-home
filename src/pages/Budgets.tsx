@@ -27,6 +27,7 @@ import { useBudgets, useSaveBudget, useDeleteBudget } from '@/hooks/use-budgets'
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { BudgetCategoryPicker } from '@/components/budgets/BudgetCategoryPicker';
+import { BudgetHistoryChart } from '@/components/budgets/BudgetHistoryChart';
 import type { Category, BudgetWithSpent } from '@/types';
 
 function getProgressColor(percentage: number): string {
