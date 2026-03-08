@@ -391,16 +391,17 @@ const Settings = () => {
         {/* Auto-Categorization Rules */}
         <AccordionItem value="rules" className="border-none">
           <Card>
-            <CardHeader className="pb-0 relative">
+            <CardHeader className="pb-4 relative">
               <AccordionTrigger className="hover:no-underline py-0">
                 <div className="flex items-center gap-2">
                   <Sparkles className="h-5 w-5" />
                   <div className="text-left">
-                    <CardTitle className="text-base">{t('settings.autoCategorization')}</CardTitle>
+                    <CardTitle className="text-lg">{t('settings.autoCategorization')}</CardTitle>
                     <CardDescription>{t('settings.autoCategorizationDesc')}</CardDescription>
                   </div>
                 </div>
               </AccordionTrigger>
+              {settingsExpandedSections.includes('rules') && (
               <div className="absolute right-6 top-6">
                 <Dialog open={addRuleOpen} onOpenChange={setAddRuleOpen}>
                   <DialogTrigger asChild>
