@@ -68,7 +68,7 @@ export function BudgetHistoryChart({ budget }: BudgetHistoryChartProps) {
   // Format month labels (e.g. "2025-03" → "Mar")
   const chartData = months.map((m) => ({
     ...m,
-    label: new Date(m.month + '-01').toLocaleDateString(undefined, { month: 'short' }),
+    label: parseMonthLabel(m.month),
   }));
 
   const budgetLimit = budget.amount;
