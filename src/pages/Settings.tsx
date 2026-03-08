@@ -188,13 +188,14 @@ const Settings = () => {
         {/* Categories Management */}
         <AccordionItem value="categories" className="border-none">
           <Card>
-            <CardHeader className="pb-0 relative">
+            <CardHeader className="pb-4 relative">
               <AccordionTrigger className="hover:no-underline py-0">
                 <div className="text-left">
-                  <CardTitle className="text-base">{t('settings.categories')}</CardTitle>
+                  <CardTitle className="text-lg">{t('settings.categories')}</CardTitle>
                   <CardDescription>{t('settings.manageCategories')}</CardDescription>
                 </div>
               </AccordionTrigger>
+              {settingsExpandedSections.includes('categories') && (
               <div className="absolute right-6 top-6">
                 <Dialog open={addCatOpen} onOpenChange={setAddCatOpen}>
                   <DialogTrigger asChild>
