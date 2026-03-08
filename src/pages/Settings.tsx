@@ -703,12 +703,12 @@ const Settings = () => {
         {/* Privacy & Consent */}
         <AccordionItem value="privacy" className="border-none">
           <Card>
-            <CardHeader className="pb-0">
+            <CardHeader className="pb-4">
               <AccordionTrigger className="hover:no-underline py-0">
                 <div className="flex items-center gap-2">
                   <ShieldCheck className="h-5 w-5" />
                   <div className="text-left">
-                    <CardTitle className="text-base">{t('consent.privacyTitle')}</CardTitle>
+                    <CardTitle className="text-lg">{t('consent.privacyTitle')}</CardTitle>
                     <CardDescription>{t('consent.privacyDescription')}</CardDescription>
                   </div>
                 </div>
