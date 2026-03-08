@@ -416,7 +416,7 @@ const Settings = () => {
             </CardHeader>
             <AccordionContent>
               <CardContent className="pt-4">
-                <div className="flex justify-end mb-4">
+                <div className="flex justify-start mb-4">
                 <Dialog open={addRuleOpen} onOpenChange={setAddRuleOpen}>
                   <DialogTrigger asChild>
                     <Button size="sm"><Plus className="h-4 w-4 mr-2" />{t('settings.addRule')}</Button>
