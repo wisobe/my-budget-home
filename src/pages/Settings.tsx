@@ -118,12 +118,12 @@ const Settings = () => {
         {/* Account & Security */}
         <AccordionItem value="account" className="border-none">
           <Card>
-            <CardHeader className="pb-0">
+            <CardHeader className="pb-4">
               <AccordionTrigger className="hover:no-underline py-0">
                 <div className="flex items-center gap-2">
                   <Lock className="h-5 w-5" />
                   <div className="text-left">
-                    <CardTitle className="text-base">{t('settings.account')}</CardTitle>
+                    <CardTitle className="text-lg">{t('settings.account')}</CardTitle>
                     <CardDescription>
                       {user ? t('settings.signedInAs', { email: user.email }) : t('settings.manageAccount')}
                     </CardDescription>
@@ -172,7 +172,7 @@ const Settings = () => {
         {/* Two-Factor Authentication */}
         <AccordionItem value="twoFactor" className="border-none">
           <Card>
-            <CardHeader className="pb-0">
+            <CardHeader className="pb-4">
               <AccordionTrigger className="hover:no-underline py-0">
                 <TwoFactorHeader />
               </AccordionTrigger>
@@ -188,13 +188,14 @@ const Settings = () => {
         {/* Categories Management */}
         <AccordionItem value="categories" className="border-none">
           <Card>
-            <CardHeader className="pb-0 relative">
+            <CardHeader className="pb-4 relative">
               <AccordionTrigger className="hover:no-underline py-0">
                 <div className="text-left">
-                  <CardTitle className="text-base">{t('settings.categories')}</CardTitle>
+                  <CardTitle className="text-lg">{t('settings.categories')}</CardTitle>
                   <CardDescription>{t('settings.manageCategories')}</CardDescription>
                 </div>
               </AccordionTrigger>
+              {settingsExpandedSections.includes('categories') && (
               <div className="absolute right-6 top-6">
                 <Dialog open={addCatOpen} onOpenChange={setAddCatOpen}>
                   <DialogTrigger asChild>
@@ -258,6 +259,7 @@ const Settings = () => {
                   </DialogContent>
                 </Dialog>
               </div>
+              )}
             </CardHeader>
             <AccordionContent>
               <CardContent className="pt-4">
@@ -389,16 +391,17 @@ const Settings = () => {
         {/* Auto-Categorization Rules */}
         <AccordionItem value="rules" className="border-none">
           <Card>
-            <CardHeader className="pb-0 relative">
+            <CardHeader className="pb-4 relative">
               <AccordionTrigger className="hover:no-underline py-0">
                 <div className="flex items-center gap-2">
                   <Sparkles className="h-5 w-5" />
                   <div className="text-left">
-                    <CardTitle className="text-base">{t('settings.autoCategorization')}</CardTitle>
+                    <CardTitle className="text-lg">{t('settings.autoCategorization')}</CardTitle>
                     <CardDescription>{t('settings.autoCategorizationDesc')}</CardDescription>
                   </div>
                 </div>
               </AccordionTrigger>
+              {settingsExpandedSections.includes('rules') && (
               <div className="absolute right-6 top-6">
                 <Dialog open={addRuleOpen} onOpenChange={setAddRuleOpen}>
                   <DialogTrigger asChild>
@@ -464,6 +467,7 @@ const Settings = () => {
                   </DialogContent>
                 </Dialog>
               </div>
+              )}
             </CardHeader>
             <AccordionContent>
               <CardContent className="pt-4">
@@ -587,10 +591,10 @@ const Settings = () => {
         {/* Preferences */}
         <AccordionItem value="preferences" className="border-none">
           <Card>
-            <CardHeader className="pb-0">
+            <CardHeader className="pb-4">
               <AccordionTrigger className="hover:no-underline py-0">
                 <div className="text-left">
-                  <CardTitle className="text-base">{t('settings.preferences')}</CardTitle>
+                  <CardTitle className="text-lg">{t('settings.preferences')}</CardTitle>
                   <CardDescription>{t('settings.customizeExperience')}</CardDescription>
                 </div>
               </AccordionTrigger>
@@ -648,12 +652,12 @@ const Settings = () => {
         {canUseSandbox && !isAdmin && (
           <AccordionItem value="plaidEnv" className="border-none">
             <Card>
-              <CardHeader className="pb-0">
+              <CardHeader className="pb-4">
                 <AccordionTrigger className="hover:no-underline py-0">
                   <div className="flex items-center gap-2">
                     <Key className="h-5 w-5" />
                     <div className="text-left">
-                      <CardTitle className="text-base">{t('settings.plaidEnvironment')}</CardTitle>
+                      <CardTitle className="text-lg">{t('settings.plaidEnvironment')}</CardTitle>
                       <CardDescription>{t('settings.plaidEnvDescription')}</CardDescription>
                     </div>
                   </div>
@@ -699,12 +703,12 @@ const Settings = () => {
         {/* Privacy & Consent */}
         <AccordionItem value="privacy" className="border-none">
           <Card>
-            <CardHeader className="pb-0">
+            <CardHeader className="pb-4">
               <AccordionTrigger className="hover:no-underline py-0">
                 <div className="flex items-center gap-2">
                   <ShieldCheck className="h-5 w-5" />
                   <div className="text-left">
-                    <CardTitle className="text-base">{t('consent.privacyTitle')}</CardTitle>
+                    <CardTitle className="text-lg">{t('consent.privacyTitle')}</CardTitle>
                     <CardDescription>{t('consent.privacyDescription')}</CardDescription>
                   </div>
                 </div>
@@ -721,12 +725,12 @@ const Settings = () => {
         {/* Data Export */}
         <AccordionItem value="export" className="border-none">
           <Card>
-            <CardHeader className="pb-0">
+            <CardHeader className="pb-4">
               <AccordionTrigger className="hover:no-underline py-0">
                 <div className="flex items-center gap-2">
                   <Download className="h-5 w-5" />
                   <div className="text-left">
-                    <CardTitle className="text-base">{t('settings.dataExport')}</CardTitle>
+                    <CardTitle className="text-lg">{t('settings.dataExport')}</CardTitle>
                     <CardDescription>{t('settings.exportData')}</CardDescription>
                   </div>
                 </div>
