@@ -157,12 +157,22 @@ try {
         }
         
         // Delete user (cascades to tokens, connections, accounts, etc.)
+        // Get user info before deletion for audit
+        $infoStmt = $pdo->prepare('SELECT email, name FROM users WHERE id = :id');
+        $infoStmt->execute(['id' => $body['id']]);
+        $deletedUser = $infoStmt->fetch();
+        
         $stmt = $pdo->prepare('DELETE FROM users WHERE id = :id');
         $stmt->execute(['id' => $body['id']]);
         
         if ($stmt->rowCount() === 0) {
             Response::notFound('User not found');
         }
+        
+        AuditLog::log('user_deleted', $admin['id'], $body['id'], json_encode([
+            'email' => $deletedUser['email'] ?? 'unknown',
+            'name' => $deletedUser['name'] ?? 'unknown',
+        ]));
         
         Response::success(null, 'User deleted');
 

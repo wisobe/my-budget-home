@@ -54,6 +54,8 @@ try {
     $pdo->prepare("INSERT INTO auth_tokens (token, user_id, expires_at) VALUES (:token, :user_id, :expires)")
         ->execute(['token' => $token, 'user_id' => $user['id'], 'expires' => $expiresAt]);
     
+    AuditLog::log('login_success', $user['id']);
+    
     Response::success([
         'token' => $token,
         'expires_at' => $expiresAt,

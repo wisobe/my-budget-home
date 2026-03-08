@@ -122,6 +122,8 @@ try {
             $stmt = $pdo->prepare("UPDATE users SET totp_enabled = 0, totp_secret = NULL, recovery_codes = NULL WHERE id = :id");
             $stmt->execute(['id' => $userId]);
 
+            AuditLog::log('2fa_disabled', $userId);
+
             Response::success(['totp_enabled' => false]);
             break;
 
