@@ -459,5 +459,9 @@
       "manualTitle": "Delete Stored Data",
       "manualDesc": "Permanently remove all your financial data from our servers"
     }
+  },
+  "environment": {
+    "selectTitle": "Choose Your Environment",
+    "selectDescription": "Select which Plaid environment you'd like to use. You can change this later in Settings."
   }
 }
