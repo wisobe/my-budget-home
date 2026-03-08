@@ -471,11 +471,7 @@ const Settings = () => {
                     </div>
                   </DialogContent>
                 </Dialog>
-              </div>
-              )}
-            </CardHeader>
-            <AccordionContent>
-              <CardContent className="pt-4">
+                </div>
                 {rules.length === 0 ? (
                   <p className="text-sm text-muted-foreground text-center py-4">{t('settings.noRulesYet')}</p>
                 ) : (
