@@ -26,6 +26,7 @@ import AdminAuditLog from "./pages/AdminAuditLog";
 import NotFound from "./pages/NotFound";
 import Login from "./pages/Login";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
+import SecurityPolicy from "./pages/SecurityPolicy";
 
 const queryClient = new QueryClient();
 
