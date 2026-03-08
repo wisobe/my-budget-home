@@ -2,6 +2,8 @@ import React, { createContext, useContext, useState, useEffect, useCallback, use
 import i18n from '@/i18n';
 import { preferencesApi } from '@/lib/api';
 
+const ALL_SETTINGS_SECTIONS = ['account', 'twoFactor', 'categories', 'rules', 'preferences', 'plaidEnv', 'privacy', 'export'];
+
 interface Preferences {
   darkMode: boolean;
   autoSync: boolean;
@@ -12,6 +14,7 @@ interface Preferences {
   consentDataProcessing: boolean;
   consentDataStorage: boolean;
   consentRecorded: boolean;
+  settingsExpandedSections: string[];
 }
 
 interface PreferencesContextType extends Preferences {
