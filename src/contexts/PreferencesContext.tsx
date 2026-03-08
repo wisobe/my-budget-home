@@ -26,6 +26,7 @@ interface PreferencesContextType extends Preferences {
   setConsentDataCollection: (v: boolean) => void;
   setConsentDataProcessing: (v: boolean) => void;
   setConsentDataStorage: (v: boolean) => void;
+  setSettingsExpandedSections: (v: string[]) => void;
   isLoaded: boolean;
 }
 
