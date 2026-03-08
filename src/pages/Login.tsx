@@ -160,6 +160,11 @@ const Login = () => {
               {t('auth.signIn')}
             </Button>
           </form>
+          <div className="mt-4 text-center">
+            <a href={`${window.location.pathname.replace(/\/$/, '')}/privacy`} className="text-xs text-muted-foreground hover:text-primary hover:underline">
+              {t('privacy.viewPolicy')}
+            </a>
+          </div>
         </CardContent>
       </Card>
     </div>
