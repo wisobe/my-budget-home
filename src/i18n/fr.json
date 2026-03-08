@@ -15,6 +15,7 @@
     "users": "Utilisateurs",
     "plaidConfig": "Configuration Plaid",
     "backendSetup": "Configuration du backend",
+    "auditLog": "Journal d'audit",
     "logout": "Déconnexion"
   },
   "auth": {
