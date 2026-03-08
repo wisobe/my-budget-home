@@ -11,7 +11,8 @@ import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useCategories, useDeleteCategory, useUpdateCategory, useCategoryRules, useCreateCategoryRule, useDeleteCategoryRule, useUpdateCategoryRule } from '@/hooks/use-transactions';
 import { useAuth } from '@/contexts/AuthContext';
-import { Plus, Trash2, Loader2, Lock, LogOut, Sparkles, Globe, ChevronRight, Pencil, ArrowLeft } from 'lucide-react';
+import { Plus, Trash2, Loader2, Lock, LogOut, Sparkles, Globe, ChevronRight, Pencil, ArrowLeft, FlaskConical, Building2, Key } from 'lucide-react';
+import { usePlaidEnvironment } from '@/contexts/PlaidEnvironmentContext';
 import { TwoFactorSettings } from '@/components/settings/TwoFactorSettings';
 import { useState, useRef } from 'react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -33,6 +34,7 @@ const Settings = () => {
   const categories = categoriesData?.data || [];
   const { logout, user, isAdmin } = useAuth();
   const { darkMode, setDarkMode, autoSync, setAutoSync, showPending, setShowPending, language, setLanguage } = usePreferences();
+  const { plaidEnvironment, setPlaidEnvironment, canUseSandbox } = usePlaidEnvironment();
   const deleteCategoryMutation = useDeleteCategory();
   const { data: rulesData } = useCategoryRules();
   const createRuleMutation = useCreateCategoryRule();
@@ -598,6 +600,50 @@ const Settings = () => {
             </div>
           </CardContent>
         </Card>
+
+        {/* Plaid Environment - for non-admin users with sandbox access */}
+        {canUseSandbox && !isAdmin && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Key className="h-5 w-5" />
+                {t('settings.plaidEnvironment')}
+              </CardTitle>
+              <CardDescription>{t('settings.plaidEnvDescription')}</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-2 gap-3">
+                <button
+                  onClick={() => setPlaidEnvironment('sandbox')}
+                  className={cn(
+                    "flex items-center gap-3 p-4 rounded-lg border-2 transition-all text-left",
+                    plaidEnvironment === 'sandbox' ? "border-primary bg-primary/5" : "border-border hover:border-muted-foreground/30"
+                  )}
+                >
+                  <FlaskConical className={cn("h-5 w-5", plaidEnvironment === 'sandbox' ? "text-primary" : "text-muted-foreground")} />
+                  <div>
+                    <p className="font-medium">{t('settings.sandboxLabel')}</p>
+                    <p className="text-xs text-muted-foreground">{t('settings.sandboxDesc')}</p>
+                  </div>
+                </button>
+                <button
+                  onClick={() => setPlaidEnvironment('production')}
+                  className={cn(
+                    "flex items-center gap-3 p-4 rounded-lg border-2 transition-all text-left",
+                    plaidEnvironment === 'production' ? "border-primary bg-primary/5" : "border-border hover:border-muted-foreground/30"
+                  )}
+                >
+                  <Building2 className={cn("h-5 w-5", plaidEnvironment === 'production' ? "text-primary" : "text-muted-foreground")} />
+                  <div>
+                    <p className="font-medium">{t('settings.productionLabel')}</p>
+                    <p className="text-xs text-muted-foreground">{t('settings.productionDesc')}</p>
+                  </div>
+                </button>
+              </div>
+              <p className="text-xs text-muted-foreground mt-3">{t('settings.envSeparate')}</p>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Privacy & Consent */}
         <PrivacyConsentSettings />
