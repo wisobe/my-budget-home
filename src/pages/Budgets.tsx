@@ -51,6 +51,7 @@ export default function Budgets() {
   const { toast } = useToast();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingBudget, setEditingBudget] = useState<BudgetWithSpent | null>(null);
+  const [expandedBudgetId, setExpandedBudgetId] = useState<string | null>(null);
   const [selectedCategory, setSelectedCategory] = useState('');
   const [amount, setAmount] = useState('');
   const [period, setPeriod] = useState<string>('monthly');
