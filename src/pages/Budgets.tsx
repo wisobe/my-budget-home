@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
-import { Plus, Trash2, Target, Pencil } from 'lucide-react';
+import { Plus, Trash2, Target, Pencil, ChevronDown } from 'lucide-react';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -27,6 +27,7 @@ import { useBudgets, useSaveBudget, useDeleteBudget } from '@/hooks/use-budgets'
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { BudgetCategoryPicker } from '@/components/budgets/BudgetCategoryPicker';
+import { BudgetHistoryChart } from '@/components/budgets/BudgetHistoryChart';
 import type { Category, BudgetWithSpent } from '@/types';
 
 function getProgressColor(percentage: number): string {
@@ -50,6 +51,7 @@ export default function Budgets() {
   const { toast } = useToast();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingBudget, setEditingBudget] = useState<BudgetWithSpent | null>(null);
+  const [expandedBudgetId, setExpandedBudgetId] = useState<string | null>(null);
   const [selectedCategory, setSelectedCategory] = useState('');
   const [amount, setAmount] = useState('');
   const [period, setPeriod] = useState<string>('monthly');
@@ -111,53 +113,71 @@ export default function Budgets() {
   const renderBudgetCard = (budget: BudgetWithSpent) => {
     const pct = Math.min(budget.percentage, 100);
     const remaining = budget.amount - budget.spent;
+    const isExpanded = expandedBudgetId === budget.id;
 
     return (
-      <div key={budget.id} className="flex items-center gap-4 p-4 rounded-lg border bg-card">
+      <div key={budget.id} className="rounded-lg border bg-card overflow-hidden">
         <div
-          className="w-3 h-3 rounded-full shrink-0"
-          style={{ backgroundColor: budget.category_color }}
-        />
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center justify-between mb-1">
-            <span className="font-medium text-sm truncate">{budget.category_name}</span>
-            <span className="text-xs text-muted-foreground ml-2 shrink-0">
-              {formatCurrency(budget.spent)} / {formatCurrency(budget.amount)}
-            </span>
+          className="flex items-center gap-4 p-4 cursor-pointer hover:bg-muted/50 transition-colors"
+          onClick={() => setExpandedBudgetId(isExpanded ? null : budget.id)}
+        >
+          <ChevronDown
+            className={cn(
+              'h-4 w-4 shrink-0 text-muted-foreground transition-transform',
+              isExpanded && 'rotate-180'
+            )}
+          />
+          <div
+            className="w-3 h-3 rounded-full shrink-0"
+            style={{ backgroundColor: budget.category_color }}
+          />
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center justify-between mb-1">
+              <span className="font-medium text-sm truncate">{budget.category_name}</span>
+              <span className="text-xs text-muted-foreground ml-2 shrink-0">
+                {formatCurrency(budget.spent)} / {formatCurrency(budget.amount)}
+              </span>
+            </div>
+            <div className={cn('h-2 rounded-full w-full', getProgressBg(budget.percentage))}>
+              <div
+                className={cn('h-2 rounded-full transition-all', getProgressColor(budget.percentage))}
+                style={{ width: `${pct}%` }}
+              />
+            </div>
+            <div className="flex justify-between mt-1">
+              <span className={cn('text-xs', remaining < 0 ? 'text-destructive font-medium' : 'text-muted-foreground')}>
+                {remaining >= 0
+                  ? t('budgets.remaining', { amount: formatCurrency(remaining) })
+                  : t('budgets.over', { amount: formatCurrency(Math.abs(remaining)) })}
+              </span>
+              <span className="text-xs text-muted-foreground">{budget.percentage}%</span>
+            </div>
           </div>
-          <div className={cn('h-2 rounded-full w-full', getProgressBg(budget.percentage))}>
-            <div
-              className={cn('h-2 rounded-full transition-all', getProgressColor(budget.percentage))}
-              style={{ width: `${pct}%` }}
-            />
-          </div>
-          <div className="flex justify-between mt-1">
-            <span className={cn('text-xs', remaining < 0 ? 'text-destructive font-medium' : 'text-muted-foreground')}>
-              {remaining >= 0
-                ? t('budgets.remaining', { amount: formatCurrency(remaining) })
-                : t('budgets.over', { amount: formatCurrency(Math.abs(remaining)) })}
-            </span>
-            <span className="text-xs text-muted-foreground">{budget.percentage}%</span>
+          <div className="flex shrink-0 gap-1" onClick={(e) => e.stopPropagation()}>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 text-muted-foreground hover:text-foreground"
+              onClick={() => openEditDialog(budget)}
+            >
+              <Pencil className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 text-muted-foreground hover:text-destructive"
+              onClick={() => handleDelete(budget.id)}
+            >
+              <Trash2 className="h-4 w-4" />
+            </Button>
           </div>
         </div>
-        <div className="flex shrink-0 gap-1">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8 text-muted-foreground hover:text-foreground"
-            onClick={() => openEditDialog(budget)}
-          >
-            <Pencil className="h-4 w-4" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8 text-muted-foreground hover:text-destructive"
-            onClick={() => handleDelete(budget.id)}
-          >
-            <Trash2 className="h-4 w-4" />
-          </Button>
-        </div>
+        {isExpanded && (
+          <div className="px-4 pb-4 border-t bg-muted/30">
+            <p className="text-xs text-muted-foreground pt-3 mb-1">{t('budgets.last12Months')}</p>
+            <BudgetHistoryChart budget={budget} />
+          </div>
+        )}
       </div>
     );
   };

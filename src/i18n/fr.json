@@ -424,7 +424,11 @@
     "budgetSaved": "Budget enregistré",
     "budgetDeleted": "Budget supprimé",
     "failedSave": "Échec de l'enregistrement du budget",
-    "failedDelete": "Échec de la suppression du budget"
+    "failedDelete": "Échec de la suppression du budget",
+    "noHistory": "Aucun historique de dépenses disponible",
+    "spending": "Dépenses",
+    "budgetLimit": "Limite du budget",
+    "last12Months": "12 derniers mois"
   },
   "consent": {
     "cookieTitle": "Ce site utilise des cookies",
