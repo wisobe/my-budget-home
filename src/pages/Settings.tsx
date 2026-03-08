@@ -35,7 +35,7 @@ const Settings = () => {
   const { data: categoriesData } = useCategories();
   const categories = categoriesData?.data || [];
   const { logout, user, isAdmin } = useAuth();
-  const { darkMode, setDarkMode, autoSync, setAutoSync, showPending, setShowPending, language, setLanguage, settingsExpandedSections, setSettingsExpandedSections } = usePreferences();
+  const { themeMode, setThemeMode, autoSync, setAutoSync, showPending, setShowPending, language, setLanguage, settingsExpandedSections, setSettingsExpandedSections } = usePreferences();
   const { plaidEnvironment, setPlaidEnvironment, canUseSandbox } = usePlaidEnvironment();
   const deleteCategoryMutation = useDeleteCategory();
   const { data: rulesData } = useCategoryRules();
