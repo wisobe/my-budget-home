@@ -424,7 +424,11 @@
     "budgetSaved": "Budget saved",
     "budgetDeleted": "Budget deleted",
     "failedSave": "Failed to save budget",
-    "failedDelete": "Failed to delete budget"
+    "failedDelete": "Failed to delete budget",
+    "noHistory": "No spending history available",
+    "spending": "Spending",
+    "budgetLimit": "Budget limit",
+    "last12Months": "Last 12 months"
   },
   "consent": {
     "cookieTitle": "This site uses cookies",

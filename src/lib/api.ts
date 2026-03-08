@@ -347,6 +347,11 @@ export const budgetsApi = {
       method: 'DELETE',
       body: JSON.stringify({ id, plaid_environment }),
     }),
+
+  history: (category_id: string, period: string) =>
+    request<ApiResponse<{ month: string; spent: number }[]>>(
+      `/budgets/history.php?category_id=${category_id}&period=${period}`
+    ),
 };
 
 // ============ User Preferences API ============
