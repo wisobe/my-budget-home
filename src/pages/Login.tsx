@@ -9,7 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Wallet, Loader2, Eye, EyeOff, ShieldCheck, Globe } from 'lucide-react';
 
 const Login = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { login, verify2fa } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
