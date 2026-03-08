@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import {
   BarChart,
@@ -27,8 +28,18 @@ function formatCurrency(amount: number): string {
   }).format(amount);
 }
 
+function getMonthDateRange(monthStr: string): { start: string; end: string } {
+  const startDate = new Date(monthStr + '-01');
+  const endDate = new Date(startDate.getFullYear(), startDate.getMonth() + 1, 0);
+  return {
+    start: monthStr + '-01',
+    end: `${endDate.getFullYear()}-${String(endDate.getMonth() + 1).padStart(2, '0')}-${String(endDate.getDate()).padStart(2, '0')}`,
+  };
+}
+
 export function BudgetHistoryChart({ budget }: BudgetHistoryChartProps) {
   const { t } = useTranslation();
+  const navigate = useNavigate();
 
   const { data, isLoading } = useQuery({
     queryKey: ['budget-history', budget.category_id, budget.period],
@@ -57,17 +68,30 @@ export function BudgetHistoryChart({ budget }: BudgetHistoryChartProps) {
 
   const budgetLimit = budget.amount;
 
+  const handleBarClick = (data: { month: string }) => {
+    const { start, end } = getMonthDateRange(data.month);
+    const params = new URLSearchParams({
+      category_id: budget.category_id,
+      start_date: start,
+      end_date: end,
+    });
+    navigate(`/transactions?${params.toString()}`);
+  };
+
   return (
     <div className="pt-2">
-      <div className="flex items-center gap-4 mb-3 text-xs text-muted-foreground">
-        <div className="flex items-center gap-1.5">
-          <div className="w-3 h-3 rounded-sm bg-primary" />
-          <span>{t('budgets.spending')}</span>
+      <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center gap-4 text-xs text-muted-foreground">
+          <div className="flex items-center gap-1.5">
+            <div className="w-3 h-3 rounded-sm bg-primary" />
+            <span>{t('budgets.spending')}</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <div className="w-3 h-0.5 bg-destructive" />
+            <span>{t('budgets.budgetLimit')}: {formatCurrency(budgetLimit)}</span>
+          </div>
         </div>
-        <div className="flex items-center gap-1.5">
-          <div className="w-3 h-0.5 bg-destructive" />
-          <span>{t('budgets.budgetLimit')}: {formatCurrency(budgetLimit)}</span>
-        </div>
+        <span className="text-xs text-muted-foreground">{t('budgets.clickToViewTransactions')}</span>
       </div>
       <ResponsiveContainer width="100%" height={200}>
         <BarChart data={chartData} margin={{ top: 5, right: 5, bottom: 5, left: 5 }}>
@@ -92,6 +116,7 @@ export function BudgetHistoryChart({ budget }: BudgetHistoryChartProps) {
               borderRadius: '8px',
               color: 'hsl(var(--popover-foreground))',
             }}
+            cursor={{ fill: 'hsl(var(--muted))' }}
           />
           <ReferenceLine
             y={budgetLimit}
@@ -99,7 +124,13 @@ export function BudgetHistoryChart({ budget }: BudgetHistoryChartProps) {
             strokeDasharray="4 4"
             strokeWidth={2}
           />
-          <Bar dataKey="spent" radius={[4, 4, 0, 0]} maxBarSize={32}>
+          <Bar
+            dataKey="spent"
+            radius={[4, 4, 0, 0]}
+            maxBarSize={32}
+            onClick={(data) => handleBarClick(data)}
+            className="cursor-pointer"
+          >
             {chartData.map((entry, index) => (
               <Cell
                 key={index}

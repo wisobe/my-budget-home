@@ -428,7 +428,8 @@
     "noHistory": "Aucun historique de dépenses disponible",
     "spending": "Dépenses",
     "budgetLimit": "Limite du budget",
-    "last12Months": "12 derniers mois"
+    "last12Months": "12 derniers mois",
+    "clickToViewTransactions": "Cliquez sur une barre pour voir les transactions"
   },
   "consent": {
     "cookieTitle": "Ce site utilise des cookies",
