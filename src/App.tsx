@@ -8,7 +8,8 @@ import { BASE_PATH } from "@/lib/config";
 import { PlaidEnvironmentProvider } from "@/contexts/PlaidEnvironmentContext";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { PreferencesProvider } from "@/contexts/PreferencesContext";
-import { CookieConsentBanner } from "@/components/consent/CookieConsentBanner";
+import { CookieConsentBanner, getCookieConsent, CookieConsentLevel } from "@/components/consent/CookieConsentBanner";
+import { CookieDeclinedScreen } from "@/components/consent/CookieDeclinedScreen";
 import { DataConsentDialog } from "@/components/consent/DataConsentDialog";
 import { Loader2 } from "lucide-react";
 import Dashboard from "./pages/Dashboard";
@@ -25,6 +26,33 @@ import NotFound from "./pages/NotFound";
 import Login from "./pages/Login";
 
 const queryClient = new QueryClient();
+
+function CookieGate({ children }: { children: React.ReactNode }) {
+  const [consent, setConsent] = React.useState<CookieConsentLevel>(getCookieConsent());
+
+  React.useEffect(() => {
+    const handler = (e: Event) => setConsent((e as CustomEvent).detail);
+    window.addEventListener('cookie-consent-changed', handler);
+    return () => window.removeEventListener('cookie-consent-changed', handler);
+  }, []);
+
+  const updateConsent = (level: CookieConsentLevel) => {
+    localStorage.setItem('cookie_consent', level!);
+    setConsent(level);
+    window.dispatchEvent(new CustomEvent('cookie-consent-changed', { detail: level }));
+  };
+
+  if (consent === 'declined') {
+    return (
+      <CookieDeclinedScreen
+        onAcceptEssential={() => updateConsent('essential')}
+        onAcceptAll={() => updateConsent('accepted')}
+      />
+    );
+  }
+
+  return <>{children}</>;
+}
 
 function AuthGate({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, isLoading } = useAuth();
@@ -53,6 +81,7 @@ const App = () => (
             <Toaster />
             <Sonner />
             <CookieConsentBanner />
+            <CookieGate>
             <AuthGate>
               <PreferencesProvider>
                 <DataConsentDialog />
@@ -73,6 +102,7 @@ const App = () => (
                 </BrowserRouter>
               </PreferencesProvider>
             </AuthGate>
+            </CookieGate>
           </TooltipProvider>
         </PlaidEnvironmentProvider>
       </AuthProvider>
