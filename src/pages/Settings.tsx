@@ -725,12 +725,12 @@ const Settings = () => {
         {/* Data Export */}
         <AccordionItem value="export" className="border-none">
           <Card>
-            <CardHeader className="pb-0">
+            <CardHeader className="pb-4">
               <AccordionTrigger className="hover:no-underline py-0">
                 <div className="flex items-center gap-2">
                   <Download className="h-5 w-5" />
                   <div className="text-left">
-                    <CardTitle className="text-base">{t('settings.dataExport')}</CardTitle>
+                    <CardTitle className="text-lg">{t('settings.dataExport')}</CardTitle>
                     <CardDescription>{t('settings.exportData')}</CardDescription>
                   </div>
                 </div>
