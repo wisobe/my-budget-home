@@ -110,7 +110,7 @@ const Settings = () => {
 
   return (
     <AppLayout title={t('settings.title')}>
-      <div className="flex justify-end gap-2 max-w-2xl mb-4">
+      <div className="flex justify-start gap-2 max-w-2xl mb-4">
         <Button variant="outline" size="sm" onClick={() => setSettingsExpandedSections(['account', 'twoFactor', 'categories', 'rules', 'preferences', 'plaidEnv', 'privacy', 'export'])}>
           <ChevronsDownUp className="h-4 w-4 mr-2 rotate-180" />
           {t('settings.expandAll')}
