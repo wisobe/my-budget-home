@@ -294,12 +294,45 @@ export function TransactionList() {
       {/* Pagination */}
       <div className="flex items-center justify-between">
         <p className="text-sm text-muted-foreground">{t('transactions.pageOf', { page, total: totalPages })}</p>
-        <div className="flex gap-2">
-          <Button variant="outline" size="sm" onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1}>
-            <ChevronLeft className="h-4 w-4" /> {t('transactions.previous')}
+        <div className="flex items-center gap-1">
+          <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => setPage(1)} disabled={page === 1}>
+            <ChevronLeft className="h-4 w-4" /><ChevronLeft className="h-4 w-4 -ml-2" />
           </Button>
-          <Button variant="outline" size="sm" onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page === totalPages}>
-            {t('transactions.next')} <ChevronRight className="h-4 w-4" />
+          <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1}>
+            <ChevronLeft className="h-4 w-4" />
+          </Button>
+          {(() => {
+            const pages: (number | 'ellipsis')[] = [];
+            if (totalPages <= 7) {
+              for (let i = 1; i <= totalPages; i++) pages.push(i);
+            } else {
+              pages.push(1);
+              if (page > 3) pages.push('ellipsis');
+              for (let i = Math.max(2, page - 1); i <= Math.min(totalPages - 1, page + 1); i++) pages.push(i);
+              if (page < totalPages - 2) pages.push('ellipsis');
+              pages.push(totalPages);
+            }
+            return pages.map((p, i) =>
+              p === 'ellipsis' ? (
+                <span key={`e${i}`} className="px-1 text-muted-foreground">…</span>
+              ) : (
+                <Button
+                  key={p}
+                  variant={p === page ? 'default' : 'outline'}
+                  size="icon"
+                  className="h-8 w-8 text-xs"
+                  onClick={() => setPage(p)}
+                >
+                  {p}
+                </Button>
+              )
+            );
+          })()}
+          <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page === totalPages}>
+            <ChevronRight className="h-4 w-4" />
+          </Button>
+          <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => setPage(totalPages)} disabled={page === totalPages}>
+            <ChevronRight className="h-4 w-4" /><ChevronRight className="h-4 w-4 -ml-2" />
           </Button>
         </div>
       </div>
