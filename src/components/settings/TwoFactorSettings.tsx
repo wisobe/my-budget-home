@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -9,6 +8,29 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { ShieldCheck, ShieldOff, Loader2, Copy, Check } from 'lucide-react';
 import { authApi } from '@/lib/api';
 import { toast } from '@/components/ui/sonner';
+
+/** Header actions for the 2FA section (used by parent accordion) */
+export function TwoFactorHeader() {
+  const { t } = useTranslation();
+  const [enabled, setEnabled] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    authApi.get2faStatus().then(r => {
+      setEnabled(r.data.totp_enabled);
+    }).catch(() => {}).finally(() => setLoading(false));
+  }, []);
+
+  if (loading) return null;
+
+  return (
+    <div className="flex items-center gap-2">
+      <ShieldCheck className="h-5 w-5" />
+      <span>{t('twoFactor.title')}</span>
+      {enabled && <Badge variant="default" className="ml-2">{t('twoFactor.active')}</Badge>}
+    </div>
+  );
+}
 
 export function TwoFactorSettings() {
   const { t } = useTranslation();
