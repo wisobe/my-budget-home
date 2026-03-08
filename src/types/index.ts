@@ -165,3 +165,18 @@ export interface AuthVerifyResponse {
   token_valid: boolean;
   user?: User;
 }
+
+export interface AuditLogEntry {
+  id: number;
+  event_type: string;
+  user_id: string | null;
+  target_user_id: string | null;
+  ip_address: string | null;
+  user_agent: string | null;
+  details: string | null;
+  created_at: string;
+  user_name: string | null;
+  user_email: string | null;
+  target_user_name: string | null;
+  target_user_email: string | null;
+}

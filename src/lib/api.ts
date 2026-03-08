@@ -362,4 +362,26 @@ export const preferencesApi = {
     }),
 };
 
+// ============ Audit Log API ============
+
+export const auditApi = {
+  list: (params?: {
+    page?: number;
+    per_page?: number;
+    event_type?: string;
+    user_id?: string;
+    start_date?: string;
+    end_date?: string;
+    search?: string;
+  }) => {
+    const searchParams = new URLSearchParams();
+    if (params) {
+      Object.entries(params).forEach(([key, value]) => {
+        if (value !== undefined) searchParams.set(key, String(value));
+      });
+    }
+    return request<PaginatedResponse<AuditLogEntry>>(`/audit/?${searchParams}`);
+  },
+};
+
 export { ApiError };
