@@ -41,3 +41,9 @@ export function useTotalBalance() {
   }
   return accounts.reduce((sum, a) => sum + Number(a.current_balance || 0), 0);
 }
+
+export function useAllAccountsBalance() {
+  const { data: accountsData } = useAccounts();
+  const accounts = accountsData?.data?.filter(a => !a.excluded) ?? [];
+  return accounts.reduce((sum, a) => sum + Number(a.current_balance || 0), 0);
+}
