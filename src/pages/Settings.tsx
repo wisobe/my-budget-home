@@ -123,7 +123,7 @@ const Settings = () => {
                 <div className="flex items-center gap-2">
                   <Lock className="h-5 w-5" />
                   <div className="text-left">
-                    <CardTitle className="text-base">{t('settings.account')}</CardTitle>
+                    <CardTitle className="text-lg">{t('settings.account')}</CardTitle>
                     <CardDescription>
                       {user ? t('settings.signedInAs', { email: user.email }) : t('settings.manageAccount')}
                     </CardDescription>
