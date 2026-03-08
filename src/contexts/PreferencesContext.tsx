@@ -131,7 +131,7 @@ export function PreferencesProvider({ children }: { children: React.ReactNode })
   const setSettingsExpandedSections = useCallback((v: string[]) => setPrefs(p => ({ ...p, settingsExpandedSections: v })), []);
 
   return (
-    <PreferencesContext.Provider value={{ ...prefs, setDarkMode, setAutoSync, setShowPending, setLanguage, setBalanceAccounts, setConsentDataCollection, setConsentDataProcessing, setConsentDataStorage, isLoaded }}>
+    <PreferencesContext.Provider value={{ ...prefs, setDarkMode, setAutoSync, setShowPending, setLanguage, setBalanceAccounts, setConsentDataCollection, setConsentDataProcessing, setConsentDataStorage, setSettingsExpandedSections, isLoaded }}>
       {children}
     </PreferencesContext.Provider>
   );
