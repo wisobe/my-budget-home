@@ -14,7 +14,7 @@
     "admin": "Admin",
     "users": "Utilisateurs",
     "plaidConfig": "Configuration Plaid",
-    "backendSetup": "Configuration du backend",
+    "dbConnection": "Connexion à la base de données",
     "auditLog": "Journal d'audit",
     "logout": "Déconnexion"
   },
