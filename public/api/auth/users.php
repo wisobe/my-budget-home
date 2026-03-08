@@ -134,6 +134,13 @@ try {
             Response::notFound('User not found');
         }
         
+        // Log the changes
+        $changedFields = array_keys($updates);
+        $logDetails = ['fields' => $changedFields];
+        if (isset($params['role'])) $logDetails['new_role'] = $params['role'];
+        $adminUser = getCurrentUser();
+        AuditLog::log('user_updated', $adminUser['id'], $body['id'], json_encode($logDetails));
+        
         $fetchStmt = $pdo->prepare('SELECT id, email, name, role, allow_sandbox, created_at FROM users WHERE id = :id');
         $fetchStmt->execute(['id' => $body['id']]);
         Response::success($fetchStmt->fetch(), 'User updated');
