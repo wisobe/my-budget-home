@@ -61,6 +61,7 @@ try {
             'email' => $user['email'],
             'name' => $user['name'],
             'role' => $user['role'],
+            'allow_sandbox' => (bool)$user['allow_sandbox'],
         ],
     ]);
 } catch (Exception $e) {

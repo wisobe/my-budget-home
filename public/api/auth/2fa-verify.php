@@ -77,6 +77,7 @@ try {
             'email' => $row['email'],
             'name' => $row['name'],
             'role' => $row['role'],
+            'allow_sandbox' => (bool)$row['allow_sandbox'],
         ],
     ]);
 } catch (Exception $e) {
