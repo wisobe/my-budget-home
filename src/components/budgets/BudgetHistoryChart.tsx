@@ -29,12 +29,17 @@ function formatCurrency(amount: number): string {
 }
 
 function getMonthDateRange(monthStr: string): { start: string; end: string } {
-  const startDate = new Date(monthStr + '-01');
-  const endDate = new Date(startDate.getFullYear(), startDate.getMonth() + 1, 0);
+  const [year, month] = monthStr.split('-').map(Number);
+  const endDate = new Date(year, month, 0); // day 0 of next month = last day of current month
   return {
-    start: monthStr + '-01',
-    end: `${endDate.getFullYear()}-${String(endDate.getMonth() + 1).padStart(2, '0')}-${String(endDate.getDate()).padStart(2, '0')}`,
+    start: `${monthStr}-01`,
+    end: `${year}-${String(month).padStart(2, '0')}-${String(endDate.getDate()).padStart(2, '0')}`,
   };
+}
+
+function parseMonthLabel(monthStr: string): string {
+  const [year, month] = monthStr.split('-').map(Number);
+  return new Date(year, month - 1, 1).toLocaleDateString(undefined, { month: 'short' });
 }
 
 export function BudgetHistoryChart({ budget }: BudgetHistoryChartProps) {
