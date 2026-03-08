@@ -19,7 +19,7 @@ try {
     $pdo = Database::getConnection();
     
     // Find user by email
-    $stmt = $pdo->prepare("SELECT id, email, name, password_hash, role, totp_enabled FROM users WHERE email = :email");
+    $stmt = $pdo->prepare("SELECT id, email, name, password_hash, role, allow_sandbox, totp_enabled FROM users WHERE email = :email");
     $stmt->execute(['email' => strtolower(trim($body['email']))]);
     $user = $stmt->fetch();
     
@@ -61,6 +61,7 @@ try {
             'email' => $user['email'],
             'name' => $user['name'],
             'role' => $user['role'],
+            'allow_sandbox' => (bool)$user['allow_sandbox'],
         ],
     ]);
 } catch (Exception $e) {
