@@ -35,6 +35,8 @@ try {
     $pdo->prepare("UPDATE users SET password_hash = :hash WHERE id = :id")
         ->execute(['hash' => $newHash, 'id' => $userId]);
     
+    AuditLog::log('password_changed', $userId);
+    
     Response::success(null, 'Password changed successfully');
 } catch (Exception $e) {
     Response::error('Failed to change password: ' . $e->getMessage(), 500);

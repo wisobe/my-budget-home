@@ -194,6 +194,24 @@ CREATE TABLE IF NOT EXISTS consent_audit_log (
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- Audit Log (tracks security and access events for compliance)
+CREATE TABLE IF NOT EXISTS audit_log (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    event_type VARCHAR(50) NOT NULL,
+    user_id VARCHAR(50) DEFAULT NULL,
+    target_user_id VARCHAR(50) DEFAULT NULL,
+    ip_address VARCHAR(45) DEFAULT NULL,
+    user_agent TEXT DEFAULT NULL,
+    details TEXT DEFAULT NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_event_type (event_type),
+    INDEX idx_user (user_id),
+    INDEX idx_target_user (target_user_id),
+    INDEX idx_created (created_at),
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL,
+    FOREIGN KEY (target_user_id) REFERENCES users(id) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 -- Default categories are now seeded per-user on first login (see categories/index.php)
 -- No global INSERT needed.
 

@@ -12,6 +12,7 @@ import {
   LogOut,
   Users,
   Target,
+  ClipboardList,
 } from 'lucide-react';
 import {
   Sidebar,
@@ -39,6 +40,7 @@ const adminNavigationKeys = [
   { key: 'nav.users', href: '/admin/users', icon: Users },
   { key: 'nav.plaidConfig', href: '/admin/plaid', icon: Link2 },
   { key: 'nav.backendSetup', href: '/admin/backend', icon: Settings },
+  { key: 'nav.auditLog', href: '/admin/audit', icon: ClipboardList },
 ];
 
 export function AppSidebar() {

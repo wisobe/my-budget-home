@@ -15,6 +15,7 @@
     "users": "Users",
     "plaidConfig": "Plaid Configuration",
     "backendSetup": "Backend Setup",
+    "auditLog": "Audit Log",
     "logout": "Logout"
   },
   "auth": {
@@ -474,5 +475,34 @@
   "environment": {
     "selectTitle": "Choose Your Environment",
     "selectDescription": "Select which Plaid environment you'd like to use. You can change this later in Settings."
+  },
+  "auditLog": {
+    "title": "Audit Log",
+    "accessLog": "Access & Security Log",
+    "description": "Review all login attempts, user management actions, and security-related events for compliance auditing.",
+    "searchPlaceholder": "Search by name, email, or details...",
+    "allEvents": "All Events",
+    "allUsers": "All Users",
+    "startDate": "Start date",
+    "endDate": "End date",
+    "totalEntries": "{{count}} entries total",
+    "event": "Event",
+    "user": "User",
+    "target": "Target",
+    "details": "Details",
+    "ipAddress": "IP Address",
+    "dateTime": "Date & Time",
+    "noEntries": "No audit log entries found",
+    "pageOf": "Page {{page}} of {{total}}",
+    "events": {
+      "login_success": "Login Success",
+      "login_failed": "Login Failed",
+      "user_created": "User Created",
+      "user_updated": "User Updated",
+      "user_deleted": "User Deleted",
+      "2fa_enabled": "2FA Enabled",
+      "2fa_disabled": "2FA Disabled",
+      "password_changed": "Password Changed"
+    }
   }
 }

@@ -59,6 +59,9 @@ try {
             'allow_sandbox' => $allowSandbox,
         ]);
         
+        $adminUser = getCurrentUser();
+        AuditLog::log('user_created', $adminUser['id'], $id, json_encode(['email' => $email, 'role' => $role]));
+        
         Response::success([
             'id' => $id,
             'email' => $email,
@@ -131,6 +134,13 @@ try {
             Response::notFound('User not found');
         }
         
+        // Log the changes
+        $changedFields = array_keys($updates);
+        $logDetails = ['fields' => $changedFields];
+        if (isset($params['role'])) $logDetails['new_role'] = $params['role'];
+        $adminUser = getCurrentUser();
+        AuditLog::log('user_updated', $adminUser['id'], $body['id'], json_encode($logDetails));
+        
         $fetchStmt = $pdo->prepare('SELECT id, email, name, role, allow_sandbox, created_at FROM users WHERE id = :id');
         $fetchStmt->execute(['id' => $body['id']]);
         Response::success($fetchStmt->fetch(), 'User updated');
@@ -147,12 +157,22 @@ try {
         }
         
         // Delete user (cascades to tokens, connections, accounts, etc.)
+        // Get user info before deletion for audit
+        $infoStmt = $pdo->prepare('SELECT email, name FROM users WHERE id = :id');
+        $infoStmt->execute(['id' => $body['id']]);
+        $deletedUser = $infoStmt->fetch();
+        
         $stmt = $pdo->prepare('DELETE FROM users WHERE id = :id');
         $stmt->execute(['id' => $body['id']]);
         
         if ($stmt->rowCount() === 0) {
             Response::notFound('User not found');
         }
+        
+        AuditLog::log('user_deleted', $admin['id'], $body['id'], json_encode([
+            'email' => $deletedUser['email'] ?? 'unknown',
+            'name' => $deletedUser['name'] ?? 'unknown',
+        ]));
         
         Response::success(null, 'User deleted');
 

@@ -15,6 +15,7 @@
     "users": "Utilisateurs",
     "plaidConfig": "Configuration Plaid",
     "backendSetup": "Configuration du backend",
+    "auditLog": "Journal d'audit",
     "logout": "Déconnexion"
   },
   "auth": {
@@ -474,5 +475,34 @@
   "environment": {
     "selectTitle": "Choisissez votre environnement",
     "selectDescription": "Sélectionnez l'environnement Plaid que vous souhaitez utiliser. Vous pourrez le modifier plus tard dans les paramètres."
+  },
+  "auditLog": {
+    "title": "Journal d'audit",
+    "accessLog": "Journal d'accès et de sécurité",
+    "description": "Consultez toutes les tentatives de connexion, les actions de gestion des utilisateurs et les événements liés à la sécurité pour les audits de conformité.",
+    "searchPlaceholder": "Rechercher par nom, courriel ou détails...",
+    "allEvents": "Tous les événements",
+    "allUsers": "Tous les utilisateurs",
+    "startDate": "Date de début",
+    "endDate": "Date de fin",
+    "totalEntries": "{{count}} entrées au total",
+    "event": "Événement",
+    "user": "Utilisateur",
+    "target": "Cible",
+    "details": "Détails",
+    "ipAddress": "Adresse IP",
+    "dateTime": "Date et heure",
+    "noEntries": "Aucune entrée dans le journal d'audit",
+    "pageOf": "Page {{page}} de {{total}}",
+    "events": {
+      "login_success": "Connexion réussie",
+      "login_failed": "Connexion échouée",
+      "user_created": "Utilisateur créé",
+      "user_updated": "Utilisateur modifié",
+      "user_deleted": "Utilisateur supprimé",
+      "2fa_enabled": "2FA activé",
+      "2fa_disabled": "2FA désactivé",
+      "password_changed": "Mot de passe modifié"
+    }
   }
 }

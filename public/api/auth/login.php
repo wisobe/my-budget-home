@@ -24,6 +24,7 @@ try {
     $user = $stmt->fetch();
     
     if (!$user || !password_verify($body['password'], $user['password_hash'])) {
+        AuditLog::log('login_failed', null, null, json_encode(['email' => strtolower(trim($body['email']))]));
         Response::error('Invalid email or password', 401);
     }
     
@@ -52,6 +53,8 @@ try {
     // Store token with user_id
     $pdo->prepare("INSERT INTO auth_tokens (token, user_id, expires_at) VALUES (:token, :user_id, :expires)")
         ->execute(['token' => $token, 'user_id' => $user['id'], 'expires' => $expiresAt]);
+    
+    AuditLog::log('login_success', $user['id']);
     
     Response::success([
         'token' => $token,

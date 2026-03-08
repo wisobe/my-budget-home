@@ -22,6 +22,7 @@ import Settings from "./pages/Settings";
 import AdminUsers from "./pages/AdminUsers";
 import AdminPlaid from "./pages/AdminPlaid";
 import AdminBackend from "./pages/AdminBackend";
+import AdminAuditLog from "./pages/AdminAuditLog";
 import NotFound from "./pages/NotFound";
 import Login from "./pages/Login";
 
@@ -97,6 +98,7 @@ const App = () => (
                     <Route path="/admin/users" element={<AdminUsers />} />
                     <Route path="/admin/plaid" element={<AdminPlaid />} />
                     <Route path="/admin/backend" element={<AdminBackend />} />
+                    <Route path="/admin/audit" element={<AdminAuditLog />} />
                     <Route path="*" element={<NotFound />} />
                   </Routes>
                 </BrowserRouter>
