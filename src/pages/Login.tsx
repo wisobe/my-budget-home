@@ -162,9 +162,9 @@ const Login = () => {
             </Button>
           </form>
           <div className="mt-4 text-center">
-            <a href={`${import.meta.env.BASE_URL}privacy`} className="text-xs text-muted-foreground hover:text-primary hover:underline">
+            <Link to="/privacy" className="text-xs text-muted-foreground hover:text-primary hover:underline">
               {t('privacy.viewPolicy')}
-            </a>
+            </Link>
           </div>
         </CardContent>
       </Card>
