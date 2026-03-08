@@ -186,77 +186,81 @@ const Settings = () => {
         </AccordionItem>
 
         {/* Categories Management */}
-        <Card>
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <div>
-                <CardTitle>{t('settings.categories')}</CardTitle>
-                <CardDescription>{t('settings.manageCategories')}</CardDescription>
-              </div>
-              <Dialog open={addCatOpen} onOpenChange={setAddCatOpen}>
-                <DialogTrigger asChild>
-                  <Button size="sm"><Plus className="h-4 w-4 mr-2" />{t('settings.addCategory')}</Button>
-                </DialogTrigger>
-                <DialogContent>
-                  <DialogHeader><DialogTitle>{t('settings.addCategory')}</DialogTitle></DialogHeader>
-                  <div className="space-y-4">
-                    <div className="space-y-2">
-                      <Label>{t('settings.categoryName')}</Label>
-                      <Input value={newCatName} onChange={e => setNewCatName(e.target.value)} placeholder={t('settings.categoryNamePlaceholder')} />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>{t('settings.color')}</Label>
-                      <div className="flex items-center gap-2">
-                        <input type="color" value={newCatColor} onChange={e => setNewCatColor(e.target.value)} className="h-9 w-12 rounded border cursor-pointer" />
-                        <Input value={newCatColor} onChange={e => setNewCatColor(e.target.value)} className="flex-1" />
+        <AccordionItem value="categories" className="border-none">
+          <Card>
+            <CardHeader className="pb-0 relative">
+              <AccordionTrigger className="hover:no-underline py-0">
+                <div className="text-left">
+                  <CardTitle className="text-base">{t('settings.categories')}</CardTitle>
+                  <CardDescription>{t('settings.manageCategories')}</CardDescription>
+                </div>
+              </AccordionTrigger>
+              <div className="absolute right-6 top-6">
+                <Dialog open={addCatOpen} onOpenChange={setAddCatOpen}>
+                  <DialogTrigger asChild>
+                    <Button size="sm" onClick={(e) => e.stopPropagation()}><Plus className="h-4 w-4 mr-2" />{t('settings.addCategory')}</Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader><DialogTitle>{t('settings.addCategory')}</DialogTitle></DialogHeader>
+                    <div className="space-y-4">
+                      <div className="space-y-2">
+                        <Label>{t('settings.categoryName')}</Label>
+                        <Input value={newCatName} onChange={e => setNewCatName(e.target.value)} placeholder={t('settings.categoryNamePlaceholder')} />
                       </div>
+                      <div className="space-y-2">
+                        <Label>{t('settings.color')}</Label>
+                        <div className="flex items-center gap-2">
+                          <input type="color" value={newCatColor} onChange={e => setNewCatColor(e.target.value)} className="h-9 w-12 rounded border cursor-pointer" />
+                          <Input value={newCatColor} onChange={e => setNewCatColor(e.target.value)} className="flex-1" />
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Switch checked={newCatIsIncome} onCheckedChange={setNewCatIsIncome} />
+                        <Label>{t('settings.incomeCategory')}</Label>
+                      </div>
+                      <div className="space-y-2">
+                        <Label>{t('settings_categories.parentCategory')}</Label>
+                        <Select value={newCatParentId} onValueChange={setNewCatParentId}>
+                          <SelectTrigger><SelectValue placeholder={t('settings_categories.noParent')} /></SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="none">{t('settings_categories.noParent')}</SelectItem>
+                            {categories.filter(c => !c.parent_id).map(c => (
+                              <SelectItem key={c.id} value={c.id}>
+                                <div className="flex items-center gap-2">
+                                  <div className="h-3 w-3 rounded-full" style={{ backgroundColor: c.color }} />
+                                  {c.name}
+                                </div>
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <Button className="w-full" disabled={!newCatName.trim() || addingCat} onClick={async () => {
+                        setAddingCat(true);
+                        try {
+                          await categoriesApi.create({
+                            name: newCatName.trim(),
+                            color: newCatColor,
+                            is_income: newCatIsIncome,
+                            parent_id: newCatParentId && newCatParentId !== 'none' ? newCatParentId : undefined,
+                          } as any);
+                          queryClient.invalidateQueries({ queryKey: ['categories'] });
+                          toast.success(t('settings.categoryCreated'));
+                          setNewCatName(''); setNewCatColor('#6b7280'); setNewCatIsIncome(false); setNewCatParentId(''); setAddCatOpen(false);
+                        } catch (e: any) {
+                          toast.error(e.message || t('settings.failedCreateCategory'));
+                        } finally { setAddingCat(false); }
+                      }}>
+                        {addingCat ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : null}
+                        {t('settings.createCategory')}
+                      </Button>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <Switch checked={newCatIsIncome} onCheckedChange={setNewCatIsIncome} />
-                      <Label>{t('settings.incomeCategory')}</Label>
-                    </div>
-                    <div className="space-y-2">
-                      <Label>{t('settings_categories.parentCategory')}</Label>
-                      <Select value={newCatParentId} onValueChange={setNewCatParentId}>
-                        <SelectTrigger><SelectValue placeholder={t('settings_categories.noParent')} /></SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="none">{t('settings_categories.noParent')}</SelectItem>
-                          {categories.filter(c => !c.parent_id).map(c => (
-                            <SelectItem key={c.id} value={c.id}>
-                              <div className="flex items-center gap-2">
-                                <div className="h-3 w-3 rounded-full" style={{ backgroundColor: c.color }} />
-                                {c.name}
-                              </div>
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <Button className="w-full" disabled={!newCatName.trim() || addingCat} onClick={async () => {
-                      setAddingCat(true);
-                      try {
-                        await categoriesApi.create({
-                          name: newCatName.trim(),
-                          color: newCatColor,
-                          is_income: newCatIsIncome,
-                          parent_id: newCatParentId && newCatParentId !== 'none' ? newCatParentId : undefined,
-                        } as any);
-                        queryClient.invalidateQueries({ queryKey: ['categories'] });
-                        toast.success(t('settings.categoryCreated'));
-                        setNewCatName(''); setNewCatColor('#6b7280'); setNewCatIsIncome(false); setNewCatParentId(''); setAddCatOpen(false);
-                      } catch (e: any) {
-                        toast.error(e.message || t('settings.failedCreateCategory'));
-                      } finally { setAddingCat(false); }
-                    }}>
-                      {addingCat ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : null}
-                      {t('settings.createCategory')}
-                    </Button>
-                  </div>
-                </DialogContent>
-              </Dialog>
-            </div>
-          </CardHeader>
-          <CardContent>
+                  </DialogContent>
+                </Dialog>
+              </div>
+            </CardHeader>
+            <AccordionContent>
+              <CardContent className="pt-4">
             <div className="relative overflow-hidden">
               {/* Parent categories view */}
               <div
