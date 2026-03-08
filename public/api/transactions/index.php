@@ -54,8 +54,10 @@ try {
     if ($categoryId === 'uncategorized') {
         $where[] = 't.category_id IS NULL';
     } elseif ($categoryId) {
-        $where[] = 't.category_id = :category_id';
+        // Include the selected category AND any child categories (subcategories)
+        $where[] = '(t.category_id = :category_id OR t.category_id IN (SELECT id FROM categories WHERE parent_id = :category_id_parent))';
         $params['category_id'] = $categoryId;
+        $params['category_id_parent'] = $categoryId;
     }
     
     // Default to 13 months ago if no start_date provided (keeps listing manageable)
