@@ -120,37 +120,27 @@ export function TwoFactorSettings() {
 
   return (
     <>
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle className="flex items-center gap-2">
-                <ShieldCheck className="h-5 w-5" />
-                {t('twoFactor.title')}
-              </CardTitle>
-              <CardDescription>{t('twoFactor.description')}</CardDescription>
-            </div>
-            <div className="flex items-center gap-2">
-              {enabled && <Badge variant="default">{t('twoFactor.active')}</Badge>}
-              {enabled ? (
-                <Button variant="outline" size="sm" onClick={() => { setDisableOpen(true); setDisableCode(''); }}>
-                  <ShieldOff className="h-4 w-4 mr-2" />
-                  {t('twoFactor.disable')}
-                </Button>
-              ) : (
-                <Button size="sm" onClick={handleStartSetup}>
-                  <ShieldCheck className="h-4 w-4 mr-2" />
-                  {t('twoFactor.enable')}
-                </Button>
-              )}
-            </div>
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <p className="text-sm text-muted-foreground">{t('twoFactor.description')}</p>
+          <div className="flex items-center gap-2 shrink-0">
+            {enabled ? (
+              <Button variant="outline" size="sm" onClick={() => { setDisableOpen(true); setDisableCode(''); }}>
+                <ShieldOff className="h-4 w-4 mr-2" />
+                {t('twoFactor.disable')}
+              </Button>
+            ) : (
+              <Button size="sm" onClick={handleStartSetup}>
+                <ShieldCheck className="h-4 w-4 mr-2" />
+                {t('twoFactor.enable')}
+              </Button>
+            )}
           </div>
-        </CardHeader>
+        </div>
         {!enabled && (
-          <CardContent>
-            <p className="text-sm text-muted-foreground">{t('twoFactor.notEnabledHint')}</p>
-          </CardContent>
+          <p className="text-sm text-muted-foreground">{t('twoFactor.notEnabledHint')}</p>
         )}
+      </div>
       </Card>
 
       {/* Setup Dialog */}
