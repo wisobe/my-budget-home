@@ -320,7 +320,8 @@
     "title": "Plaid Configuration"
   },
   "adminBackend": {
-    "title": "Backend Setup"
+    "title": "Database Connection",
+    "dbDesc": "Test the connection to your MariaDB database to ensure the backend is properly configured."
   },
   "notFound": {
     "title": "404",

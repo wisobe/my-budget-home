@@ -320,7 +320,8 @@
     "title": "Configuration Plaid"
   },
   "adminBackend": {
-    "title": "Configuration du backend"
+    "title": "Connexion à la base de données",
+    "dbDesc": "Testez la connexion à votre base de données MariaDB pour vous assurer que le backend est correctement configuré."
   },
   "notFound": {
     "title": "404",
