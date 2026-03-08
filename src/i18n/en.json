@@ -14,7 +14,7 @@
     "admin": "Admin",
     "users": "Users",
     "plaidConfig": "Plaid Configuration",
-    "backendSetup": "Backend Setup",
+    "dbConnection": "Database Connection",
     "auditLog": "Audit Log",
     "logout": "Logout"
   },
@@ -320,7 +320,8 @@
     "title": "Plaid Configuration"
   },
   "adminBackend": {
-    "title": "Backend Setup"
+    "title": "Database Connection",
+    "dbDesc": "Test the connection to your MariaDB database to ensure the backend is properly configured."
   },
   "notFound": {
     "title": "404",
