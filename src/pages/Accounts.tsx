@@ -32,7 +32,7 @@ const accountIcons: Record<string, typeof Wallet> = {
 const Accounts = () => {
   const { t } = useTranslation();
   const { data: accountsData, isLoading } = useAccounts();
-  const totalBalance = useTotalBalance();
+  const totalBalance = useAllAccountsBalance();
   const updateAccountMutation = useUpdateAccount();
 
   const accounts = accountsData?.data || [];
