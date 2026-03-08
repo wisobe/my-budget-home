@@ -40,6 +40,7 @@ try {
             $row = $stmt->fetch();
             if ($row) {
                 $tokenValid = true;
+                $row['allow_sandbox'] = (bool)$row['allow_sandbox'];
                 $user = $row;
             }
         } catch (Exception $e) {

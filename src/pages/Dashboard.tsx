@@ -44,7 +44,7 @@ const Dashboard = () => {
     return Number(t.amount);
   };
 
-  const isIncomeTransaction = (t: typeof transactions[0]) => !!t.category_is_income;
+  const isIncomeTransaction = (t: typeof transactions[0]) => t.category_is_income === true || Number(t.category_is_income) === 1;
 
   const monthlyIncome = thisMonthTransactions
     .filter(t => isIncomeTransaction(t))

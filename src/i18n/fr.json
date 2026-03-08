@@ -459,5 +459,9 @@
       "manualTitle": "Supprimer les données stockées",
       "manualDesc": "Supprimer définitivement toutes vos données financières de nos serveurs"
     }
+  },
+  "environment": {
+    "selectTitle": "Choisissez votre environnement",
+    "selectDescription": "Sélectionnez l'environnement Plaid que vous souhaitez utiliser. Vous pourrez le modifier plus tard dans les paramètres."
   }
 }
