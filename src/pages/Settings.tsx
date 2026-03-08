@@ -596,9 +596,12 @@ const Settings = () => {
           <Card>
             <CardHeader className="pb-4">
               <AccordionTrigger className="hover:no-underline py-0">
-                <div className="text-left">
-                  <CardTitle className="text-lg">{t('settings.preferences')}</CardTitle>
-                  <CardDescription>{t('settings.customizeExperience')}</CardDescription>
+                <div className="flex items-center gap-2">
+                  <SlidersHorizontal className="h-5 w-5" />
+                  <div className="text-left">
+                    <CardTitle className="text-lg">{t('settings.preferences')}</CardTitle>
+                    <CardDescription>{t('settings.customizeExperience')}</CardDescription>
+                  </div>
                 </div>
               </AccordionTrigger>
             </CardHeader>
