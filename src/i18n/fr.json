@@ -510,7 +510,23 @@
       "2fa_enabled": "2FA activé",
       "2fa_disabled": "2FA désactivé",
       "password_changed": "Mot de passe modifié"
-    }
+    },
+    "securityMonitoring": "Surveillance de sécurité",
+    "securityMonitoringDesc": "Aperçu en temps réel de la posture de sécurité basé sur les événements d'authentification et la détection d'anomalies.",
+    "statusHealthy": "Sain",
+    "statusWarning": "Avertissement",
+    "statusCritical": "Critique",
+    "failedLogins24h": "Connexions échouées (24h)",
+    "failedLogins7d": "Connexions échouées (7j)",
+    "failedLogins30d": "Connexions échouées (30j)",
+    "successfulLogins24h": "Connexions réussies (24h)",
+    "activeAlerts": "Alertes actives",
+    "noAlerts": "Aucune alerte de sécurité — tous les systèmes sont sains.",
+    "suspiciousIps": "IPs suspectes (7j)",
+    "targetedAccounts": "Comptes ciblés (7j)",
+    "attempts": "{{count}} tentatives",
+    "securityEvents30d": "Événements de sécurité (30j)",
+    "overallStatus": "État général"
   },
   "privacy": {
     "title": "Politique de confidentialité",
