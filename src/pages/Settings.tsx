@@ -34,6 +34,7 @@ const Settings = () => {
   const categories = categoriesData?.data || [];
   const { logout, user, isAdmin } = useAuth();
   const { darkMode, setDarkMode, autoSync, setAutoSync, showPending, setShowPending, language, setLanguage } = usePreferences();
+  const { plaidEnvironment, setPlaidEnvironment, canUseSandbox } = usePlaidEnvironment();
   const deleteCategoryMutation = useDeleteCategory();
   const { data: rulesData } = useCategoryRules();
   const createRuleMutation = useCreateCategoryRule();
