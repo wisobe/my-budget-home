@@ -54,6 +54,7 @@ try {
     }
 
     if (!$valid) {
+        AuditLog::log('login_failed', $row['user_id'], null, json_encode(['reason' => '2fa_invalid_code']));
         Response::error('Invalid verification code.', 401);
     }
 
