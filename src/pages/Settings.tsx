@@ -109,59 +109,81 @@ const Settings = () => {
 
   return (
     <AppLayout title={t('settings.title')}>
-      <div className="space-y-6 max-w-2xl">
+      <Accordion
+        type="multiple"
+        value={settingsExpandedSections}
+        onValueChange={setSettingsExpandedSections}
+        className="space-y-4 max-w-2xl"
+      >
         {/* Account & Security */}
-        <Card>
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <div>
-                <CardTitle className="flex items-center gap-2">
+        <AccordionItem value="account" className="border-none">
+          <Card>
+            <CardHeader className="pb-0">
+              <AccordionTrigger className="hover:no-underline py-0">
+                <div className="flex items-center gap-2">
                   <Lock className="h-5 w-5" />
-                  {t('settings.account')}
-                </CardTitle>
-                <CardDescription>
-                  {user ? t('settings.signedInAs', { email: user.email }) : t('settings.manageAccount')}
-                </CardDescription>
-              </div>
-              <div className="flex items-center gap-2">
+                  <div className="text-left">
+                    <CardTitle className="text-base">{t('settings.account')}</CardTitle>
+                    <CardDescription>
+                      {user ? t('settings.signedInAs', { email: user.email }) : t('settings.manageAccount')}
+                    </CardDescription>
+                  </div>
+                </div>
+              </AccordionTrigger>
+              <div className="flex items-center gap-2 absolute right-6 top-6">
                 {user && (
                   <Badge variant={isAdmin ? 'default' : 'secondary'}>
                     {isAdmin ? t('settings.admin') : t('settings.user')}
                   </Badge>
                 )}
-                <Button variant="outline" size="sm" onClick={logout}>
+                <Button variant="outline" size="sm" onClick={(e) => { e.stopPropagation(); logout(); }}>
                   <LogOut className="h-4 w-4 mr-2" />
                   {t('nav.logout')}
                 </Button>
               </div>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleChangePassword} className="space-y-4">
-              <div className="space-y-2">
-                <Label>{t('settings.currentPassword')}</Label>
-                <Input type="password" value={currentPassword} onChange={e => setCurrentPassword(e.target.value)} required />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label>{t('settings.newPassword')}</Label>
-                  <Input type="password" value={newPassword} onChange={e => setNewPassword(e.target.value)} required />
-                </div>
-                <div className="space-y-2">
-                  <Label>{t('settings.confirmNewPassword')}</Label>
-                  <Input type="password" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} required />
-                </div>
-              </div>
-              <Button type="submit" disabled={changingPassword || !currentPassword || !newPassword}>
-                {changingPassword && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-                {t('settings.changePassword')}
-              </Button>
-            </form>
-          </CardContent>
-        </Card>
+            </CardHeader>
+            <AccordionContent>
+              <CardContent className="pt-4">
+                <form onSubmit={handleChangePassword} className="space-y-4">
+                  <div className="space-y-2">
+                    <Label>{t('settings.currentPassword')}</Label>
+                    <Input type="password" value={currentPassword} onChange={e => setCurrentPassword(e.target.value)} required />
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label>{t('settings.newPassword')}</Label>
+                      <Input type="password" value={newPassword} onChange={e => setNewPassword(e.target.value)} required />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>{t('settings.confirmNewPassword')}</Label>
+                      <Input type="password" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} required />
+                    </div>
+                  </div>
+                  <Button type="submit" disabled={changingPassword || !currentPassword || !newPassword}>
+                    {changingPassword && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                    {t('settings.changePassword')}
+                  </Button>
+                </form>
+              </CardContent>
+            </AccordionContent>
+          </Card>
+        </AccordionItem>
 
         {/* Two-Factor Authentication */}
-        <TwoFactorSettings />
+        <AccordionItem value="twoFactor" className="border-none">
+          <Card>
+            <CardHeader className="pb-0">
+              <AccordionTrigger className="hover:no-underline py-0">
+                <TwoFactorHeader />
+              </AccordionTrigger>
+            </CardHeader>
+            <AccordionContent>
+              <CardContent className="pt-4">
+                <TwoFactorSettings />
+              </CardContent>
+            </AccordionContent>
+          </Card>
+        </AccordionItem>
 
         {/* Categories Management */}
         <Card>
