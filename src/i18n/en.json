@@ -15,6 +15,7 @@
     "users": "Users",
     "plaidConfig": "Plaid Configuration",
     "backendSetup": "Backend Setup",
+    "auditLog": "Audit Log",
     "logout": "Logout"
   },
   "auth": {
