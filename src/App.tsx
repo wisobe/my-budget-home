@@ -102,6 +102,7 @@ const App = () => (
                 </BrowserRouter>
               </PreferencesProvider>
             </AuthGate>
+            </CookieGate>
           </TooltipProvider>
         </PlaidEnvironmentProvider>
       </AuthProvider>
