@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -161,9 +162,9 @@ const Login = () => {
             </Button>
           </form>
           <div className="mt-4 text-center">
-            <a href={`${import.meta.env.BASE_URL}privacy`} className="text-xs text-muted-foreground hover:text-primary hover:underline">
+            <Link to="/privacy" className="text-xs text-muted-foreground hover:text-primary hover:underline">
               {t('privacy.viewPolicy')}
-            </a>
+            </Link>
           </div>
         </CardContent>
       </Card>
