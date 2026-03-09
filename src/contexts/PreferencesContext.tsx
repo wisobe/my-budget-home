@@ -87,6 +87,7 @@ function toApi(prefs: Preferences): Record<string, string> {
     consent_data_storage: prefs.consentDataStorage ? '1' : '0',
     settings_expanded_sections: prefs.settingsExpandedSections.join(','),
     sidebar_order: prefs.sidebarOrder.join(','),
+    account_order: prefs.accountOrder.join(','),
   };
 }
 
