@@ -210,7 +210,7 @@ function requireAdmin(): array {
 // ============================================================
 $_currentUserId = null;
 $_requestUri = $_SERVER['REQUEST_URI'] ?? '';
-$_isOpenAuthEndpoint = preg_match('#/auth/(login|verify|2fa-verify)\.php#', $_requestUri);
+$_isOpenAuthEndpoint = preg_match('#/auth/(login|verify|2fa-verify)\.php#', $_requestUri) || preg_match('#/subscriptions/debug\.php#', $_requestUri);
 
 if (!$_isOpenAuthEndpoint && $_SERVER['REQUEST_METHOD'] !== 'OPTIONS') {
     try {
