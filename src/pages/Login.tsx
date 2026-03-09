@@ -109,6 +109,7 @@ const Login = () => {
   const toggleLanguage = () => {
     const newLang = i18n.language === 'fr' ? 'en' : 'fr';
     i18n.changeLanguage(newLang);
+    localStorage.setItem('login_language', newLang);
   };
 
   return (

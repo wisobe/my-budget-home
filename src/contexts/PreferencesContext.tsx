@@ -117,12 +117,25 @@ export function PreferencesProvider({ children }: { children: React.ReactNode })
   useEffect(() => {
     preferencesApi.get()
       .then(res => {
+        const loginLang = localStorage.getItem('login_language');
+        localStorage.removeItem('login_language');
+
         if (res.data) {
-          setPrefs(p => ({ ...p, ...fromApi(res.data) }));
+          const apiPrefs = fromApi(res.data);
+          if (loginLang) {
+            apiPrefs.language = loginLang;
+          }
+          setPrefs(p => ({ ...p, ...apiPrefs }));
+        } else if (loginLang) {
+          setPrefs(p => ({ ...p, language: loginLang }));
         }
       })
       .catch(() => {
-        // API unreachable — keep defaults
+        const loginLang = localStorage.getItem('login_language');
+        localStorage.removeItem('login_language');
+        if (loginLang) {
+          setPrefs(p => ({ ...p, language: loginLang }));
+        }
       })
       .finally(() => {
         setIsLoaded(true);
