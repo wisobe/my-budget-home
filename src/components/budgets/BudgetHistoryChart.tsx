@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
+import { usePlaidEnvironment } from '@/contexts/PlaidEnvironmentContext';
 import { useQuery } from '@tanstack/react-query';
 import {
   BarChart,
