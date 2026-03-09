@@ -7,33 +7,29 @@ if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
 
 $userId = getCurrentUserId();
 $pdo = Database::getConnection();
-$plaidEnv = $_GET['plaid_environment'] ?? null;
+$plaidEnv = $_GET['plaid_environment'] ?? 'sandbox';
+if (!in_array($plaidEnv, ['sandbox', 'production'])) $plaidEnv = 'sandbox';
 
-// Get transactions from last 18 months grouped by merchant
 $sql = "SELECT t.name, t.merchant_name, t.amount, t.date, t.category_id,
-               c.name as category_name, c.color as category_color
+               cat.name as category_name, cat.color as category_color
         FROM transactions t
         JOIN accounts a ON t.account_id = a.id
-        LEFT JOIN categories c ON t.category_id = c.id
+        LEFT JOIN plaid_connections c ON a.plaid_connection_id = c.id
+        LEFT JOIN categories cat ON t.category_id = cat.id
         WHERE a.user_id = :user_id
           AND t.excluded = 0
           AND t.amount > 0
-          AND t.date >= DATE_SUB(CURDATE(), INTERVAL 18 MONTH)";
+          AND t.date >= DATE_SUB(CURDATE(), INTERVAL 18 MONTH)
+          AND (c.plaid_environment = :plaid_env OR a.plaid_connection_id IS NULL)
+        ORDER BY t.date DESC";
 
-$params = [':user_id' => $userId];
-
-if ($plaidEnv) {
-    $sql .= " AND a.plaid_environment = :plaid_env";
-    $params[':plaid_env'] = $plaidEnv;
-}
-
-$sql .= " ORDER BY t.date DESC";
+$params = [':user_id' => $userId, ':plaid_env' => $plaidEnv];
 
 $stmt = $pdo->prepare($sql);
 $stmt->execute($params);
 $transactions = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-// Group by merchant (use merchant_name if available, else name)
+// Group by merchant
 $merchants = [];
 foreach ($transactions as $t) {
     $key = strtolower(trim($t['merchant_name'] ?: $t['name']));
@@ -73,7 +69,6 @@ foreach ($merchants as $key => $merchant) {
         $d2 = new DateTime($txns[$i]['date']);
         $intervals[] = (int)$d1->diff($d2)->days;
     }
-
     if (empty($intervals)) continue;
 
     $avgInterval = array_sum($intervals) / count($intervals);
@@ -85,7 +80,6 @@ foreach ($merchants as $key => $merchant) {
             break;
         }
     }
-
     if (!$matchedBucket) continue;
 
     $variance = 0;

@@ -7,44 +7,41 @@ if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
 
 $userId = getCurrentUserId();
 $pdo = Database::getConnection();
-$plaidEnv = $_GET['plaid_environment'] ?? null;
+$plaidEnv = $_GET['plaid_environment'] ?? 'sandbox';
+if (!in_array($plaidEnv, ['sandbox', 'production'])) $plaidEnv = 'sandbox';
 
 $insights = [];
-$envFilter = '';
-$params = [':user_id' => $userId];
-if ($plaidEnv) {
-    $envFilter = ' AND a.plaid_environment = :plaid_env';
-    $params[':plaid_env'] = $plaidEnv;
-}
 
-// 1. UNUSUAL MERCHANTS
+// Common environment filter pattern (matches existing codebase)
+$envJoin = "LEFT JOIN plaid_connections pc ON a.plaid_connection_id = pc.id";
+$envWhere = "(pc.plaid_environment = :plaid_env OR a.plaid_connection_id IS NULL)";
+
+// 1. UNUSUAL MERCHANTS - places visited only 1-2 times in last 90 days not seen before
 $sql = "SELECT t.merchant_name, t.name, t.amount, t.date, COUNT(*) as visit_count
         FROM transactions t
         JOIN accounts a ON t.account_id = a.id
+        {$envJoin}
         WHERE a.user_id = :user_id AND t.excluded = 0 AND t.amount > 0
           AND t.date >= DATE_SUB(CURDATE(), INTERVAL 90 DAY)
-          {$envFilter}
+          AND {$envWhere}
           AND (t.merchant_name IS NOT NULL AND t.merchant_name != '')
         GROUP BY COALESCE(t.merchant_name, t.name)
         HAVING visit_count <= 2";
 $stmt = $pdo->prepare($sql);
-$stmt->execute($params);
+$stmt->execute([':user_id' => $userId, ':plaid_env' => $plaidEnv]);
 $unusual = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 foreach ($unusual as $u) {
     $merchantKey = $u['merchant_name'] ?: $u['name'];
     $checkSql = "SELECT COUNT(*) as cnt FROM transactions t
                  JOIN accounts a ON t.account_id = a.id
-                 WHERE a.user_id = :check_uid AND t.excluded = 0
+                 {$envJoin}
+                 WHERE a.user_id = :uid AND t.excluded = 0
                    AND t.date < DATE_SUB(CURDATE(), INTERVAL 90 DAY)
-                   AND (t.merchant_name = :merchant1 OR t.name = :merchant2)";
-    $checkParams = [':check_uid' => $userId, ':merchant1' => $merchantKey, ':merchant2' => $merchantKey];
-    if ($plaidEnv) {
-        $checkSql .= " AND a.plaid_environment = :check_env";
-        $checkParams[':check_env'] = $plaidEnv;
-    }
+                   AND {$envWhere}
+                   AND (t.merchant_name = :m1 OR t.name = :m2)";
     $checkStmt = $pdo->prepare($checkSql);
-    $checkStmt->execute($checkParams);
+    $checkStmt->execute([':uid' => $userId, ':plaid_env' => $plaidEnv, ':m1' => $merchantKey, ':m2' => $merchantKey]);
     $prior = $checkStmt->fetch(PDO::FETCH_ASSOC);
 
     if ((int)($prior['cnt'] ?? 0) === 0 && (float)$u['amount'] > 50) {
@@ -62,18 +59,15 @@ foreach ($unusual as $u) {
 $sql2 = "SELECT t.name, t.merchant_name, t.amount, t.date
          FROM transactions t
          JOIN accounts a ON t.account_id = a.id
-         LEFT JOIN categories c ON t.category_id = c.id
+         {$envJoin}
+         LEFT JOIN categories cat ON t.category_id = cat.id
          WHERE a.user_id = :user_id2 AND t.excluded = 0 AND t.amount < 0
-           AND (c.is_income = 1 OR t.amount < -500)
-           AND t.date >= DATE_SUB(CURDATE(), INTERVAL 12 MONTH)";
-$params2 = [':user_id2' => $userId];
-if ($plaidEnv) {
-    $sql2 .= " AND a.plaid_environment = :plaid_env2";
-    $params2[':plaid_env2'] = $plaidEnv;
-}
-$sql2 .= " ORDER BY t.date DESC";
+           AND (cat.is_income = 1 OR t.amount < -500)
+           AND t.date >= DATE_SUB(CURDATE(), INTERVAL 12 MONTH)
+           AND (pc.plaid_environment = :plaid_env2 OR a.plaid_connection_id IS NULL)
+         ORDER BY t.date DESC";
 $stmt2 = $pdo->prepare($sql2);
-$stmt2->execute($params2);
+$stmt2->execute([':user_id2' => $userId, ':plaid_env2' => $plaidEnv]);
 $incomes = $stmt2->fetchAll(PDO::FETCH_ASSOC);
 
 $incomeSources = [];
@@ -102,24 +96,21 @@ foreach ($incomeSources as $source => $txns) {
     }
 }
 
-// 3. SPENDING SPIKES
-$sql3 = "SELECT c.name as category_name, c.color as category_color,
+// 3. SPENDING SPIKES - categories with recent spend much higher than average
+$sql3 = "SELECT cat.name as category_name, cat.color as category_color,
                 SUM(CASE WHEN t.date >= DATE_SUB(CURDATE(), INTERVAL 30 DAY) THEN t.amount ELSE 0 END) as recent_total,
                 SUM(CASE WHEN t.date < DATE_SUB(CURDATE(), INTERVAL 30 DAY) AND t.date >= DATE_SUB(CURDATE(), INTERVAL 120 DAY) THEN t.amount ELSE 0 END) / 3 as avg_monthly
          FROM transactions t
          JOIN accounts a ON t.account_id = a.id
-         JOIN categories c ON t.category_id = c.id
+         {$envJoin}
+         JOIN categories cat ON t.category_id = cat.id
          WHERE a.user_id = :user_id3 AND t.excluded = 0 AND t.amount > 0
            AND t.date >= DATE_SUB(CURDATE(), INTERVAL 120 DAY)
-           AND c.is_income = 0";
-$params3 = [':user_id3' => $userId];
-if ($plaidEnv) {
-    $sql3 .= " AND a.plaid_environment = :plaid_env3";
-    $params3[':plaid_env3'] = $plaidEnv;
-}
-$sql3 .= " GROUP BY c.id HAVING avg_monthly > 20 AND recent_total > avg_monthly * 1.5";
+           AND cat.is_income = 0
+           AND (pc.plaid_environment = :plaid_env3 OR a.plaid_connection_id IS NULL)
+         GROUP BY cat.id HAVING avg_monthly > 20 AND recent_total > avg_monthly * 1.5";
 $stmt3 = $pdo->prepare($sql3);
-$stmt3->execute($params3);
+$stmt3->execute([':user_id3' => $userId, ':plaid_env3' => $plaidEnv]);
 $spikes = $stmt3->fetchAll(PDO::FETCH_ASSOC);
 
 foreach ($spikes as $spike) {
@@ -137,16 +128,13 @@ foreach ($spikes as $spike) {
 $sql4 = "SELECT t.name, t.merchant_name, t.amount, t.date, COUNT(*) as dup_count
          FROM transactions t
          JOIN accounts a ON t.account_id = a.id
+         {$envJoin}
          WHERE a.user_id = :user_id4 AND t.excluded = 0 AND t.amount > 0
-           AND t.date >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)";
-$params4 = [':user_id4' => $userId];
-if ($plaidEnv) {
-    $sql4 .= " AND a.plaid_environment = :plaid_env4";
-    $params4[':plaid_env4'] = $plaidEnv;
-}
-$sql4 .= " GROUP BY COALESCE(t.merchant_name, t.name), t.amount, t.date HAVING dup_count > 1";
+           AND t.date >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)
+           AND (pc.plaid_environment = :plaid_env4 OR a.plaid_connection_id IS NULL)
+         GROUP BY COALESCE(t.merchant_name, t.name), t.amount, t.date HAVING dup_count > 1";
 $stmt4 = $pdo->prepare($sql4);
-$stmt4->execute($params4);
+$stmt4->execute([':user_id4' => $userId, ':plaid_env4' => $plaidEnv]);
 $duplicates = $stmt4->fetchAll(PDO::FETCH_ASSOC);
 
 foreach ($duplicates as $dup) {
@@ -160,20 +148,17 @@ foreach ($duplicates as $dup) {
     ];
 }
 
-// 5. LARGEST SINGLE TRANSACTIONS
+// 5. LARGEST TRANSACTIONS this month
 $sql5 = "SELECT t.name, t.merchant_name, t.amount, t.date
          FROM transactions t
          JOIN accounts a ON t.account_id = a.id
+         {$envJoin}
          WHERE a.user_id = :user_id5 AND t.excluded = 0 AND t.amount > 0
-           AND t.date >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)";
-$params5 = [':user_id5' => $userId];
-if ($plaidEnv) {
-    $sql5 .= " AND a.plaid_environment = :plaid_env5";
-    $params5[':plaid_env5'] = $plaidEnv;
-}
-$sql5 .= " ORDER BY t.amount DESC LIMIT 3";
+           AND t.date >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)
+           AND (pc.plaid_environment = :plaid_env5 OR a.plaid_connection_id IS NULL)
+         ORDER BY t.amount DESC LIMIT 3";
 $stmt5 = $pdo->prepare($sql5);
-$stmt5->execute($params5);
+$stmt5->execute([':user_id5' => $userId, ':plaid_env5' => $plaidEnv]);
 $largest = $stmt5->fetchAll(PDO::FETCH_ASSOC);
 
 foreach ($largest as $lg) {
