@@ -47,6 +47,7 @@ const defaults: Preferences = {
   consentDataStorage: false,
   consentRecorded: false,
   settingsExpandedSections: [...ALL_SETTINGS_SECTIONS],
+  sidebarOrder: [],
 };
 
 function fromApi(data: Record<string, string>): Partial<Preferences> {
