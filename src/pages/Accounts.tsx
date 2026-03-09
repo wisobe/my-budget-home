@@ -132,12 +132,106 @@ function SortableAccountItem({
   );
 }
 
+function SortableGroupCard({
+  type,
+  typeAccounts,
+  sensors,
+  onAccountDragEnd,
+  onToggleExcluded,
+  isPending,
+  t,
+}: {
+  type: string;
+  typeAccounts: Account[];
+  sensors: ReturnType<typeof useSensors>;
+  onAccountDragEnd: (type: string) => (event: DragEndEvent) => void;
+  onToggleExcluded: (id: string, excluded: boolean) => void;
+  isPending: boolean;
+  t: (key: string, opts?: any) => string;
+}) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: type });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    zIndex: isDragging ? 10 : undefined,
+  };
+
+  const Icon = accountIcons[type] || Wallet;
+  const colorClass = accountTypeColors[type] || accountTypeColors.other;
+  const typeTotal = typeAccounts
+    .filter(a => !a.excluded)
+    .reduce((sum, a) => sum + Number(a.current_balance || 0), 0);
+
+  return (
+    <div ref={setNodeRef} style={style}>
+      <Card className={cn(isDragging && "shadow-lg ring-2 ring-primary/20")}>
+        <CardHeader>
+          <div className="flex items-center justify-between group/group-card">
+            <div className="flex items-center gap-3">
+              <div className={cn("h-10 w-10 rounded-lg flex items-center justify-center", colorClass)}>
+                <Icon className="h-5 w-5" />
+              </div>
+              <div>
+                <CardTitle className="capitalize">{t('accounts.accounts', { type })}</CardTitle>
+                <CardDescription>{t('accounts.accountCount', { count: typeAccounts.length })}</CardDescription>
+              </div>
+            </div>
+            <div className="flex items-center gap-3">
+              <p className={cn("text-xl font-bold", typeTotal < 0 && "text-expense")}>
+                {new Intl.NumberFormat('en-CA', { style: 'currency', currency: 'CAD' }).format(typeTotal)}
+              </p>
+              <button
+                {...attributes}
+                {...listeners}
+                className="opacity-0 group-hover/group-card:opacity-60 hover:!opacity-100 cursor-grab active:cursor-grabbing p-1 text-muted-foreground touch-none"
+                tabIndex={-1}
+              >
+                <GripVertical className="h-5 w-5" />
+              </button>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragEnd={onAccountDragEnd(type)}
+          >
+            <SortableContext
+              items={typeAccounts.map(a => a.id)}
+              strategy={verticalListSortingStrategy}
+            >
+              {typeAccounts.map(account => (
+                <SortableAccountItem
+                  key={account.id}
+                  account={account}
+                  onToggleExcluded={onToggleExcluded}
+                  isPending={isPending}
+                  t={t}
+                />
+              ))}
+            </SortableContext>
+          </DndContext>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
 const Accounts = () => {
   const { t } = useTranslation();
   const { data: accountsData, isLoading } = useAccounts();
   const totalBalance = useAllAccountsBalance();
   const updateAccountMutation = useUpdateAccount();
-  const { accountOrder, setAccountOrder } = usePreferences();
+  const { accountOrder, setAccountOrder, accountGroupOrder, setAccountGroupOrder } = usePreferences();
 
   const accounts = accountsData?.data || [];
 
@@ -155,7 +249,18 @@ const Accounts = () => {
     if (!acc[account.type]) acc[account.type] = [];
     acc[account.type].push(account);
     return acc;
-  }, {} as Record<string, typeof accounts>);
+  }, {} as Record<string, Account[]>);
+
+  // Sort groups by saved group order
+  const groupTypes = Object.keys(groupedAccounts);
+  const sortedGroupTypes = [...groupTypes].sort((a, b) => {
+    const aIdx = accountGroupOrder.indexOf(a);
+    const bIdx = accountGroupOrder.indexOf(b);
+    if (aIdx === -1 && bIdx === -1) return 0;
+    if (aIdx === -1) return 1;
+    if (bIdx === -1) return -1;
+    return aIdx - bIdx;
+  });
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
@@ -171,7 +276,7 @@ const Accounts = () => {
     }
   };
 
-  const handleDragEnd = (type: string) => (event: DragEndEvent) => {
+  const handleAccountDragEnd = (type: string) => (event: DragEndEvent) => {
     const { active, over } = event;
     if (!over || active.id === over.id) return;
 
@@ -180,13 +285,21 @@ const Accounts = () => {
     const newIndex = typeAccounts.findIndex(a => a.id === over.id);
     const reordered = arrayMove(typeAccounts, oldIndex, newIndex);
 
-    // Build full order: replace this type's accounts in the global sorted list
     const newSorted = sortedAccounts.filter(a => a.type !== type);
-    // Insert reordered accounts at the position of the first account of this type
     const insertIdx = sortedAccounts.findIndex(a => a.type === type);
     newSorted.splice(insertIdx >= 0 ? insertIdx : newSorted.length, 0, ...reordered);
 
     setAccountOrder(newSorted.map(a => String(a.id)));
+  };
+
+  const handleGroupDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+
+    const oldIndex = sortedGroupTypes.indexOf(String(active.id));
+    const newIndex = sortedGroupTypes.indexOf(String(over.id));
+    const newOrder = arrayMove(sortedGroupTypes, oldIndex, newIndex);
+    setAccountGroupOrder(newOrder);
   };
 
   return (
@@ -212,56 +325,29 @@ const Accounts = () => {
           </CardHeader>
         </Card>
 
-        {Object.entries(groupedAccounts).map(([type, typeAccounts]) => {
-          const Icon = accountIcons[type] || Wallet;
-          const colorClass = accountTypeColors[type] || accountTypeColors.other;
-          const typeTotal = typeAccounts
-            .filter(a => !a.excluded)
-            .reduce((sum, a) => sum + Number(a.current_balance || 0), 0);
-
-          return (
-            <Card key={type}>
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className={cn("h-10 w-10 rounded-lg flex items-center justify-center", colorClass)}>
-                      <Icon className="h-5 w-5" />
-                    </div>
-                    <div>
-                      <CardTitle className="capitalize">{t('accounts.accounts', { type })}</CardTitle>
-                      <CardDescription>{t('accounts.accountCount', { count: typeAccounts.length })}</CardDescription>
-                    </div>
-                  </div>
-                  <p className={cn("text-xl font-bold", typeTotal < 0 && "text-expense")}>
-                    {new Intl.NumberFormat('en-CA', { style: 'currency', currency: 'CAD' }).format(typeTotal)}
-                  </p>
-                </div>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <DndContext
-                  sensors={sensors}
-                  collisionDetection={closestCenter}
-                  onDragEnd={handleDragEnd(type)}
-                >
-                  <SortableContext
-                    items={typeAccounts.map(a => a.id)}
-                    strategy={verticalListSortingStrategy}
-                  >
-                    {typeAccounts.map(account => (
-                      <SortableAccountItem
-                        key={account.id}
-                        account={account}
-                        onToggleExcluded={handleToggleExcluded}
-                        isPending={updateAccountMutation.isPending}
-                        t={t}
-                      />
-                    ))}
-                  </SortableContext>
-                </DndContext>
-              </CardContent>
-            </Card>
-          );
-        })}
+        <DndContext
+          sensors={sensors}
+          collisionDetection={closestCenter}
+          onDragEnd={handleGroupDragEnd}
+        >
+          <SortableContext
+            items={sortedGroupTypes}
+            strategy={verticalListSortingStrategy}
+          >
+            {sortedGroupTypes.map(type => (
+              <SortableGroupCard
+                key={type}
+                type={type}
+                typeAccounts={groupedAccounts[type]}
+                sensors={sensors}
+                onAccountDragEnd={handleAccountDragEnd}
+                onToggleExcluded={handleToggleExcluded}
+                isPending={updateAccountMutation.isPending}
+                t={t}
+              />
+            ))}
+          </SortableContext>
+        </DndContext>
       </div>
     </AppLayout>
   );
