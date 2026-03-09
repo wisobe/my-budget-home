@@ -54,7 +54,7 @@ try {
 }
 
 // Fetch ALL non-excluded, non-pending transactions from the last 18 months
-// Removed t.amount > 0 filter — amounts can be positive or negative depending on account type
+// Exclude income categories (is_income = 1)
 $sql = "SELECT t.name, t.merchant_name, t.amount, t.date, t.category_id,
                cat.name as category_name, cat.color as category_color
         FROM transactions t
@@ -68,6 +68,7 @@ $sql = "SELECT t.name, t.merchant_name, t.amount, t.date, t.category_id,
           AND t.amount != 0
           AND t.date >= DATE_SUB(CURDATE(), INTERVAL 18 MONTH)
           AND (c.plaid_environment = :plaid_env OR a.plaid_connection_id IS NULL)
+          AND (cat.is_income = 0 OR cat.is_income IS NULL)
         ORDER BY t.date DESC";
 
 $params = [':user_id' => $userId, ':plaid_env' => $plaidEnv];
