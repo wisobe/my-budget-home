@@ -16,7 +16,7 @@ if (empty($search)) {
 }
 
 // Find all transactions matching the search term
-$sql = "SELECT t.name, t.merchant_name, t.amount, t.date, t.pending, t.excluded,
+$sql = "SELECT t.id as txn_id, t.plaid_transaction_id, t.name, t.merchant_name, t.amount, t.date, t.pending, t.excluded,
                a.excluded as account_excluded, a.id as account_id,
                cat.name as category_name, cat.is_income,
                c.plaid_environment
