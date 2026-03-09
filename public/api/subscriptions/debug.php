@@ -26,6 +26,7 @@ $sql = "SELECT t.id as txn_id, t.plaid_transaction_id, t.name, t.merchant_name, 
         LEFT JOIN categories cat ON t.category_id = cat.id
         WHERE a.user_id = :user_id
           AND (LOWER(t.name) LIKE :search OR LOWER(t.merchant_name) LIKE :search2)
+        GROUP BY t.id
         ORDER BY t.date DESC
         LIMIT 50";
 
