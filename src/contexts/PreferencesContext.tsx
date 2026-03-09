@@ -18,6 +18,7 @@ interface Preferences {
   consentRecorded: boolean;
   settingsExpandedSections: string[];
   sidebarOrder: string[];
+  accountOrder: string[];
 }
 
 interface PreferencesContextType extends Preferences {
