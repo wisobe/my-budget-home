@@ -44,10 +44,17 @@ if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
 }
 
 // Load dismissed merchants
-$dStmt = $pdo->prepare("SELECT merchant_key FROM subscription_dismissals WHERE user_id = :user_id AND plaid_environment = :env");
-$dStmt->execute([':user_id' => $userId, ':env' => $plaidEnv]);
-$dismissedKeys = array_column($dStmt->fetchAll(PDO::FETCH_ASSOC), 'merchant_key');
+try {
+    $dStmt = $pdo->prepare("SELECT merchant_key FROM subscription_dismissals WHERE user_id = :user_id AND plaid_environment = :env");
+    $dStmt->execute([':user_id' => $userId, ':env' => $plaidEnv]);
+    $dismissedKeys = array_column($dStmt->fetchAll(PDO::FETCH_ASSOC), 'merchant_key');
+} catch (Exception $e) {
+    // Table might not exist yet
+    $dismissedKeys = [];
+}
 
+// Fetch ALL non-excluded, non-pending transactions from the last 18 months
+// Removed t.amount > 0 filter — amounts can be positive or negative depending on account type
 $sql = "SELECT t.name, t.merchant_name, t.amount, t.date, t.category_id,
                cat.name as category_name, cat.color as category_color
         FROM transactions t
@@ -57,7 +64,8 @@ $sql = "SELECT t.name, t.merchant_name, t.amount, t.date, t.category_id,
         WHERE a.user_id = :user_id
           AND a.excluded = 0
           AND t.excluded = 0
-          AND t.amount > 0
+          AND t.pending = 0
+          AND t.amount != 0
           AND t.date >= DATE_SUB(CURDATE(), INTERVAL 18 MONTH)
           AND (c.plaid_environment = :plaid_env OR a.plaid_connection_id IS NULL)
         ORDER BY t.date DESC";
@@ -72,22 +80,24 @@ $transactions = $stmt->fetchAll(PDO::FETCH_ASSOC);
 function normalizeMerchantKey($name) {
     $key = strtolower(trim($name));
     // Remove common suffixes/noise
-    $key = preg_replace('/\s+(inc\.?|llc\.?|ltd\.?|co\.?|corp\.?|.com)$/i', '', $key);
-    // Remove trailing numbers (order IDs, etc.)
+    $key = preg_replace('/\s+(inc\.?|llc\.?|ltd\.?|co\.?|corp\.?|\.com|com)$/i', '', $key);
+    // Remove trailing numbers (order IDs, reference numbers, etc.)
     $key = preg_replace('/\s+#?\d+$/', '', $key);
-    // Remove special characters except spaces
+    // Remove asterisk patterns common in credit card descriptors (e.g., "NETFLIX *MEMBER")
+    $key = preg_replace('/\s*\*\s*.*$/', '', $key);
+    // Remove special characters except spaces and letters/numbers
     $key = preg_replace('/[^a-z0-9\s]/', '', $key);
     // Collapse whitespace
     $key = preg_replace('/\s+/', ' ', trim($key));
     return $key;
 }
 
-// Group by normalized merchant key
+// Group by normalized merchant key, using absolute amounts
 $merchants = [];
 foreach ($transactions as $t) {
     $rawName = $t['merchant_name'] ?: $t['name'];
     $key = normalizeMerchantKey($rawName);
-    if (strlen($key) < 2) continue; // skip meaningless names
+    if (strlen($key) < 2) continue;
 
     if (!isset($merchants[$key])) {
         $merchants[$key] = [
@@ -98,7 +108,7 @@ foreach ($transactions as $t) {
         ];
     }
     $merchants[$key]['transactions'][] = [
-        'amount' => (float)$t['amount'],
+        'amount' => abs((float)$t['amount']),
         'date' => $t['date'],
     ];
 }
@@ -115,7 +125,7 @@ $subscriptions = [];
 
 foreach ($merchants as $key => $merchant) {
     $txns = $merchant['transactions'];
-    if (count($txns) < 2) continue; // lowered from 3 to 2 to catch newer subscriptions
+    if (count($txns) < 2) continue;
 
     usort($txns, fn($a, $b) => strcmp($a['date'], $b['date']));
 
@@ -197,7 +207,6 @@ foreach ($merchants as $key => $merchant) {
 }
 
 usort($subscriptions, function ($a, $b) {
-    // Dismissed always last
     if ($a['dismissed'] !== $b['dismissed']) return $a['dismissed'] ? 1 : -1;
     $order = ['missed' => 0, 'due_soon' => 1, 'active' => 2];
     $diff = ($order[$a['status']] ?? 3) - ($order[$b['status']] ?? 3);
