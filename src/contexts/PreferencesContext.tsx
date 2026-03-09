@@ -164,9 +164,10 @@ export function PreferencesProvider({ children }: { children: React.ReactNode })
   const setConsentDataProcessing = useCallback((v: boolean) => setPrefs(p => ({ ...p, consentDataProcessing: v, consentRecorded: true })), []);
   const setConsentDataStorage = useCallback((v: boolean) => setPrefs(p => ({ ...p, consentDataStorage: v, consentRecorded: true })), []);
   const setSettingsExpandedSections = useCallback((v: string[]) => setPrefs(p => ({ ...p, settingsExpandedSections: v })), []);
+  const setSidebarOrder = useCallback((v: string[]) => setPrefs(p => ({ ...p, sidebarOrder: v })), []);
 
   return (
-    <PreferencesContext.Provider value={{ ...prefs, darkMode, setThemeMode, setDarkMode, setAutoSync, setShowPending, setLanguage, setBalanceAccounts, setConsentDataCollection, setConsentDataProcessing, setConsentDataStorage, setSettingsExpandedSections, isLoaded }}>
+    <PreferencesContext.Provider value={{ ...prefs, darkMode, setThemeMode, setDarkMode, setAutoSync, setShowPending, setLanguage, setBalanceAccounts, setConsentDataCollection, setConsentDataProcessing, setConsentDataStorage, setSettingsExpandedSections, setSidebarOrder, isLoaded }}>
       {children}
     </PreferencesContext.Provider>
   );
