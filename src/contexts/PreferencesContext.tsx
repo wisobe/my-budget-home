@@ -17,12 +17,13 @@ interface Preferences {
   consentDataStorage: boolean;
   consentRecorded: boolean;
   settingsExpandedSections: string[];
+  sidebarOrder: string[];
 }
 
 interface PreferencesContextType extends Preferences {
-  darkMode: boolean; // resolved value for components that need it
+  darkMode: boolean;
   setThemeMode: (v: ThemeMode) => void;
-  setDarkMode: (v: boolean) => void; // kept for backward compat
+  setDarkMode: (v: boolean) => void;
   setAutoSync: (v: boolean) => void;
   setShowPending: (v: boolean) => void;
   setLanguage: (v: string) => void;
@@ -31,6 +32,7 @@ interface PreferencesContextType extends Preferences {
   setConsentDataProcessing: (v: boolean) => void;
   setConsentDataStorage: (v: boolean) => void;
   setSettingsExpandedSections: (v: string[]) => void;
+  setSidebarOrder: (v: string[]) => void;
   isLoaded: boolean;
 }
 
@@ -45,6 +47,7 @@ const defaults: Preferences = {
   consentDataStorage: false,
   consentRecorded: false,
   settingsExpandedSections: [...ALL_SETTINGS_SECTIONS],
+  sidebarOrder: [],
 };
 
 function fromApi(data: Record<string, string>): Partial<Preferences> {
@@ -64,6 +67,7 @@ function fromApi(data: Record<string, string>): Partial<Preferences> {
   if (data.consent_data_processing !== undefined) { p.consentDataProcessing = data.consent_data_processing === '1'; p.consentRecorded = true; }
   if (data.consent_data_storage !== undefined) { p.consentDataStorage = data.consent_data_storage === '1'; p.consentRecorded = true; }
   if (data.settings_expanded_sections !== undefined) p.settingsExpandedSections = data.settings_expanded_sections ? data.settings_expanded_sections.split(',') : [];
+  if (data.sidebar_order !== undefined) p.sidebarOrder = data.sidebar_order ? data.sidebar_order.split(',') : [];
   return p;
 }
 
@@ -78,6 +82,7 @@ function toApi(prefs: Preferences): Record<string, string> {
     consent_data_processing: prefs.consentDataProcessing ? '1' : '0',
     consent_data_storage: prefs.consentDataStorage ? '1' : '0',
     settings_expanded_sections: prefs.settingsExpandedSections.join(','),
+    sidebar_order: prefs.sidebarOrder.join(','),
   };
 }
 
@@ -159,9 +164,10 @@ export function PreferencesProvider({ children }: { children: React.ReactNode })
   const setConsentDataProcessing = useCallback((v: boolean) => setPrefs(p => ({ ...p, consentDataProcessing: v, consentRecorded: true })), []);
   const setConsentDataStorage = useCallback((v: boolean) => setPrefs(p => ({ ...p, consentDataStorage: v, consentRecorded: true })), []);
   const setSettingsExpandedSections = useCallback((v: string[]) => setPrefs(p => ({ ...p, settingsExpandedSections: v })), []);
+  const setSidebarOrder = useCallback((v: string[]) => setPrefs(p => ({ ...p, sidebarOrder: v })), []);
 
   return (
-    <PreferencesContext.Provider value={{ ...prefs, darkMode, setThemeMode, setDarkMode, setAutoSync, setShowPending, setLanguage, setBalanceAccounts, setConsentDataCollection, setConsentDataProcessing, setConsentDataStorage, setSettingsExpandedSections, isLoaded }}>
+    <PreferencesContext.Provider value={{ ...prefs, darkMode, setThemeMode, setDarkMode, setAutoSync, setShowPending, setLanguage, setBalanceAccounts, setConsentDataCollection, setConsentDataProcessing, setConsentDataStorage, setSettingsExpandedSections, setSidebarOrder, isLoaded }}>
       {children}
     </PreferencesContext.Provider>
   );
