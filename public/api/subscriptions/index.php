@@ -122,8 +122,8 @@ foreach ($transactions as $t) {
 
 $buckets = [
     ['label' => 'weekly', 'days' => 7, 'min' => 4, 'max' => 11],
-    ['label' => 'biweekly', 'days' => 14, 'min' => 11, 'max' => 20],
-    ['label' => 'monthly', 'days' => 30, 'min' => 25, 'max' => 38],
+    ['label' => 'biweekly', 'days' => 14, 'min' => 11, 'max' => 21],
+    ['label' => 'monthly', 'days' => 30, 'min' => 21, 'max' => 38],
     ['label' => 'quarterly', 'days' => 91, 'min' => 80, 'max' => 105],
     ['label' => 'annual', 'days' => 365, 'min' => 340, 'max' => 400],
 ];
@@ -144,11 +144,17 @@ foreach ($merchants as $key => $merchant) {
     }
     if (empty($intervals)) continue;
 
-    $avgInterval = array_sum($intervals) / count($intervals);
+    // Use median interval for better resilience to billing date shifts
+    $sorted = $intervals;
+    sort($sorted);
+    $mid = floor(count($sorted) / 2);
+    $medianInterval = count($sorted) % 2 === 0
+        ? ($sorted[$mid - 1] + $sorted[$mid]) / 2
+        : $sorted[$mid];
 
     $matchedBucket = null;
     foreach ($buckets as $bucket) {
-        if ($avgInterval >= $bucket['min'] && $avgInterval <= $bucket['max']) {
+        if ($medianInterval >= $bucket['min'] && $medianInterval <= $bucket['max']) {
             $matchedBucket = $bucket;
             break;
         }
