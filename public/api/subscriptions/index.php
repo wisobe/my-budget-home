@@ -1,17 +1,12 @@
 <?php
 require_once __DIR__ . '/../includes/bootstrap.php';
 
-use App\Database;
-use App\Response;
-
-$db = Database::getInstance();
-$pdo = $db->getConnection();
-$userId = $db->requireAuth();
-
 if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
     Response::error('Method not allowed', 405);
 }
 
+$userId = getCurrentUserId();
+$pdo = Database::getConnection();
 $plaidEnv = $_GET['plaid_environment'] ?? null;
 
 // Get transactions from last 18 months grouped by merchant
@@ -68,13 +63,10 @@ $subscriptions = [];
 
 foreach ($merchants as $key => $merchant) {
     $txns = $merchant['transactions'];
-    // Need at least 3 occurrences
     if (count($txns) < 3) continue;
 
-    // Sort by date ascending
     usort($txns, fn($a, $b) => strcmp($a['date'], $b['date']));
 
-    // Calculate intervals between consecutive transactions
     $intervals = [];
     for ($i = 1; $i < count($txns); $i++) {
         $d1 = new DateTime($txns[$i - 1]['date']);
@@ -86,7 +78,6 @@ foreach ($merchants as $key => $merchant) {
 
     $avgInterval = array_sum($intervals) / count($intervals);
 
-    // Find matching frequency bucket
     $matchedBucket = null;
     foreach ($buckets as $bucket) {
         if ($avgInterval >= $bucket['min'] && $avgInterval <= $bucket['max']) {
@@ -97,7 +88,6 @@ foreach ($merchants as $key => $merchant) {
 
     if (!$matchedBucket) continue;
 
-    // Check consistency: standard deviation should be < 30% of expected interval
     $variance = 0;
     foreach ($intervals as $iv) {
         $variance += pow($iv - $matchedBucket['days'], 2);
@@ -105,13 +95,11 @@ foreach ($merchants as $key => $merchant) {
     $stdDev = sqrt($variance / count($intervals));
     if ($stdDev > $matchedBucket['days'] * 0.35) continue;
 
-    // Calculate amounts
     $amounts = array_column($txns, 'amount');
     $currentAmount = end($amounts);
     $previousAmount = count($amounts) >= 2 ? $amounts[count($amounts) - 2] : $currentAmount;
     $avgAmount = array_sum($amounts) / count($amounts);
 
-    // Price change detection
     $priceChange = null;
     if ($previousAmount > 0 && abs($currentAmount - $previousAmount) / $previousAmount > 0.05) {
         $priceChange = [
@@ -122,7 +110,6 @@ foreach ($merchants as $key => $merchant) {
         ];
     }
 
-    // Determine status
     $lastDate = new DateTime(end($txns)['date']);
     $today = new DateTime();
     $daysSinceLast = (int)$lastDate->diff($today)->days;
@@ -135,7 +122,6 @@ foreach ($merchants as $key => $merchant) {
         $status = 'due_soon';
     }
 
-    // Next expected date
     $nextDate = clone $lastDate;
     $nextDate->modify("+{$expectedInterval} days");
 
@@ -156,7 +142,6 @@ foreach ($merchants as $key => $merchant) {
     ];
 }
 
-// Sort: missed first, then due_soon, then active
 usort($subscriptions, function ($a, $b) {
     $order = ['missed' => 0, 'due_soon' => 1, 'active' => 2];
     $diff = ($order[$a['status']] ?? 3) - ($order[$b['status']] ?? 3);
