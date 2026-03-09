@@ -5,9 +5,28 @@ import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { useAccounts, useAllAccountsBalance, useUpdateAccount } from '@/hooks/use-accounts';
 import { SyncButton } from '@/components/transactions/SyncButton';
-import { Plus, CreditCard, Wallet, PiggyBank, TrendingUp } from 'lucide-react';
+import { Plus, CreditCard, Wallet, PiggyBank, TrendingUp, GripVertical } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { toast } from '@/components/ui/sonner';
+import { usePreferences } from '@/contexts/PreferencesContext';
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from '@dnd-kit/core';
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  useSortable,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
+import type { Account } from '@/types';
 
 const accountTypeColors: Record<string, string> = {
   checking: 'bg-primary/10 text-primary',
@@ -29,19 +48,119 @@ const accountIcons: Record<string, typeof Wallet> = {
   other: Wallet,
 };
 
+function SortableAccountItem({
+  account,
+  onToggleExcluded,
+  isPending,
+  t,
+}: {
+  account: Account;
+  onToggleExcluded: (id: string, excluded: boolean) => void;
+  isPending: boolean;
+  t: (key: string, opts?: any) => string;
+}) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: account.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    zIndex: isDragging ? 10 : undefined,
+  };
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      className={cn(
+        "flex items-center justify-between p-4 rounded-lg transition-colors group/account",
+        account.excluded
+          ? "bg-muted/30 opacity-60"
+          : "bg-muted/50 hover:bg-muted",
+        isDragging && "shadow-lg ring-2 ring-primary/20"
+      )}
+    >
+      <div className="flex items-center gap-4 flex-1 min-w-0">
+        <Switch
+          checked={!account.excluded}
+          onCheckedChange={() => onToggleExcluded(account.id, !!account.excluded)}
+          disabled={isPending}
+          aria-label={t('accounts.toggleInclude')}
+        />
+        <div className="min-w-0 flex-1">
+          <p className="font-medium truncate">{account.name}</p>
+          <p className="text-sm text-muted-foreground truncate">
+            {account.institution_name}
+            {account.last_synced && (
+              <> • {t('accounts.lastSynced', { date: new Date(account.last_synced).toLocaleDateString() })}</>
+            )}
+            {account.excluded && (
+              <> • <span className="text-muted-foreground italic">{t('accounts.excludedLabel')}</span></>
+            )}
+          </p>
+        </div>
+      </div>
+      <div className="flex items-center gap-3">
+        <div className="text-right">
+          <p className={cn("font-semibold", Number(account.current_balance) < 0 && "text-expense")}>
+            {new Intl.NumberFormat('en-CA', { style: 'currency', currency: account.currency }).format(Number(account.current_balance))}
+          </p>
+          {account.available_balance !== undefined && (
+            <p className="text-xs text-muted-foreground">
+              {t('accounts.available', {
+                amount: new Intl.NumberFormat('en-CA', { style: 'currency', currency: account.currency }).format(account.available_balance)
+              })}
+            </p>
+          )}
+        </div>
+        <button
+          {...attributes}
+          {...listeners}
+          className="opacity-0 group-hover/account:opacity-60 hover:!opacity-100 cursor-grab active:cursor-grabbing p-1 text-muted-foreground touch-none"
+          tabIndex={-1}
+        >
+          <GripVertical className="h-4 w-4" />
+        </button>
+      </div>
+    </div>
+  );
+}
+
 const Accounts = () => {
   const { t } = useTranslation();
   const { data: accountsData, isLoading } = useAccounts();
   const totalBalance = useAllAccountsBalance();
   const updateAccountMutation = useUpdateAccount();
+  const { accountOrder, setAccountOrder } = usePreferences();
 
   const accounts = accountsData?.data || [];
 
-  const groupedAccounts = accounts.reduce((acc, account) => {
+  // Sort accounts by saved order
+  const sortedAccounts = [...accounts].sort((a, b) => {
+    const aIdx = accountOrder.indexOf(String(a.id));
+    const bIdx = accountOrder.indexOf(String(b.id));
+    if (aIdx === -1 && bIdx === -1) return 0;
+    if (aIdx === -1) return 1;
+    if (bIdx === -1) return -1;
+    return aIdx - bIdx;
+  });
+
+  const groupedAccounts = sortedAccounts.reduce((acc, account) => {
     if (!acc[account.type]) acc[account.type] = [];
     acc[account.type].push(account);
     return acc;
   }, {} as Record<string, typeof accounts>);
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
+  );
 
   const handleToggleExcluded = async (accountId: string, currentExcluded: boolean) => {
     try {
@@ -50,6 +169,24 @@ const Accounts = () => {
     } catch (err: any) {
       toast.error(err.message || t('accounts.failedUpdate'));
     }
+  };
+
+  const handleDragEnd = (type: string) => (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+
+    const typeAccounts = groupedAccounts[type];
+    const oldIndex = typeAccounts.findIndex(a => a.id === active.id);
+    const newIndex = typeAccounts.findIndex(a => a.id === over.id);
+    const reordered = arrayMove(typeAccounts, oldIndex, newIndex);
+
+    // Build full order: replace this type's accounts in the global sorted list
+    const newSorted = sortedAccounts.filter(a => a.type !== type);
+    // Insert reordered accounts at the position of the first account of this type
+    const insertIdx = sortedAccounts.findIndex(a => a.type === type);
+    newSorted.splice(insertIdx >= 0 ? insertIdx : newSorted.length, 0, ...reordered);
+
+    setAccountOrder(newSorted.map(a => String(a.id)));
   };
 
   return (
@@ -101,50 +238,26 @@ const Accounts = () => {
                 </div>
               </CardHeader>
               <CardContent className="space-y-3">
-                {typeAccounts.map(account => (
-                  <div
-                    key={account.id}
-                    className={cn(
-                      "flex items-center justify-between p-4 rounded-lg transition-colors",
-                      account.excluded
-                        ? "bg-muted/30 opacity-60"
-                        : "bg-muted/50 hover:bg-muted"
-                    )}
+                <DndContext
+                  sensors={sensors}
+                  collisionDetection={closestCenter}
+                  onDragEnd={handleDragEnd(type)}
+                >
+                  <SortableContext
+                    items={typeAccounts.map(a => a.id)}
+                    strategy={verticalListSortingStrategy}
                   >
-                    <div className="flex items-center gap-4">
-                      <Switch
-                        checked={!account.excluded}
-                        onCheckedChange={() => handleToggleExcluded(account.id, !!account.excluded)}
-                        disabled={updateAccountMutation.isPending}
-                        aria-label={t('accounts.toggleInclude')}
+                    {typeAccounts.map(account => (
+                      <SortableAccountItem
+                        key={account.id}
+                        account={account}
+                        onToggleExcluded={handleToggleExcluded}
+                        isPending={updateAccountMutation.isPending}
+                        t={t}
                       />
-                      <div>
-                        <p className="font-medium">{account.name}</p>
-                        <p className="text-sm text-muted-foreground">
-                          {account.institution_name}
-                          {account.last_synced && (
-                            <> • {t('accounts.lastSynced', { date: new Date(account.last_synced).toLocaleDateString() })}</>
-                          )}
-                          {account.excluded && (
-                            <> • <span className="text-muted-foreground italic">{t('accounts.excludedLabel')}</span></>
-                          )}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <p className={cn("font-semibold", Number(account.current_balance) < 0 && "text-expense")}>
-                        {new Intl.NumberFormat('en-CA', { style: 'currency', currency: account.currency }).format(Number(account.current_balance))}
-                      </p>
-                      {account.available_balance !== undefined && (
-                        <p className="text-xs text-muted-foreground">
-                          {t('accounts.available', {
-                            amount: new Intl.NumberFormat('en-CA', { style: 'currency', currency: account.currency }).format(account.available_balance)
-                          })}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                ))}
+                    ))}
+                  </SortableContext>
+                </DndContext>
               </CardContent>
             </Card>
           );
