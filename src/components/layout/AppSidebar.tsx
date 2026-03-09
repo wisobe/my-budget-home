@@ -14,6 +14,10 @@ import {
   Target,
   ClipboardList,
   Database,
+  RefreshCw,
+  Lightbulb,
+  Heart,
+  Calculator,
 } from 'lucide-react';
 import {
   Sidebar,
