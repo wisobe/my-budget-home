@@ -71,6 +71,7 @@ function fromApi(data: Record<string, string>): Partial<Preferences> {
   if (data.consent_data_storage !== undefined) { p.consentDataStorage = data.consent_data_storage === '1'; p.consentRecorded = true; }
   if (data.settings_expanded_sections !== undefined) p.settingsExpandedSections = data.settings_expanded_sections ? data.settings_expanded_sections.split(',') : [];
   if (data.sidebar_order !== undefined) p.sidebarOrder = data.sidebar_order ? data.sidebar_order.split(',') : [];
+  if (data.account_order !== undefined) p.accountOrder = data.account_order ? data.account_order.split(',') : [];
   return p;
 }
 
