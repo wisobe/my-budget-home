@@ -19,6 +19,7 @@ interface Preferences {
   settingsExpandedSections: string[];
   sidebarOrder: string[];
   accountOrder: string[];
+  accountGroupOrder: string[];
 }
 
 interface PreferencesContextType extends Preferences {
