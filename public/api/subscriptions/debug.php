@@ -30,6 +30,22 @@ $sql = "SELECT t.id as txn_id, t.plaid_transaction_id, t.name, t.merchant_name, 
         ORDER BY t.date DESC
         LIMIT 50";
 
+// Also search by account for transactions around expected dates
+$sqlByAccount = "SELECT t.id as txn_id, t.plaid_transaction_id, t.name, t.merchant_name, t.amount, t.date, t.pending, t.excluded,
+               a.excluded as account_excluded, a.id as account_id,
+               cat.name as category_name, cat.is_income,
+               c.plaid_environment
+        FROM transactions t
+        JOIN accounts a ON t.account_id = a.id
+        LEFT JOIN plaid_connections c ON a.plaid_connection_id = c.id
+        LEFT JOIN categories cat ON t.category_id = cat.id
+        WHERE a.user_id = :user_id
+          AND t.amount = 9.19
+          AND t.date >= '2025-12-01'
+        GROUP BY t.id
+        ORDER BY t.date DESC
+        LIMIT 50";
+
 $stmt = $pdo->prepare($sql);
 $stmt->execute([
     ':user_id' => $userId,
@@ -38,8 +54,12 @@ $stmt->execute([
 ]);
 $transactions = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
+// Run the amount-based search to find the missing transaction
+$stmt2 = $pdo->prepare($sqlByAccount);
+$stmt2->execute([':user_id' => $userId]);
+$amountMatches = $stmt2->fetchAll(PDO::FETCH_ASSOC);
+
 // Analyze why they might be filtered out
-$issues = [];
 foreach ($transactions as &$t) {
     $t['filter_reasons'] = [];
     if ($t['pending']) $t['filter_reasons'][] = 'pending=1';
@@ -56,8 +76,7 @@ foreach ($transactions as &$t) {
     if ($date < $cutoff) $t['filter_reasons'][] = 'older than 18 months';
 }
 
-// Also show what the normalization would produce
-// Inline normalization function (can't require index.php as it exits)
+// Inline normalization function
 function debugNormalizeMerchantKey($name) {
     $key = strtolower(trim($name));
     $key = preg_replace('/\s+(inc\.?|llc\.?|ltd\.?|co\.?|corp\.?|\.com|com)$/i', '', $key);
@@ -79,5 +98,6 @@ Response::success([
     'plaid_environment' => $plaidEnv,
     'total_found' => count($transactions),
     'transactions' => $transactions,
+    'amount_matches_919' => $amountMatches,
     'normalized_keys' => $normalizedKeys,
 ]);
