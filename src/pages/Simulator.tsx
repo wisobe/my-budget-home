@@ -28,7 +28,10 @@ const Simulator = () => {
   });
 
   const summary = healthData?.data?.summary;
-  const subscriptions = subData?.data?.subscriptions ?? [];
+  const subscriptions = useMemo(() => {
+    const all = subData?.data?.subscriptions ?? [];
+    return all.filter((s: any) => !s.dismissed);
+  }, [subData]);
 
   const [spendingAdjust, setSpendingAdjust] = useState(0); // % change
   const [extraSavings, setExtraSavings] = useState(0);
