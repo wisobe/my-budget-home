@@ -53,6 +53,7 @@ const defaults: Preferences = {
   settingsExpandedSections: [...ALL_SETTINGS_SECTIONS],
   sidebarOrder: [],
   accountOrder: [],
+  accountGroupOrder: [],
 };
 
 function fromApi(data: Record<string, string>): Partial<Preferences> {
