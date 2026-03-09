@@ -1,6 +1,6 @@
+import { useMemo } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { cn } from '@/lib/utils';
 import {
   LayoutDashboard,
   ArrowLeftRight,
@@ -18,7 +18,25 @@ import {
   Lightbulb,
   Heart,
   Calculator,
+  GripVertical,
 } from 'lucide-react';
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from '@dnd-kit/core';
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+  useSortable,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 import {
   Sidebar,
   SidebarContent,
@@ -29,9 +47,15 @@ import {
   SidebarMenuItem,
 } from '@/components/ui/sidebar';
 import { useAuth } from '@/contexts/AuthContext';
-import { Badge } from '@/components/ui/badge';
+import { usePreferences } from '@/contexts/PreferencesContext';
 
-const navigationKeys = [
+interface NavItem {
+  key: string;
+  href: string;
+  icon: React.ComponentType<{ className?: string }>;
+}
+
+const defaultNavigation: NavItem[] = [
   { key: 'nav.dashboard', href: '/', icon: LayoutDashboard },
   { key: 'nav.transactions', href: '/transactions', icon: ArrowLeftRight },
   { key: 'nav.budgets', href: '/budgets', icon: Target },
@@ -45,17 +69,93 @@ const navigationKeys = [
   { key: 'nav.settings', href: '/settings', icon: Settings },
 ];
 
-const adminNavigationKeys = [
+const adminNavigationKeys: NavItem[] = [
   { key: 'nav.users', href: '/admin/users', icon: Users },
   { key: 'nav.plaidConfig', href: '/admin/plaid', icon: Link2 },
   { key: 'nav.dbConnection', href: '/admin/backend', icon: Database },
   { key: 'nav.auditLog', href: '/admin/audit', icon: ClipboardList },
 ];
 
+function SortableNavItem({ item, isActive }: { item: NavItem; isActive: boolean }) {
+  const { t } = useTranslation();
+  const name = t(item.key);
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: item.key });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    zIndex: isDragging ? 10 : undefined,
+    opacity: isDragging ? 0.8 : undefined,
+  };
+
+  return (
+    <SidebarMenuItem ref={setNodeRef} style={style}>
+      <div className="flex items-center group/nav-item">
+        <button
+          {...attributes}
+          {...listeners}
+          className="opacity-0 group-hover/nav-item:opacity-60 hover:!opacity-100 cursor-grab active:cursor-grabbing p-1 text-sidebar-foreground/40 transition-opacity shrink-0"
+          tabIndex={-1}
+        >
+          <GripVertical className="h-3.5 w-3.5" />
+        </button>
+        <SidebarMenuButton
+          asChild
+          isActive={isActive}
+          tooltip={name}
+          className="flex-1"
+        >
+          <Link to={item.href}>
+            <item.icon className="h-5 w-5" />
+            <span>{name}</span>
+          </Link>
+        </SidebarMenuButton>
+      </div>
+    </SidebarMenuItem>
+  );
+}
+
 export function AppSidebar() {
   const { t } = useTranslation();
   const location = useLocation();
   const { logout, authEnabled, user, isAdmin } = useAuth();
+  const { sidebarOrder, setSidebarOrder } = usePreferences();
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
+  );
+
+  const sortedNavigation = useMemo(() => {
+    if (!sidebarOrder || sidebarOrder.length === 0) return defaultNavigation;
+    const ordered: NavItem[] = [];
+    for (const key of sidebarOrder) {
+      const item = defaultNavigation.find(n => n.key === key);
+      if (item) ordered.push(item);
+    }
+    // Append any new items not in saved order
+    for (const item of defaultNavigation) {
+      if (!ordered.find(n => n.key === item.key)) ordered.push(item);
+    }
+    return ordered;
+  }, [sidebarOrder]);
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+
+    const oldIndex = sortedNavigation.findIndex(n => n.key === active.id);
+    const newIndex = sortedNavigation.findIndex(n => n.key === over.id);
+    const newOrder = arrayMove(sortedNavigation, oldIndex, newIndex);
+    setSidebarOrder(newOrder.map(n => n.key));
+  };
 
   return (
     <Sidebar>
@@ -72,26 +172,26 @@ export function AppSidebar() {
       </SidebarHeader>
 
       <SidebarContent className="px-3 py-4">
-        <SidebarMenu>
-          {navigationKeys.map((item) => {
-            const isActive = location.pathname === item.href;
-            const name = t(item.key);
-            return (
-              <SidebarMenuItem key={item.key}>
-                <SidebarMenuButton
-                  asChild
-                  isActive={isActive}
-                  tooltip={name}
-                >
-                  <Link to={item.href}>
-                    <item.icon className="h-5 w-5" />
-                    <span>{name}</span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            );
-          })}
-        </SidebarMenu>
+        <DndContext
+          sensors={sensors}
+          collisionDetection={closestCenter}
+          onDragEnd={handleDragEnd}
+        >
+          <SortableContext
+            items={sortedNavigation.map(n => n.key)}
+            strategy={verticalListSortingStrategy}
+          >
+            <SidebarMenu>
+              {sortedNavigation.map((item) => (
+                <SortableNavItem
+                  key={item.key}
+                  item={item}
+                  isActive={location.pathname === item.href}
+                />
+              ))}
+            </SidebarMenu>
+          </SortableContext>
+        </DndContext>
 
         {isAdmin && (
           <div className="mt-4 pt-4 border-t border-sidebar-border">
