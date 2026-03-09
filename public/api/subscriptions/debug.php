@@ -30,6 +30,22 @@ $sql = "SELECT t.id as txn_id, t.plaid_transaction_id, t.name, t.merchant_name, 
         ORDER BY t.date DESC
         LIMIT 50";
 
+// Also search by account for transactions around expected dates
+$sqlByAccount = "SELECT t.id as txn_id, t.plaid_transaction_id, t.name, t.merchant_name, t.amount, t.date, t.pending, t.excluded,
+               a.excluded as account_excluded, a.id as account_id,
+               cat.name as category_name, cat.is_income,
+               c.plaid_environment
+        FROM transactions t
+        JOIN accounts a ON t.account_id = a.id
+        LEFT JOIN plaid_connections c ON a.plaid_connection_id = c.id
+        LEFT JOIN categories cat ON t.category_id = cat.id
+        WHERE a.user_id = :user_id
+          AND t.amount = 9.19
+          AND t.date >= '2025-12-01'
+        GROUP BY t.id
+        ORDER BY t.date DESC
+        LIMIT 50";
+
 $stmt = $pdo->prepare($sql);
 $stmt->execute([
     ':user_id' => $userId,
