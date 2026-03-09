@@ -14,6 +14,10 @@ import {
   Target,
   ClipboardList,
   Database,
+  RefreshCw,
+  Lightbulb,
+  Heart,
+  Calculator,
 } from 'lucide-react';
 import {
   Sidebar,
@@ -34,6 +38,10 @@ const navigationKeys = [
   { key: 'nav.reports', href: '/reports', icon: PieChart },
   { key: 'nav.accounts', href: '/accounts', icon: CreditCard },
   { key: 'nav.connections', href: '/connections', icon: Link2 },
+  { key: 'nav.subscriptions', href: '/subscriptions', icon: RefreshCw },
+  { key: 'nav.insights', href: '/insights', icon: Lightbulb },
+  { key: 'nav.healthScore', href: '/health-score', icon: Heart },
+  { key: 'nav.simulator', href: '/simulator', icon: Calculator },
   { key: 'nav.settings', href: '/settings', icon: Settings },
 ];
 

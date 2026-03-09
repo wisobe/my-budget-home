@@ -16,7 +16,11 @@
     "plaidConfig": "Plaid Configuration",
     "dbConnection": "Database Connection",
     "auditLog": "Audit Log",
-    "logout": "Logout"
+    "logout": "Logout",
+    "subscriptions": "Subscriptions",
+    "insights": "Insights",
+    "healthScore": "Health Score",
+    "simulator": "Simulator"
   },
   "auth": {
     "signIn": "Sign In",

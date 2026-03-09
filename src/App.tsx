@@ -19,6 +19,10 @@ import Reports from "./pages/Reports";
 import Accounts from "./pages/Accounts";
 import Connections from "./pages/Connections";
 import Settings from "./pages/Settings";
+import Subscriptions from "./pages/Subscriptions";
+import Insights from "./pages/Insights";
+import HealthScore from "./pages/HealthScore";
+import Simulator from "./pages/Simulator";
 import AdminUsers from "./pages/AdminUsers";
 import AdminPlaid from "./pages/AdminPlaid";
 import AdminBackend from "./pages/AdminBackend";
@@ -104,6 +108,10 @@ const App = () => (
                           <Route path="/reports" element={<Reports />} />
                           <Route path="/accounts" element={<Accounts />} />
                           <Route path="/connections" element={<Connections />} />
+                          <Route path="/subscriptions" element={<Subscriptions />} />
+                          <Route path="/insights" element={<Insights />} />
+                          <Route path="/health-score" element={<HealthScore />} />
+                          <Route path="/simulator" element={<Simulator />} />
                           <Route path="/settings" element={<Settings />} />
                           <Route path="/admin/users" element={<AdminUsers />} />
                           <Route path="/admin/plaid" element={<AdminPlaid />} />
