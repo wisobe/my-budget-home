@@ -16,12 +16,13 @@ $envWhere = "(pc.plaid_environment = :plaid_env OR a.plaid_connection_id IS NULL
 
 // ---- SAVINGS RATE (25 points) ----
 $sql = "SELECT
-          SUM(CASE WHEN t.amount < 0 THEN ABS(t.amount) ELSE 0 END) as total_income,
-          SUM(CASE WHEN t.amount > 0 THEN t.amount ELSE 0 END) as total_expenses
+          SUM(CASE WHEN cat.is_income = 1 THEN ABS(t.amount) ELSE 0 END) as total_income,
+          SUM(CASE WHEN (cat.is_income = 0 OR cat.is_income IS NULL) THEN t.amount ELSE 0 END) as total_expenses
         FROM transactions t
         JOIN accounts a ON t.account_id = a.id
         {$envJoin}
-        WHERE a.user_id = :user_id AND t.excluded = 0
+        LEFT JOIN categories cat ON t.category_id = cat.id
+        WHERE a.user_id = :user_id AND a.excluded = 0 AND t.excluded = 0 AND t.pending = 0
           AND t.date >= DATE_SUB(CURDATE(), INTERVAL 3 MONTH)
           AND {$envWhere}";
 $stmt = $pdo->prepare($sql);
