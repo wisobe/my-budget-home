@@ -163,13 +163,16 @@ foreach ($merchants as $key => $merchant) {
     if (!$matchedBucket) continue;
 
     // Strict variance check — max 20% deviation from expected interval
-    $variance = 0;
-    foreach ($intervals as $iv) {
-        $variance += pow($iv - $matchedBucket['days'], 2);
+    // Skip for merchants with ≤3 transactions (not enough data for reliable variance)
+    if (count($intervals) > 2) {
+        $variance = 0;
+        foreach ($intervals as $iv) {
+            $variance += pow($iv - $matchedBucket['days'], 2);
+        }
+        $stdDev = sqrt($variance / count($intervals));
+        $varianceThreshold = 0.20;
+        if ($stdDev > $matchedBucket['days'] * $varianceThreshold) continue;
     }
-    $stdDev = sqrt($variance / count($intervals));
-    $varianceThreshold = 0.20;
-    if ($stdDev > $matchedBucket['days'] * $varianceThreshold) continue;
 
     $amounts = array_column($txns, 'amount');
     $currentAmount = end($amounts);
