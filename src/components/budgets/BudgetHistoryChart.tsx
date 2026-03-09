@@ -46,10 +46,11 @@ function parseMonthLabel(monthStr: string): string {
 export function BudgetHistoryChart({ budget }: BudgetHistoryChartProps) {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const { environment } = usePlaidEnvironment();
 
   const { data, isLoading } = useQuery({
-    queryKey: ['budget-history', budget.category_id, budget.period],
-    queryFn: () => budgetsApi.history(budget.category_id, budget.period),
+    queryKey: ['budget-history', budget.category_id, budget.period, environment],
+    queryFn: () => budgetsApi.history(budget.category_id, budget.period, environment),
   });
 
   const months = data?.data ?? [];
