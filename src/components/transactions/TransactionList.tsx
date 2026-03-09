@@ -89,91 +89,87 @@ export function TransactionList() {
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-col gap-4">
-        <div className="flex flex-col sm:flex-row gap-4">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder={t('transactions.searchPlaceholder')}
-              value={search}
-              onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-              className="pl-9"
-            />
-          </div>
-          <Select value={categoryFilter} onValueChange={(v) => { setCategoryFilter(v); setPage(1); }}>
-            <SelectTrigger className="w-full sm:w-[200px]">
-              <SelectValue placeholder={t('transactions.allCategories')} />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">{t('transactions.allCategories')}</SelectItem>
-              <SelectItem value="uncategorized">{t('transactions.uncategorized')}</SelectItem>
-              {categories.filter(c => !c.parent_id).map(category => {
-                const children = categories.filter(c => c.parent_id === category.id);
-                return [
-                  <SelectItem key={category.id} value={category.id}>{category.name}</SelectItem>,
-                  ...children.map(child => (
-                    <SelectItem key={child.id} value={child.id}>
-                      <span className="pl-3 text-muted-foreground">↳ {child.name}</span>
-                    </SelectItem>
-                  )),
-                ];
-              })}
-            </SelectContent>
-          </Select>
-          <div className="flex items-center gap-2">
-            <Switch id="show-excluded" checked={showExcluded} onCheckedChange={setShowExcluded} />
-            <Label htmlFor="show-excluded" className="text-sm whitespace-nowrap">{t('transactions.showExcluded')}</Label>
-          </div>
+      <div className="flex flex-wrap gap-4 items-center">
+        <div className="relative w-full sm:w-[200px]">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder={t('transactions.searchPlaceholder')}
+            value={search}
+            onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+            className="pl-9"
+          />
         </div>
-        <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
-          <div className="flex items-center gap-2">
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button variant="outline" size="sm" className={cn("w-[150px] justify-start text-left font-normal", !startDate && "text-muted-foreground")}>
-                  <CalendarIcon className="mr-2 h-4 w-4" />
-                  {startDate ? format(startDate, 'MMM d, yyyy') : <span>{t('transactions.startDate')}</span>}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0" align="start">
-                <Calendar
-                  mode="single"
-                  selected={startDate}
-                  onSelect={(d) => { setStartDate(d); setPage(1); }}
-                  initialFocus
-                  className={cn("p-3 pointer-events-auto")}
-                />
-              </PopoverContent>
-            </Popover>
-            {startDate && (
-              <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => { setStartDate(undefined); setPage(1); }}>
-                <X className="h-3 w-3" />
+        <div className="flex items-center gap-2">
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="outline" size="sm" className={cn("w-[150px] justify-start text-left font-normal", !startDate && "text-muted-foreground")}>
+                <CalendarIcon className="mr-2 h-4 w-4" />
+                {startDate ? format(startDate, 'MMM d, yyyy') : <span>{t('transactions.startDate')}</span>}
               </Button>
-            )}
-          </div>
-          <div className="flex items-center gap-2">
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button variant="outline" size="sm" className={cn("w-[150px] justify-start text-left font-normal", !endDate && "text-muted-foreground")}>
-                  <CalendarIcon className="mr-2 h-4 w-4" />
-                  {endDate ? format(endDate, 'MMM d, yyyy') : <span>{t('transactions.endDate')}</span>}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0" align="start">
-                <Calendar
-                  mode="single"
-                  selected={endDate}
-                  onSelect={(d) => { setEndDate(d); setPage(1); }}
-                  initialFocus
-                  className={cn("p-3 pointer-events-auto")}
-                />
-              </PopoverContent>
-            </Popover>
-            {endDate && (
-              <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => { setEndDate(undefined); setPage(1); }}>
-                <X className="h-3 w-3" />
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="start">
+              <Calendar
+                mode="single"
+                selected={startDate}
+                onSelect={(d) => { setStartDate(d); setPage(1); }}
+                initialFocus
+                className={cn("p-3 pointer-events-auto")}
+              />
+            </PopoverContent>
+          </Popover>
+          {startDate && (
+            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => { setStartDate(undefined); setPage(1); }}>
+              <X className="h-3 w-3" />
+            </Button>
+          )}
+        </div>
+        <div className="flex items-center gap-2">
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="outline" size="sm" className={cn("w-[150px] justify-start text-left font-normal", !endDate && "text-muted-foreground")}>
+                <CalendarIcon className="mr-2 h-4 w-4" />
+                {endDate ? format(endDate, 'MMM d, yyyy') : <span>{t('transactions.endDate')}</span>}
               </Button>
-            )}
-          </div>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="start">
+              <Calendar
+                mode="single"
+                selected={endDate}
+                onSelect={(d) => { setEndDate(d); setPage(1); }}
+                initialFocus
+                className={cn("p-3 pointer-events-auto")}
+              />
+            </PopoverContent>
+          </Popover>
+          {endDate && (
+            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => { setEndDate(undefined); setPage(1); }}>
+              <X className="h-3 w-3" />
+            </Button>
+          )}
+        </div>
+        <Select value={categoryFilter} onValueChange={(v) => { setCategoryFilter(v); setPage(1); }}>
+          <SelectTrigger className="w-full sm:w-[200px]">
+            <SelectValue placeholder={t('transactions.allCategories')} />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">{t('transactions.allCategories')}</SelectItem>
+            <SelectItem value="uncategorized">{t('transactions.uncategorized')}</SelectItem>
+            {categories.filter(c => !c.parent_id).map(category => {
+              const children = categories.filter(c => c.parent_id === category.id);
+              return [
+                <SelectItem key={category.id} value={category.id}>{category.name}</SelectItem>,
+                ...children.map(child => (
+                  <SelectItem key={child.id} value={child.id}>
+                    <span className="pl-3 text-muted-foreground">↳ {child.name}</span>
+                  </SelectItem>
+                )),
+              ];
+            })}
+          </SelectContent>
+        </Select>
+        <div className="flex items-center gap-2">
+          <Switch id="show-excluded" checked={showExcluded} onCheckedChange={setShowExcluded} />
+          <Label htmlFor="show-excluded" className="text-sm whitespace-nowrap">{t('transactions.showExcluded')}</Label>
         </div>
       </div>
 
