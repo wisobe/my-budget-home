@@ -616,6 +616,22 @@ const Settings = () => {
               <CardContent className="pt-4 space-y-6">
                 <div className="flex items-center justify-between">
                   <div>
+                    <p className="font-medium">{t('settings.autoSyncTransactions')}</p>
+                    <p className="text-sm text-muted-foreground">{t('settings.syncOnLoad')}</p>
+                  </div>
+                  <Switch checked={autoSync} onCheckedChange={setAutoSync} />
+                </div>
+                <Separator />
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="font-medium">{t('settings.showPendingTransactions')}</p>
+                    <p className="text-sm text-muted-foreground">{t('settings.includePending')}</p>
+                  </div>
+                  <Switch checked={showPending} onCheckedChange={setShowPending} />
+                </div>
+                <Separator />
+                <div className="flex items-center justify-between">
+                  <div>
                     <p className="font-medium">{t('settings.theme')}</p>
                     <p className="text-sm text-muted-foreground">{t('settings.themeDesc')}</p>
                   </div>
@@ -629,22 +645,6 @@ const Settings = () => {
                       <SelectItem value="system">{t('settings.themeSystem')}</SelectItem>
                     </SelectContent>
                   </Select>
-                </div>
-                <Separator />
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="font-medium">{t('settings.autoSyncTransactions')}</p>
-                    <p className="text-sm text-muted-foreground">{t('settings.syncOnLoad')}</p>
-                  </div>
-                  <Switch checked={autoSync} onCheckedChange={setAutoSync} />
-                </div>
-                <Separator />
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="font-medium">{t('settings.showPendingTransactions')}</p>
-                    <p className="text-sm text-muted-foreground">{t('settings.includePending')}</p>
-                  </div>
-                  <Switch checked={showPending} onCheckedChange={setShowPending} />
                 </div>
                 <Separator />
                 <div className="flex items-center justify-between">
