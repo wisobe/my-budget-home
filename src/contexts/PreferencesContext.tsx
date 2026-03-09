@@ -34,6 +34,7 @@ interface PreferencesContextType extends Preferences {
   setConsentDataStorage: (v: boolean) => void;
   setSettingsExpandedSections: (v: string[]) => void;
   setSidebarOrder: (v: string[]) => void;
+  setAccountOrder: (v: string[]) => void;
   isLoaded: boolean;
 }
 
