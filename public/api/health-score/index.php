@@ -43,7 +43,9 @@ $sql2 = "SELECT COUNT(*) as total_budgets,
            FROM transactions t
            JOIN accounts a ON t.account_id = a.id
            {$envJoin}
-           WHERE a.user_id = :user_id2 AND t.excluded = 0 AND t.amount > 0
+           LEFT JOIN categories cat ON t.category_id = cat.id
+           WHERE a.user_id = :user_id2 AND a.excluded = 0 AND t.excluded = 0 AND t.pending = 0
+             AND (cat.is_income = 0 OR cat.is_income IS NULL)
              AND t.date >= DATE_FORMAT(CURDATE(), '%Y-%m-01')
              AND (pc.plaid_environment = :plaid_env2 OR a.plaid_connection_id IS NULL)
            GROUP BY t.category_id
