@@ -52,8 +52,7 @@ foreach ($transactions as &$t) {
 }
 
 // Also show what the normalization would produce
-require_once __DIR__ . '/index.php';
-// Can't require index.php as it exits, so inline the function
+// Inline normalization function (can't require index.php as it exits)
 function debugNormalizeMerchantKey($name) {
     $key = strtolower(trim($name));
     $key = preg_replace('/\s+(inc\.?|llc\.?|ltd\.?|co\.?|corp\.?|\.com|com)$/i', '', $key);
