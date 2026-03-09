@@ -18,6 +18,7 @@ interface Preferences {
   consentRecorded: boolean;
   settingsExpandedSections: string[];
   sidebarOrder: string[];
+  accountOrder: string[];
 }
 
 interface PreferencesContextType extends Preferences {
@@ -33,6 +34,7 @@ interface PreferencesContextType extends Preferences {
   setConsentDataStorage: (v: boolean) => void;
   setSettingsExpandedSections: (v: string[]) => void;
   setSidebarOrder: (v: string[]) => void;
+  setAccountOrder: (v: string[]) => void;
   isLoaded: boolean;
 }
 
@@ -48,6 +50,7 @@ const defaults: Preferences = {
   consentRecorded: false,
   settingsExpandedSections: [...ALL_SETTINGS_SECTIONS],
   sidebarOrder: [],
+  accountOrder: [],
 };
 
 function fromApi(data: Record<string, string>): Partial<Preferences> {
@@ -68,6 +71,7 @@ function fromApi(data: Record<string, string>): Partial<Preferences> {
   if (data.consent_data_storage !== undefined) { p.consentDataStorage = data.consent_data_storage === '1'; p.consentRecorded = true; }
   if (data.settings_expanded_sections !== undefined) p.settingsExpandedSections = data.settings_expanded_sections ? data.settings_expanded_sections.split(',') : [];
   if (data.sidebar_order !== undefined) p.sidebarOrder = data.sidebar_order ? data.sidebar_order.split(',') : [];
+  if (data.account_order !== undefined) p.accountOrder = data.account_order ? data.account_order.split(',') : [];
   return p;
 }
 
@@ -83,6 +87,7 @@ function toApi(prefs: Preferences): Record<string, string> {
     consent_data_storage: prefs.consentDataStorage ? '1' : '0',
     settings_expanded_sections: prefs.settingsExpandedSections.join(','),
     sidebar_order: prefs.sidebarOrder.join(','),
+    account_order: prefs.accountOrder.join(','),
   };
 }
 
@@ -178,9 +183,10 @@ export function PreferencesProvider({ children }: { children: React.ReactNode })
   const setConsentDataStorage = useCallback((v: boolean) => setPrefs(p => ({ ...p, consentDataStorage: v, consentRecorded: true })), []);
   const setSettingsExpandedSections = useCallback((v: string[]) => setPrefs(p => ({ ...p, settingsExpandedSections: v })), []);
   const setSidebarOrder = useCallback((v: string[]) => setPrefs(p => ({ ...p, sidebarOrder: v })), []);
+  const setAccountOrder = useCallback((v: string[]) => setPrefs(p => ({ ...p, accountOrder: v })), []);
 
   return (
-    <PreferencesContext.Provider value={{ ...prefs, darkMode, setThemeMode, setDarkMode, setAutoSync, setShowPending, setLanguage, setBalanceAccounts, setConsentDataCollection, setConsentDataProcessing, setConsentDataStorage, setSettingsExpandedSections, setSidebarOrder, isLoaded }}>
+    <PreferencesContext.Provider value={{ ...prefs, darkMode, setThemeMode, setDarkMode, setAutoSync, setShowPending, setLanguage, setBalanceAccounts, setConsentDataCollection, setConsentDataProcessing, setConsentDataStorage, setSettingsExpandedSections, setSidebarOrder, setAccountOrder, isLoaded }}>
       {children}
     </PreferencesContext.Provider>
   );
