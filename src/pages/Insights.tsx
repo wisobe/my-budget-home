@@ -32,7 +32,7 @@ const typeIcons: Record<string, typeof AlertTriangle> = {
 
 const Insights = () => {
   const { t } = useTranslation();
-  const { environment } = usePlaidEnvironment();
+  const { plaidEnvironment: environment } = usePlaidEnvironment();
 
   const { data, isLoading } = useQuery({
     queryKey: ['insights', environment],

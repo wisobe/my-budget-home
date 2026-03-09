@@ -41,7 +41,7 @@ const scoreColor = (score: number) => {
 
 const HealthScore = () => {
   const { t } = useTranslation();
-  const { environment } = usePlaidEnvironment();
+  const { plaidEnvironment: environment } = usePlaidEnvironment();
 
   const { data, isLoading } = useQuery({
     queryKey: ['health-score', environment],

@@ -15,7 +15,7 @@ import { Label } from '@/components/ui/label';
 
 const Simulator = () => {
   const { t } = useTranslation();
-  const { environment } = usePlaidEnvironment();
+  const { plaidEnvironment: environment } = usePlaidEnvironment();
 
   const { data: healthData, isLoading: healthLoading } = useQuery({
     queryKey: ['health-score', environment],

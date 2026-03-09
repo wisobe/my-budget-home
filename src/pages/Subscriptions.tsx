@@ -38,7 +38,7 @@ interface SubscriptionData {
 
 const Subscriptions = () => {
   const { t } = useTranslation();
-  const { environment } = usePlaidEnvironment();
+  const { plaidEnvironment: environment } = usePlaidEnvironment();
 
   const { data, isLoading } = useQuery({
     queryKey: ['subscriptions', environment],
