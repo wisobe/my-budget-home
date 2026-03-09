@@ -64,7 +64,9 @@ $sql3 = "SELECT DATE_FORMAT(t.date, '%Y-%m') as month, SUM(t.amount) as total
          FROM transactions t
          JOIN accounts a ON t.account_id = a.id
          {$envJoin}
-         WHERE a.user_id = :user_id AND t.excluded = 0 AND t.amount > 0
+         LEFT JOIN categories cat ON t.category_id = cat.id
+         WHERE a.user_id = :user_id AND a.excluded = 0 AND t.excluded = 0 AND t.pending = 0
+           AND (cat.is_income = 0 OR cat.is_income IS NULL)
            AND t.date >= DATE_SUB(CURDATE(), INTERVAL 6 MONTH)
            AND {$envWhere}
          GROUP BY DATE_FORMAT(t.date, '%Y-%m')
