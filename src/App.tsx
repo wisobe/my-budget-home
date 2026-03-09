@@ -108,6 +108,10 @@ const App = () => (
                           <Route path="/reports" element={<Reports />} />
                           <Route path="/accounts" element={<Accounts />} />
                           <Route path="/connections" element={<Connections />} />
+                          <Route path="/subscriptions" element={<Subscriptions />} />
+                          <Route path="/insights" element={<Insights />} />
+                          <Route path="/health-score" element={<HealthScore />} />
+                          <Route path="/simulator" element={<Simulator />} />
                           <Route path="/settings" element={<Settings />} />
                           <Route path="/admin/users" element={<AdminUsers />} />
                           <Route path="/admin/plaid" element={<AdminPlaid />} />
