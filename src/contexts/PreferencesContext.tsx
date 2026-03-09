@@ -19,6 +19,7 @@ interface Preferences {
   settingsExpandedSections: string[];
   sidebarOrder: string[];
   accountOrder: string[];
+  accountGroupOrder: string[];
 }
 
 interface PreferencesContextType extends Preferences {
@@ -35,6 +36,7 @@ interface PreferencesContextType extends Preferences {
   setSettingsExpandedSections: (v: string[]) => void;
   setSidebarOrder: (v: string[]) => void;
   setAccountOrder: (v: string[]) => void;
+  setAccountGroupOrder: (v: string[]) => void;
   isLoaded: boolean;
 }
 
@@ -51,6 +53,7 @@ const defaults: Preferences = {
   settingsExpandedSections: [...ALL_SETTINGS_SECTIONS],
   sidebarOrder: [],
   accountOrder: [],
+  accountGroupOrder: [],
 };
 
 function fromApi(data: Record<string, string>): Partial<Preferences> {
@@ -72,6 +75,7 @@ function fromApi(data: Record<string, string>): Partial<Preferences> {
   if (data.settings_expanded_sections !== undefined) p.settingsExpandedSections = data.settings_expanded_sections ? data.settings_expanded_sections.split(',') : [];
   if (data.sidebar_order !== undefined) p.sidebarOrder = data.sidebar_order ? data.sidebar_order.split(',') : [];
   if (data.account_order !== undefined) p.accountOrder = data.account_order ? data.account_order.split(',') : [];
+  if (data.account_group_order !== undefined) p.accountGroupOrder = data.account_group_order ? data.account_group_order.split(',') : [];
   return p;
 }
 
@@ -88,6 +92,7 @@ function toApi(prefs: Preferences): Record<string, string> {
     settings_expanded_sections: prefs.settingsExpandedSections.join(','),
     sidebar_order: prefs.sidebarOrder.join(','),
     account_order: prefs.accountOrder.join(','),
+    account_group_order: prefs.accountGroupOrder.join(','),
   };
 }
 
@@ -184,9 +189,10 @@ export function PreferencesProvider({ children }: { children: React.ReactNode })
   const setSettingsExpandedSections = useCallback((v: string[]) => setPrefs(p => ({ ...p, settingsExpandedSections: v })), []);
   const setSidebarOrder = useCallback((v: string[]) => setPrefs(p => ({ ...p, sidebarOrder: v })), []);
   const setAccountOrder = useCallback((v: string[]) => setPrefs(p => ({ ...p, accountOrder: v })), []);
+  const setAccountGroupOrder = useCallback((v: string[]) => setPrefs(p => ({ ...p, accountGroupOrder: v })), []);
 
   return (
-    <PreferencesContext.Provider value={{ ...prefs, darkMode, setThemeMode, setDarkMode, setAutoSync, setShowPending, setLanguage, setBalanceAccounts, setConsentDataCollection, setConsentDataProcessing, setConsentDataStorage, setSettingsExpandedSections, setSidebarOrder, setAccountOrder, isLoaded }}>
+    <PreferencesContext.Provider value={{ ...prefs, darkMode, setThemeMode, setDarkMode, setAutoSync, setShowPending, setLanguage, setBalanceAccounts, setConsentDataCollection, setConsentDataProcessing, setConsentDataStorage, setSettingsExpandedSections, setSidebarOrder, setAccountOrder, setAccountGroupOrder, isLoaded }}>
       {children}
     </PreferencesContext.Provider>
   );
