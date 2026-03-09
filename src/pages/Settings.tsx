@@ -740,23 +740,26 @@ const Settings = () => {
               <CardContent className="pt-4 space-y-4">
                 <PrivacyConsentSettings />
                 <Separator />
-                <div className="flex flex-col gap-2">
-                  <Link to="/privacy" className="text-sm text-primary hover:underline inline-flex items-center gap-1">
-                    <ShieldCheck className="h-4 w-4" />
-                    {t('privacy.viewPolicy')}
-                  </Link>
-                  <Link to="/security-policy" className="text-sm text-primary hover:underline inline-flex items-center gap-1">
-                    <ShieldCheck className="h-4 w-4" />
-                    {t('securityPolicy.viewPolicy')}
-                  </Link>
-                  <Link to="/access-control-policy" className="text-sm text-primary hover:underline inline-flex items-center gap-1">
-                    <ShieldCheck className="h-4 w-4" />
-                    {t('accessControlPolicy.viewPolicy')}
-                  </Link>
-                  <Link to="/data-retention-policy" className="text-sm text-primary hover:underline inline-flex items-center gap-1">
-                    <ShieldCheck className="h-4 w-4" />
-                    {t('dataRetentionPolicy.viewPolicy')}
-                  </Link>
+                <div className="rounded-lg border border-border bg-muted/30 p-4">
+                  <h4 className="text-sm font-semibold mb-3">{t('settings.policies', 'Policies')}</h4>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    <Link to="/privacy" className="flex items-center gap-2 rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground hover:bg-accent transition-colors">
+                      <ShieldCheck className="h-4 w-4 text-muted-foreground" />
+                      {t('privacy.viewPolicy')}
+                    </Link>
+                    <Link to="/security-policy" className="flex items-center gap-2 rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground hover:bg-accent transition-colors">
+                      <ShieldCheck className="h-4 w-4 text-muted-foreground" />
+                      {t('securityPolicy.viewPolicy')}
+                    </Link>
+                    <Link to="/access-control-policy" className="flex items-center gap-2 rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground hover:bg-accent transition-colors">
+                      <ShieldCheck className="h-4 w-4 text-muted-foreground" />
+                      {t('accessControlPolicy.viewPolicy')}
+                    </Link>
+                    <Link to="/data-retention-policy" className="flex items-center gap-2 rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground hover:bg-accent transition-colors">
+                      <ShieldCheck className="h-4 w-4 text-muted-foreground" />
+                      {t('dataRetentionPolicy.viewPolicy')}
+                    </Link>
+                  </div>
                 </div>
               </CardContent>
             </AccordionContent>
