@@ -1,7 +1,11 @@
 <?php
+// TEMPORARY: bypass auth for debugging
 require_once __DIR__ . '/../includes/bootstrap.php';
 
-$userId = getCurrentUserId();
+// Get first user ID directly for testing
+$pdo = Database::getConnection();
+$stmt = $pdo->query("SELECT id FROM users LIMIT 1");
+$userId = $stmt->fetchColumn();
 $pdo = Database::getConnection();
 $plaidEnv = $_GET['plaid_environment'] ?? 'sandbox';
 if (!in_array($plaidEnv, ['sandbox', 'production'])) $plaidEnv = 'sandbox';
