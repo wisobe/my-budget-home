@@ -1,0 +1,84 @@
+import { useTranslation } from 'react-i18next';
+import { AppLayout } from '@/components/layout/AppLayout';
+import { Card, CardContent } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
+import { usePlaidEnvironment } from '@/contexts/PlaidEnvironmentContext';
+import { useQuery } from '@tanstack/react-query';
+import { insightsApi } from '@/lib/api';
+import { AlertTriangle, TrendingUp, TrendingDown, ShieldAlert, Copy, Banknote, Info, Lightbulb } from 'lucide-react';
+
+interface Insight {
+  type: string;
+  severity: 'critical' | 'warning' | 'positive' | 'info';
+  title: string;
+  description: string;
+  data: Record<string, unknown>;
+}
+
+const severityConfig = {
+  critical: { color: 'text-destructive', bg: 'bg-destructive/10', border: 'border-destructive/30', icon: ShieldAlert },
+  warning: { color: 'text-orange-600 dark:text-orange-400', bg: 'bg-orange-500/10', border: 'border-orange-500/30', icon: AlertTriangle },
+  positive: { color: 'text-green-600 dark:text-green-400', bg: 'bg-green-500/10', border: 'border-green-500/30', icon: TrendingUp },
+  info: { color: 'text-primary', bg: 'bg-primary/10', border: 'border-primary/30', icon: Info },
+};
+
+const typeIcons: Record<string, typeof AlertTriangle> = {
+  unusual_merchant: ShieldAlert,
+  salary_change: Banknote,
+  spending_spike: TrendingUp,
+  duplicate_charge: Copy,
+  large_transaction: Banknote,
+};
+
+const Insights = () => {
+  const { t } = useTranslation();
+  const { environment } = usePlaidEnvironment();
+
+  const { data, isLoading } = useQuery({
+    queryKey: ['insights', environment],
+    queryFn: () => insightsApi.list(environment),
+  });
+
+  const insights: Insight[] = data?.data ?? [];
+
+  return (
+    <AppLayout title={t('insights.title', 'Insights')}>
+      {isLoading ? (
+        <div className="space-y-4">
+          {[1, 2, 3].map(i => <Skeleton key={i} className="h-20" />)}
+        </div>
+      ) : insights.length === 0 ? (
+        <Card>
+          <CardContent className="flex flex-col items-center justify-center py-16">
+            <Lightbulb className="h-12 w-12 text-muted-foreground mb-4" />
+            <p className="text-lg font-medium text-foreground">No insights right now</p>
+            <p className="text-sm text-muted-foreground mt-1">Everything looks normal. Check back later!</p>
+          </CardContent>
+        </Card>
+      ) : (
+        <div className="space-y-3">
+          <p className="text-sm text-muted-foreground">{insights.length} insight{insights.length !== 1 ? 's' : ''} found based on your recent activity</p>
+          {insights.map((insight, i) => {
+            const config = severityConfig[insight.severity];
+            const Icon = typeIcons[insight.type] || config.icon;
+            return (
+              <Card key={i} className={`border ${config.border}`}>
+                <CardContent className="flex items-start gap-4 py-4">
+                  <div className={`h-10 w-10 rounded-lg ${config.bg} flex items-center justify-center shrink-0 mt-0.5`}>
+                    <Icon className={`h-5 w-5 ${config.color}`} />
+                  </div>
+                  <div className="min-w-0">
+                    <p className={`font-semibold ${config.color}`}>{insight.title}</p>
+                    <p className="text-sm text-muted-foreground mt-0.5">{insight.description}</p>
+                  </div>
+                </CardContent>
+              </Card>
+            );
+          })}
+        </div>
+      )}
+    </AppLayout>
+  );
+};
+
+export default Insights;
