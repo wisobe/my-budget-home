@@ -106,8 +106,14 @@ foreach ($transactions as $t) {
             'category_name' => $t['category_name'],
             'category_color' => $t['category_color'],
             'transactions' => [],
+            '_seen' => [],
         ];
     }
+    // Deduplicate: skip if same date + same amount already seen for this merchant
+    $dedupeKey = $t['date'] . '|' . abs((float)$t['amount']);
+    if (in_array($dedupeKey, $merchants[$key]['_seen'])) continue;
+    $merchants[$key]['_seen'][] = $dedupeKey;
+
     $merchants[$key]['transactions'][] = [
         'amount' => abs((float)$t['amount']),
         'date' => $t['date'],
