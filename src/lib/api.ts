@@ -403,6 +403,11 @@ export const auditApi = {
 export const subscriptionsApi = {
   list: (plaid_environment?: string) =>
     request<ApiResponse<any>>(`/subscriptions/${plaid_environment ? `?plaid_environment=${plaid_environment}` : ''}`),
+  dismiss: (merchant_key: string, dismiss: boolean, plaid_environment?: string) =>
+    request<ApiResponse<any>>(`/subscriptions/${plaid_environment ? `?plaid_environment=${plaid_environment}` : ''}`, {
+      method: 'POST',
+      body: JSON.stringify({ merchant_key, dismiss }),
+    }),
 };
 
 // ============ Insights API ============
