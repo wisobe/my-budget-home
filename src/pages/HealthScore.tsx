@@ -87,16 +87,17 @@ const HealthScore = () => {
                 </div>
               </div>
               <p className="mt-4 text-muted-foreground text-sm">Your Financial Health Score</p>
+              <p className="text-xs text-muted-foreground mt-1">Based on the last 3 months of transaction data</p>
 
               {/* Quick Summary */}
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-8 w-full max-w-2xl">
                 <div className="text-center">
-                  <p className="text-xs text-muted-foreground">Monthly Income</p>
-                  <p className="text-lg font-semibold">${health.summary.monthly_income.toLocaleString()}</p>
+                  <p className="text-xs text-muted-foreground">Avg. Monthly Income</p>
+                  <p className="text-lg font-semibold">${Number(health.summary.monthly_income).toLocaleString('en-CA', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
                 </div>
                 <div className="text-center">
-                  <p className="text-xs text-muted-foreground">Monthly Expenses</p>
-                  <p className="text-lg font-semibold">${health.summary.monthly_expenses.toLocaleString()}</p>
+                  <p className="text-xs text-muted-foreground">Avg. Monthly Expenses</p>
+                  <p className="text-lg font-semibold">${Number(health.summary.monthly_expenses).toLocaleString('en-CA', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
                 </div>
                 <div className="text-center">
                   <p className="text-xs text-muted-foreground">Savings Rate</p>
@@ -105,12 +106,13 @@ const HealthScore = () => {
                 <div className="text-center">
                   <p className="text-xs text-muted-foreground">Debt Ratio</p>
                   <p className="text-lg font-semibold">
-                    {health.summary.total_assets + health.summary.total_debt > 0
-                      ? ((health.summary.total_debt / (health.summary.total_assets + health.summary.total_debt)) * 100).toFixed(1)
+                    {Number(health.summary.total_assets) + Number(health.summary.total_debt) > 0
+                      ? ((Number(health.summary.total_debt) / (Number(health.summary.total_assets) + Number(health.summary.total_debt))) * 100).toFixed(1)
                       : '0'}%
                   </p>
                 </div>
               </div>
+              <p className="text-xs text-muted-foreground mt-3">Income and expenses are averaged over the last 3 months. Pending transactions are excluded.</p>
             </CardContent>
           </Card>
 
