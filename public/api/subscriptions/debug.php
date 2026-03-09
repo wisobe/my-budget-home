@@ -54,8 +54,12 @@ $stmt->execute([
 ]);
 $transactions = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
+// Run the amount-based search to find the missing transaction
+$stmt2 = $pdo->prepare($sqlByAccount);
+$stmt2->execute([':user_id' => $userId]);
+$amountMatches = $stmt2->fetchAll(PDO::FETCH_ASSOC);
+
 // Analyze why they might be filtered out
-$issues = [];
 foreach ($transactions as &$t) {
     $t['filter_reasons'] = [];
     if ($t['pending']) $t['filter_reasons'][] = 'pending=1';
@@ -72,8 +76,7 @@ foreach ($transactions as &$t) {
     if ($date < $cutoff) $t['filter_reasons'][] = 'older than 18 months';
 }
 
-// Also show what the normalization would produce
-// Inline normalization function (can't require index.php as it exits)
+// Inline normalization function
 function debugNormalizeMerchantKey($name) {
     $key = strtolower(trim($name));
     $key = preg_replace('/\s+(inc\.?|llc\.?|ltd\.?|co\.?|corp\.?|\.com|com)$/i', '', $key);
@@ -95,5 +98,6 @@ Response::success([
     'plaid_environment' => $plaidEnv,
     'total_found' => count($transactions),
     'transactions' => $transactions,
+    'amount_matches_919' => $amountMatches,
     'normalized_keys' => $normalizedKeys,
 ]);
