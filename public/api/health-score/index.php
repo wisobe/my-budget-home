@@ -7,14 +7,12 @@ if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
 
 $userId = getCurrentUserId();
 $pdo = Database::getConnection();
-$plaidEnv = $_GET['plaid_environment'] ?? null;
+$plaidEnv = $_GET['plaid_environment'] ?? 'sandbox';
+if (!in_array($plaidEnv, ['sandbox', 'production'])) $plaidEnv = 'sandbox';
 
-$envFilter = '';
-$params = [':user_id' => $userId];
-if ($plaidEnv) {
-    $envFilter = ' AND a.plaid_environment = :plaid_env';
-    $params[':plaid_env'] = $plaidEnv;
-}
+// Common join/filter pattern matching existing codebase
+$envJoin = "LEFT JOIN plaid_connections pc ON a.plaid_connection_id = pc.id";
+$envWhere = "(pc.plaid_environment = :plaid_env OR a.plaid_connection_id IS NULL)";
 
 // ---- SAVINGS RATE (25 points) ----
 $sql = "SELECT
@@ -22,10 +20,12 @@ $sql = "SELECT
           SUM(CASE WHEN t.amount > 0 THEN t.amount ELSE 0 END) as total_expenses
         FROM transactions t
         JOIN accounts a ON t.account_id = a.id
+        {$envJoin}
         WHERE a.user_id = :user_id AND t.excluded = 0
-          AND t.date >= DATE_SUB(CURDATE(), INTERVAL 3 MONTH) {$envFilter}";
+          AND t.date >= DATE_SUB(CURDATE(), INTERVAL 3 MONTH)
+          AND {$envWhere}";
 $stmt = $pdo->prepare($sql);
-$stmt->execute($params);
+$stmt->execute([':user_id' => $userId, ':plaid_env' => $plaidEnv]);
 $flow = $stmt->fetch(PDO::FETCH_ASSOC);
 
 $income = (float)($flow['total_income'] ?? 0);
@@ -41,18 +41,15 @@ $sql2 = "SELECT COUNT(*) as total_budgets,
            SELECT t.category_id, SUM(t.amount) as spent
            FROM transactions t
            JOIN accounts a ON t.account_id = a.id
+           {$envJoin}
            WHERE a.user_id = :user_id2 AND t.excluded = 0 AND t.amount > 0
              AND t.date >= DATE_FORMAT(CURDATE(), '%Y-%m-01')
+             AND (pc.plaid_environment = :plaid_env2 OR a.plaid_connection_id IS NULL)
            GROUP BY t.category_id
          ) bv ON bv.category_id = b.category_id
-         WHERE b.user_id = :user_id3";
-$params2 = [':user_id2' => $userId, ':user_id3' => $userId];
-if ($plaidEnv) {
-    $sql2 .= " AND b.plaid_environment = :plaid_env2";
-    $params2[':plaid_env2'] = $plaidEnv;
-}
+         WHERE b.user_id = :user_id3 AND b.plaid_environment = :plaid_env3";
 $stmt2 = $pdo->prepare($sql2);
-$stmt2->execute($params2);
+$stmt2->execute([':user_id2' => $userId, ':plaid_env2' => $plaidEnv, ':user_id3' => $userId, ':plaid_env3' => $plaidEnv]);
 $budgetData = $stmt2->fetch(PDO::FETCH_ASSOC);
 
 $totalBudgets = (int)($budgetData['total_budgets'] ?? 0);
@@ -63,13 +60,16 @@ $budgetScore = $totalBudgets > 0 ? round(($withinBudget / $totalBudgets) * 20) :
 $sql3 = "SELECT DATE_FORMAT(t.date, '%Y-%m') as month, SUM(t.amount) as total
          FROM transactions t
          JOIN accounts a ON t.account_id = a.id
+         {$envJoin}
          WHERE a.user_id = :user_id AND t.excluded = 0 AND t.amount > 0
-           AND t.date >= DATE_SUB(CURDATE(), INTERVAL 6 MONTH) {$envFilter}
+           AND t.date >= DATE_SUB(CURDATE(), INTERVAL 6 MONTH)
+           AND {$envWhere}
          GROUP BY DATE_FORMAT(t.date, '%Y-%m')
          ORDER BY month";
 $stmt3 = $pdo->prepare($sql3);
-$stmt3->execute($params);
-$monthlyExpenses = array_map('floatval', $stmt3->fetchAll(PDO::FETCH_COLUMN, 1));
+$stmt3->execute([':user_id' => $userId, ':plaid_env' => $plaidEnv]);
+$rows3 = $stmt3->fetchAll(PDO::FETCH_ASSOC);
+$monthlyExpenses = array_map(fn($r) => (float)$r['total'], $rows3);
 
 $stabilityScore = 15;
 if (count($monthlyExpenses) >= 3) {
@@ -88,13 +88,16 @@ if (count($monthlyExpenses) >= 3) {
 $sql4 = "SELECT DATE_FORMAT(t.date, '%Y-%m') as month, SUM(ABS(t.amount)) as total
          FROM transactions t
          JOIN accounts a ON t.account_id = a.id
+         {$envJoin}
          WHERE a.user_id = :user_id AND t.excluded = 0 AND t.amount < 0
-           AND t.date >= DATE_SUB(CURDATE(), INTERVAL 6 MONTH) {$envFilter}
+           AND t.date >= DATE_SUB(CURDATE(), INTERVAL 6 MONTH)
+           AND {$envWhere}
          GROUP BY DATE_FORMAT(t.date, '%Y-%m')
          ORDER BY month";
 $stmt4 = $pdo->prepare($sql4);
-$stmt4->execute($params);
-$monthlyIncome = array_map('floatval', $stmt4->fetchAll(PDO::FETCH_COLUMN, 1));
+$stmt4->execute([':user_id' => $userId, ':plaid_env' => $plaidEnv]);
+$rows4 = $stmt4->fetchAll(PDO::FETCH_ASSOC);
+$monthlyIncome = array_map(fn($r) => (float)$r['total'], $rows4);
 
 $incomeScore = 15;
 if (count($monthlyIncome) >= 3) {
@@ -116,14 +119,11 @@ $sql5 = "SELECT
            SUM(CASE WHEN a.type IN ('credit', 'loan') THEN ABS(a.current_balance) ELSE 0 END) as total_debt,
            SUM(CASE WHEN a.type IN ('checking', 'savings', 'depository') THEN a.current_balance ELSE 0 END) as total_assets
          FROM accounts a
-         WHERE a.user_id = :user_id5 AND a.excluded = 0";
-$params5 = [':user_id5' => $userId];
-if ($plaidEnv) {
-    $sql5 .= " AND a.plaid_environment = :plaid_env5";
-    $params5[':plaid_env5'] = $plaidEnv;
-}
+         {$envJoin}
+         WHERE a.user_id = :user_id5 AND a.excluded = 0
+           AND (pc.plaid_environment = :plaid_env5 OR a.plaid_connection_id IS NULL)";
 $stmt5 = $pdo->prepare($sql5);
-$stmt5->execute($params5);
+$stmt5->execute([':user_id5' => $userId, ':plaid_env5' => $plaidEnv]);
 $balances = $stmt5->fetch(PDO::FETCH_ASSOC);
 
 $totalDebt = (float)($balances['total_debt'] ?? 0);
@@ -135,20 +135,20 @@ $debtScore = max(0, min(15, round((1 - $debtRatio / 0.5) * 15)));
 $sql6 = "SELECT COUNT(DISTINCT t.category_id) as cat_count
          FROM transactions t
          JOIN accounts a ON t.account_id = a.id
+         {$envJoin}
          WHERE a.user_id = :user_id AND t.excluded = 0 AND t.amount > 0
            AND t.date >= DATE_SUB(CURDATE(), INTERVAL 3 MONTH)
-           AND t.category_id IS NOT NULL {$envFilter}";
+           AND t.category_id IS NOT NULL
+           AND {$envWhere}";
 $stmt6 = $pdo->prepare($sql6);
-$stmt6->execute($params);
+$stmt6->execute([':user_id' => $userId, ':plaid_env' => $plaidEnv]);
 $diversity = $stmt6->fetch(PDO::FETCH_ASSOC);
 
 $catCount = (int)($diversity['cat_count'] ?? 0);
 $diversityScore = min(10, round($catCount / 5 * 10));
 
-// Total score
 $totalScore = $savingsScore + $budgetScore + $stabilityScore + $incomeScore + $debtScore + $diversityScore;
 
-// Generate tips
 $tips = [];
 if ($savingsRate < 0.10) $tips[] = ['type' => 'savings', 'text' => 'Try to save at least 10-20% of your income each month.'];
 if ($totalBudgets === 0) $tips[] = ['type' => 'budget', 'text' => 'Set up budgets to track spending limits by category.'];
