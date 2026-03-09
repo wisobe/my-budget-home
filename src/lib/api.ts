@@ -348,9 +348,9 @@ export const budgetsApi = {
       body: JSON.stringify({ id, plaid_environment }),
     }),
 
-  history: (category_id: string, period: string) =>
+  history: (category_id: string, period: string, plaid_environment?: string) =>
     request<ApiResponse<{ month: string; spent: number }[]>>(
-      `/budgets/history.php?category_id=${category_id}&period=${period}`
+      `/budgets/history.php?category_id=${category_id}&period=${period}${plaid_environment ? `&plaid_environment=${plaid_environment}` : ''}`
     ),
 };
 

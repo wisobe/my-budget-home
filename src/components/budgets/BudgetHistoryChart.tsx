@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
+import { usePlaidEnvironment } from '@/contexts/PlaidEnvironmentContext';
 import { useQuery } from '@tanstack/react-query';
 import {
   BarChart,
@@ -45,10 +46,11 @@ function parseMonthLabel(monthStr: string): string {
 export function BudgetHistoryChart({ budget }: BudgetHistoryChartProps) {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const { plaidEnvironment } = usePlaidEnvironment();
 
   const { data, isLoading } = useQuery({
-    queryKey: ['budget-history', budget.category_id, budget.period],
-    queryFn: () => budgetsApi.history(budget.category_id, budget.period),
+    queryKey: ['budget-history', budget.category_id, budget.period, plaidEnvironment],
+    queryFn: () => budgetsApi.history(budget.category_id, budget.period, plaidEnvironment),
   });
 
   const months = data?.data ?? [];
