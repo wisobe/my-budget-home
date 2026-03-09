@@ -21,9 +21,9 @@ interface Preferences {
 }
 
 interface PreferencesContextType extends Preferences {
-  darkMode: boolean; // resolved value for components that need it
+  darkMode: boolean;
   setThemeMode: (v: ThemeMode) => void;
-  setDarkMode: (v: boolean) => void; // kept for backward compat
+  setDarkMode: (v: boolean) => void;
   setAutoSync: (v: boolean) => void;
   setShowPending: (v: boolean) => void;
   setLanguage: (v: string) => void;
@@ -32,6 +32,7 @@ interface PreferencesContextType extends Preferences {
   setConsentDataProcessing: (v: boolean) => void;
   setConsentDataStorage: (v: boolean) => void;
   setSettingsExpandedSections: (v: string[]) => void;
+  setSidebarOrder: (v: string[]) => void;
   isLoaded: boolean;
 }
 
