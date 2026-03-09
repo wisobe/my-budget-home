@@ -49,8 +49,8 @@ export function BudgetHistoryChart({ budget }: BudgetHistoryChartProps) {
   const { plaidEnvironment } = usePlaidEnvironment();
 
   const { data, isLoading } = useQuery({
-    queryKey: ['budget-history', budget.category_id, budget.period, environment],
-    queryFn: () => budgetsApi.history(budget.category_id, budget.period, environment),
+    queryKey: ['budget-history', budget.category_id, budget.period, plaidEnvironment],
+    queryFn: () => budgetsApi.history(budget.category_id, budget.period, plaidEnvironment),
   });
 
   const months = data?.data ?? [];
