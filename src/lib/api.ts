@@ -398,4 +398,25 @@ export const auditApi = {
   }>>(`/audit/security-stats.php`),
 };
 
+// ============ Subscriptions API ============
+
+export const subscriptionsApi = {
+  list: (plaid_environment?: string) =>
+    request<ApiResponse<any>>(`/subscriptions/${plaid_environment ? `?plaid_environment=${plaid_environment}` : ''}`),
+};
+
+// ============ Insights API ============
+
+export const insightsApi = {
+  list: (plaid_environment?: string) =>
+    request<ApiResponse<any[]>>(`/insights/${plaid_environment ? `?plaid_environment=${plaid_environment}` : ''}`),
+};
+
+// ============ Health Score API ============
+
+export const healthScoreApi = {
+  get: (plaid_environment?: string) =>
+    request<ApiResponse<any>>(`/health-score/${plaid_environment ? `?plaid_environment=${plaid_environment}` : ''}`),
+};
+
 export { ApiError };
