@@ -1,16 +1,20 @@
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { usePlaidEnvironment } from '@/contexts/PlaidEnvironmentContext';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { subscriptionsApi } from '@/lib/api';
-import { RefreshCw, TrendingUp, TrendingDown, AlertTriangle, Clock, DollarSign, CalendarDays } from 'lucide-react';
+import { RefreshCw, TrendingUp, TrendingDown, AlertTriangle, Clock, DollarSign, CalendarDays, EyeOff, Eye } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
+import { toast } from 'sonner';
 
 interface Subscription {
   merchant: string;
+  merchant_key: string;
   frequency: string;
   amount: number;
   avg_amount: number;
@@ -23,6 +27,7 @@ interface Subscription {
   category_color: string | null;
   monthly_cost: number;
   annual_cost: number;
+  dismissed: boolean;
 }
 
 interface SubscriptionData {
@@ -36,16 +41,33 @@ interface SubscriptionData {
   };
 }
 
+const formatCurrency = (value: number) =>
+  new Intl.NumberFormat('en-CA', { style: 'currency', currency: 'CAD' }).format(value);
+
 const Subscriptions = () => {
   const { t } = useTranslation();
   const { plaidEnvironment: environment } = usePlaidEnvironment();
+  const queryClient = useQueryClient();
+  const [showDismissed, setShowDismissed] = useState(false);
 
   const { data, isLoading } = useQuery({
     queryKey: ['subscriptions', environment],
     queryFn: () => subscriptionsApi.list(environment),
   });
 
+  const dismissMutation = useMutation({
+    mutationFn: ({ merchantKey, dismiss }: { merchantKey: string; dismiss: boolean }) =>
+      subscriptionsApi.dismiss(merchantKey, dismiss, environment),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['subscriptions'] });
+      toast.success('Subscription list updated');
+    },
+  });
+
   const subData = data?.data as SubscriptionData | undefined;
+
+  const visibleSubs = subData?.subscriptions.filter(s => showDismissed || !s.dismissed) ?? [];
+  const activeSubs = subData?.subscriptions.filter(s => !s.dismissed) ?? [];
 
   const statusConfig = {
     active: { label: 'Active', variant: 'default' as const, icon: RefreshCw },
@@ -60,6 +82,12 @@ const Subscriptions = () => {
     quarterly: 'Quarterly',
     annual: 'Annual',
   };
+
+  // Recompute summary for active (non-dismissed) only
+  const summaryMonthly = activeSubs.reduce((sum, s) => sum + s.monthly_cost, 0);
+  const summaryAnnual = activeSubs.reduce((sum, s) => sum + s.annual_cost, 0);
+  const summaryAlerts = activeSubs.filter(s => s.status === 'missed').length +
+    activeSubs.filter(s => s.price_change !== null).length;
 
   return (
     <AppLayout title={t('subscriptions.title', 'Subscriptions')}>
@@ -82,7 +110,7 @@ const Subscriptions = () => {
                   </div>
                   <div>
                     <p className="text-sm text-muted-foreground">Active</p>
-                    <p className="text-2xl font-bold">{subData?.summary.total_count ?? 0}</p>
+                    <p className="text-2xl font-bold">{activeSubs.length}</p>
                   </div>
                 </div>
               </CardContent>
@@ -95,7 +123,7 @@ const Subscriptions = () => {
                   </div>
                   <div>
                     <p className="text-sm text-muted-foreground">Monthly Cost</p>
-                    <p className="text-2xl font-bold">${subData?.summary.total_monthly?.toFixed(2) ?? '0.00'}</p>
+                    <p className="text-2xl font-bold">{formatCurrency(summaryMonthly)}</p>
                   </div>
                 </div>
               </CardContent>
@@ -108,7 +136,7 @@ const Subscriptions = () => {
                   </div>
                   <div>
                     <p className="text-sm text-muted-foreground">Annual Cost</p>
-                    <p className="text-2xl font-bold">${subData?.summary.total_annual?.toFixed(2) ?? '0.00'}</p>
+                    <p className="text-2xl font-bold">{formatCurrency(summaryAnnual)}</p>
                   </div>
                 </div>
               </CardContent>
@@ -121,7 +149,7 @@ const Subscriptions = () => {
                   </div>
                   <div>
                     <p className="text-sm text-muted-foreground">Alerts</p>
-                    <p className="text-2xl font-bold">{(subData?.summary.missed_count ?? 0) + (subData?.summary.price_changes ?? 0)}</p>
+                    <p className="text-2xl font-bold">{summaryAlerts}</p>
                   </div>
                 </div>
               </CardContent>
@@ -130,19 +158,28 @@ const Subscriptions = () => {
 
           {/* Subscription List */}
           <Card>
-            <CardHeader>
+            <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle className="text-lg">Detected Subscriptions</CardTitle>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowDismissed(!showDismissed)}
+                className="text-muted-foreground"
+              >
+                {showDismissed ? <Eye className="h-4 w-4 mr-1" /> : <EyeOff className="h-4 w-4 mr-1" />}
+                {showDismissed ? 'Hide dismissed' : 'Show dismissed'}
+              </Button>
             </CardHeader>
             <CardContent>
-              {!subData?.subscriptions.length ? (
+              {!visibleSubs.length ? (
                 <p className="text-muted-foreground text-center py-8">No recurring subscriptions detected yet. More transaction history will improve detection.</p>
               ) : (
                 <div className="space-y-3">
-                  {subData.subscriptions.map((sub, i) => {
+                  {visibleSubs.map((sub, i) => {
                     const statusCfg = statusConfig[sub.status];
                     const StatusIcon = statusCfg.icon;
                     return (
-                      <div key={i} className="flex items-center justify-between rounded-lg border border-border p-4 hover:bg-muted/50 transition-colors">
+                      <div key={i} className={`flex items-center justify-between rounded-lg border border-border p-4 hover:bg-muted/50 transition-colors ${sub.dismissed ? 'opacity-50' : ''}`}>
                         <div className="flex items-center gap-4 min-w-0">
                           <div className="h-10 w-10 rounded-full flex items-center justify-center shrink-0"
                                style={{ backgroundColor: sub.category_color ? `${sub.category_color}20` : 'hsl(var(--muted))' }}>
@@ -171,7 +208,16 @@ const Subscriptions = () => {
                             </div>
                           )}
                           <Badge variant={statusCfg.variant}>{statusCfg.label}</Badge>
-                          <span className="font-semibold tabular-nums">${sub.amount.toFixed(2)}</span>
+                          <span className="font-semibold tabular-nums">{formatCurrency(sub.amount)}</span>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8"
+                            onClick={() => dismissMutation.mutate({ merchantKey: sub.merchant_key, dismiss: !sub.dismissed })}
+                            title={sub.dismissed ? 'Restore subscription' : 'Dismiss subscription'}
+                          >
+                            {sub.dismissed ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
+                          </Button>
                         </div>
                       </div>
                     );

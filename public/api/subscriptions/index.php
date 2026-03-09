@@ -1,14 +1,52 @@
 <?php
 require_once __DIR__ . '/../includes/bootstrap.php';
 
-if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
-    Response::error('Method not allowed', 405);
-}
-
 $userId = getCurrentUserId();
 $pdo = Database::getConnection();
 $plaidEnv = $_GET['plaid_environment'] ?? 'sandbox';
 if (!in_array($plaidEnv, ['sandbox', 'production'])) $plaidEnv = 'sandbox';
+
+// Handle POST for dismiss/restore
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $input = json_decode(file_get_contents('php://input'), true);
+    $merchantKey = $input['merchant_key'] ?? '';
+    $dismiss = !empty($input['dismiss']);
+
+    if (empty($merchantKey)) {
+        Response::error('merchant_key is required', 400);
+    }
+
+    // Create table if not exists
+    $pdo->exec("CREATE TABLE IF NOT EXISTS subscription_dismissals (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        user_id VARCHAR(50) NOT NULL,
+        merchant_key VARCHAR(255) NOT NULL,
+        plaid_environment VARCHAR(20) NOT NULL DEFAULT 'sandbox',
+        created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE KEY uk_user_merchant_env (user_id, merchant_key, plaid_environment),
+        INDEX idx_user (user_id),
+        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+
+    if ($dismiss) {
+        $stmt = $pdo->prepare("INSERT IGNORE INTO subscription_dismissals (user_id, merchant_key, plaid_environment) VALUES (:user_id, :key, :env)");
+        $stmt->execute([':user_id' => $userId, ':key' => $merchantKey, ':env' => $plaidEnv]);
+    } else {
+        $stmt = $pdo->prepare("DELETE FROM subscription_dismissals WHERE user_id = :user_id AND merchant_key = :key AND plaid_environment = :env");
+        $stmt->execute([':user_id' => $userId, ':key' => $merchantKey, ':env' => $plaidEnv]);
+    }
+
+    Response::success(['dismissed' => $dismiss]);
+}
+
+if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
+    Response::error('Method not allowed', 405);
+}
+
+// Load dismissed merchants
+$dStmt = $pdo->prepare("SELECT merchant_key FROM subscription_dismissals WHERE user_id = :user_id AND plaid_environment = :env");
+$dStmt->execute([':user_id' => $userId, ':env' => $plaidEnv]);
+$dismissedKeys = array_column($dStmt->fetchAll(PDO::FETCH_ASSOC), 'merchant_key');
 
 $sql = "SELECT t.name, t.merchant_name, t.amount, t.date, t.category_id,
                cat.name as category_name, cat.color as category_color
@@ -17,6 +55,7 @@ $sql = "SELECT t.name, t.merchant_name, t.amount, t.date, t.category_id,
         LEFT JOIN plaid_connections c ON a.plaid_connection_id = c.id
         LEFT JOIN categories cat ON t.category_id = cat.id
         WHERE a.user_id = :user_id
+          AND a.excluded = 0
           AND t.excluded = 0
           AND t.amount > 0
           AND t.date >= DATE_SUB(CURDATE(), INTERVAL 18 MONTH)
@@ -29,13 +68,30 @@ $stmt = $pdo->prepare($sql);
 $stmt->execute($params);
 $transactions = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-// Group by merchant
+// Normalize merchant names for better grouping
+function normalizeMerchantKey($name) {
+    $key = strtolower(trim($name));
+    // Remove common suffixes/noise
+    $key = preg_replace('/\s+(inc\.?|llc\.?|ltd\.?|co\.?|corp\.?|.com)$/i', '', $key);
+    // Remove trailing numbers (order IDs, etc.)
+    $key = preg_replace('/\s+#?\d+$/', '', $key);
+    // Remove special characters except spaces
+    $key = preg_replace('/[^a-z0-9\s]/', '', $key);
+    // Collapse whitespace
+    $key = preg_replace('/\s+/', ' ', trim($key));
+    return $key;
+}
+
+// Group by normalized merchant key
 $merchants = [];
 foreach ($transactions as $t) {
-    $key = strtolower(trim($t['merchant_name'] ?: $t['name']));
+    $rawName = $t['merchant_name'] ?: $t['name'];
+    $key = normalizeMerchantKey($rawName);
+    if (strlen($key) < 2) continue; // skip meaningless names
+
     if (!isset($merchants[$key])) {
         $merchants[$key] = [
-            'name' => $t['merchant_name'] ?: $t['name'],
+            'name' => $rawName,
             'category_name' => $t['category_name'],
             'category_color' => $t['category_color'],
             'transactions' => [],
@@ -59,7 +115,7 @@ $subscriptions = [];
 
 foreach ($merchants as $key => $merchant) {
     $txns = $merchant['transactions'];
-    if (count($txns) < 3) continue;
+    if (count($txns) < 2) continue; // lowered from 3 to 2 to catch newer subscriptions
 
     usort($txns, fn($a, $b) => strcmp($a['date'], $b['date']));
 
@@ -82,12 +138,14 @@ foreach ($merchants as $key => $merchant) {
     }
     if (!$matchedBucket) continue;
 
+    // Relaxed variance check for subscriptions with few data points
     $variance = 0;
     foreach ($intervals as $iv) {
         $variance += pow($iv - $matchedBucket['days'], 2);
     }
     $stdDev = sqrt($variance / count($intervals));
-    if ($stdDev > $matchedBucket['days'] * 0.35) continue;
+    $varianceThreshold = count($txns) <= 3 ? 0.5 : 0.35;
+    if ($stdDev > $matchedBucket['days'] * $varianceThreshold) continue;
 
     $amounts = array_column($txns, 'amount');
     $currentAmount = end($amounts);
@@ -121,6 +179,7 @@ foreach ($merchants as $key => $merchant) {
 
     $subscriptions[] = [
         'merchant' => $merchant['name'],
+        'merchant_key' => $key,
         'frequency' => $matchedBucket['label'],
         'amount' => round($currentAmount, 2),
         'avg_amount' => round($avgAmount, 2),
@@ -133,26 +192,30 @@ foreach ($merchants as $key => $merchant) {
         'category_color' => $merchant['category_color'],
         'monthly_cost' => round($currentAmount * (30 / $expectedInterval), 2),
         'annual_cost' => round($currentAmount * (365 / $expectedInterval), 2),
+        'dismissed' => in_array($key, $dismissedKeys),
     ];
 }
 
 usort($subscriptions, function ($a, $b) {
+    // Dismissed always last
+    if ($a['dismissed'] !== $b['dismissed']) return $a['dismissed'] ? 1 : -1;
     $order = ['missed' => 0, 'due_soon' => 1, 'active' => 2];
     $diff = ($order[$a['status']] ?? 3) - ($order[$b['status']] ?? 3);
     if ($diff !== 0) return $diff;
     return $b['amount'] - $a['amount'];
 });
 
-$totalMonthly = array_sum(array_column($subscriptions, 'monthly_cost'));
-$totalAnnual = array_sum(array_column($subscriptions, 'annual_cost'));
+$activeOnly = array_filter($subscriptions, fn($s) => !$s['dismissed']);
+$totalMonthly = array_sum(array_column($activeOnly, 'monthly_cost'));
+$totalAnnual = array_sum(array_column($activeOnly, 'annual_cost'));
 
 Response::success([
-    'subscriptions' => $subscriptions,
+    'subscriptions' => array_values($subscriptions),
     'summary' => [
-        'total_count' => count($subscriptions),
+        'total_count' => count($activeOnly),
         'total_monthly' => round($totalMonthly, 2),
         'total_annual' => round($totalAnnual, 2),
-        'missed_count' => count(array_filter($subscriptions, fn($s) => $s['status'] === 'missed')),
-        'price_changes' => count(array_filter($subscriptions, fn($s) => $s['price_change'] !== null)),
+        'missed_count' => count(array_filter($activeOnly, fn($s) => $s['status'] === 'missed')),
+        'price_changes' => count(array_filter($activeOnly, fn($s) => $s['price_change'] !== null)),
     ],
 ]);

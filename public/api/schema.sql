@@ -212,6 +212,18 @@ CREATE TABLE IF NOT EXISTS audit_log (
     FOREIGN KEY (target_user_id) REFERENCES users(id) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- Subscription Dismissals (tracks user-hidden subscriptions)
+CREATE TABLE IF NOT EXISTS subscription_dismissals (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id VARCHAR(50) NOT NULL,
+    merchant_key VARCHAR(255) NOT NULL,
+    plaid_environment VARCHAR(20) NOT NULL DEFAULT 'sandbox',
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE KEY uk_user_merchant_env (user_id, merchant_key, plaid_environment),
+    INDEX idx_user (user_id),
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 -- Default categories are now seeded per-user on first login (see categories/index.php)
 -- No global INSERT needed.
 
