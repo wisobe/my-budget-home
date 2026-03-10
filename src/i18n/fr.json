@@ -16,7 +16,11 @@
     "plaidConfig": "Configuration Plaid",
     "dbConnection": "Connexion à la base de données",
     "auditLog": "Journal d'audit",
-    "logout": "Déconnexion"
+    "logout": "Déconnexion",
+    "subscriptions": "Abonnements",
+    "insights": "Analyses",
+    "healthScore": "Santé financière",
+    "simulator": "Simulateur"
   },
   "auth": {
     "signIn": "Se connecter",
