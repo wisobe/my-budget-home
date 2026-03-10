@@ -60,7 +60,7 @@ const Subscriptions = () => {
       subscriptionsApi.dismiss(merchantKey, dismiss, environment),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['subscriptions'] });
-      toast.success('Subscription list updated');
+      toast.success(t('subscriptions.listUpdated'));
     },
   });
 
@@ -70,27 +70,26 @@ const Subscriptions = () => {
   const activeSubs = subData?.subscriptions.filter(s => !s.dismissed) ?? [];
 
   const statusConfig = {
-    active: { label: 'Active', variant: 'default' as const, icon: RefreshCw },
-    due_soon: { label: 'Due Soon', variant: 'secondary' as const, icon: Clock },
-    missed: { label: 'Missed', variant: 'destructive' as const, icon: AlertTriangle },
+    active: { label: t('subscriptions.active'), variant: 'default' as const, icon: RefreshCw },
+    due_soon: { label: t('subscriptions.dueSoon'), variant: 'secondary' as const, icon: Clock },
+    missed: { label: t('subscriptions.missed'), variant: 'destructive' as const, icon: AlertTriangle },
   };
 
   const frequencyLabels: Record<string, string> = {
-    weekly: 'Weekly',
-    biweekly: 'Bi-weekly',
-    monthly: 'Monthly',
-    quarterly: 'Quarterly',
-    annual: 'Annual',
+    weekly: t('subscriptions.weekly'),
+    biweekly: t('subscriptions.biweekly'),
+    monthly: t('subscriptions.monthly'),
+    quarterly: t('subscriptions.quarterly'),
+    annual: t('subscriptions.annual'),
   };
 
-  // Recompute summary for active (non-dismissed) only
   const summaryMonthly = activeSubs.reduce((sum, s) => sum + s.monthly_cost, 0);
   const summaryAnnual = activeSubs.reduce((sum, s) => sum + s.annual_cost, 0);
   const summaryAlerts = activeSubs.filter(s => s.status === 'missed').length +
     activeSubs.filter(s => s.price_change !== null).length;
 
   return (
-    <AppLayout title={t('subscriptions.title', 'Subscriptions')}>
+    <AppLayout title={t('subscriptions.title')}>
       {isLoading ? (
         <div className="space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -109,7 +108,7 @@ const Subscriptions = () => {
                     <RefreshCw className="h-5 w-5 text-primary" />
                   </div>
                   <div>
-                    <p className="text-sm text-muted-foreground">Active</p>
+                    <p className="text-sm text-muted-foreground">{t('subscriptions.active')}</p>
                     <p className="text-2xl font-bold">{activeSubs.length}</p>
                   </div>
                 </div>
@@ -122,7 +121,7 @@ const Subscriptions = () => {
                     <DollarSign className="h-5 w-5 text-primary" />
                   </div>
                   <div>
-                    <p className="text-sm text-muted-foreground">Monthly Cost</p>
+                    <p className="text-sm text-muted-foreground">{t('subscriptions.monthlyCost')}</p>
                     <p className="text-2xl font-bold">{formatCurrency(summaryMonthly)}</p>
                   </div>
                 </div>
@@ -135,7 +134,7 @@ const Subscriptions = () => {
                     <CalendarDays className="h-5 w-5 text-primary" />
                   </div>
                   <div>
-                    <p className="text-sm text-muted-foreground">Annual Cost</p>
+                    <p className="text-sm text-muted-foreground">{t('subscriptions.annualCost')}</p>
                     <p className="text-2xl font-bold">{formatCurrency(summaryAnnual)}</p>
                   </div>
                 </div>
@@ -148,7 +147,7 @@ const Subscriptions = () => {
                     <AlertTriangle className="h-5 w-5 text-destructive" />
                   </div>
                   <div>
-                    <p className="text-sm text-muted-foreground">Alerts</p>
+                    <p className="text-sm text-muted-foreground">{t('subscriptions.alerts')}</p>
                     <p className="text-2xl font-bold">{summaryAlerts}</p>
                   </div>
                 </div>
@@ -159,7 +158,7 @@ const Subscriptions = () => {
           {/* Subscription List */}
           <Card>
             <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle className="text-lg">Detected Subscriptions</CardTitle>
+              <CardTitle className="text-lg">{t('subscriptions.detectedSubscriptions')}</CardTitle>
               <Button
                 variant="ghost"
                 size="sm"
@@ -167,12 +166,12 @@ const Subscriptions = () => {
                 className="text-muted-foreground"
               >
                 {showDismissed ? <Eye className="h-4 w-4 mr-1" /> : <EyeOff className="h-4 w-4 mr-1" />}
-                {showDismissed ? 'Hide dismissed' : 'Show dismissed'}
+                {showDismissed ? t('subscriptions.hideDismissed') : t('subscriptions.showDismissed')}
               </Button>
             </CardHeader>
             <CardContent>
               {!visibleSubs.length ? (
-                <p className="text-muted-foreground text-center py-8">No recurring subscriptions detected yet. More transaction history will improve detection.</p>
+                <p className="text-muted-foreground text-center py-8">{t('subscriptions.noSubscriptions')}</p>
               ) : (
                 <div className="space-y-3">
                   {visibleSubs.map((sub, i) => {
@@ -196,7 +195,7 @@ const Subscriptions = () => {
                                 </>
                               )}
                               <span>·</span>
-                              <span>Next: {format(parseISO(sub.next_expected_date), 'MMM d')}</span>
+                              <span>{t('subscriptions.next', { date: format(parseISO(sub.next_expected_date), 'MMM d') })}</span>
                             </div>
                           </div>
                         </div>
@@ -214,7 +213,7 @@ const Subscriptions = () => {
                             size="icon"
                             className="h-8 w-8"
                             onClick={() => dismissMutation.mutate({ merchantKey: sub.merchant_key, dismiss: !sub.dismissed })}
-                            title={sub.dismissed ? 'Restore subscription' : 'Dismiss subscription'}
+                            title={sub.dismissed ? t('subscriptions.restoreSubscription') : t('subscriptions.dismissSubscription')}
                           >
                             {sub.dismissed ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
                           </Button>

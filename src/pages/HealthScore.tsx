@@ -51,7 +51,7 @@ const HealthScore = () => {
   const health = data?.data as HealthData | undefined;
 
   return (
-    <AppLayout title={t('healthScore.title', 'Financial Health')}>
+    <AppLayout title={t('healthScore.title')}>
       {isLoading ? (
         <div className="space-y-4">
           <Skeleton className="h-48" />
@@ -60,7 +60,7 @@ const HealthScore = () => {
       ) : !health ? (
         <Card>
           <CardContent className="py-16 text-center text-muted-foreground">
-            Unable to calculate health score. Add more transactions first.
+            {t('healthScore.noData')}
           </CardContent>
         </Card>
       ) : (
@@ -86,25 +86,25 @@ const HealthScore = () => {
                   <p className={`text-lg font-semibold ${gradeColors[health.grade] || 'text-foreground'}`}>{health.grade}</p>
                 </div>
               </div>
-              <p className="mt-4 text-muted-foreground text-sm">Your Financial Health Score</p>
-              <p className="text-xs text-muted-foreground mt-1">Based on the last 3 months of transaction data</p>
+              <p className="mt-4 text-muted-foreground text-sm">{t('healthScore.yourScore')}</p>
+              <p className="text-xs text-muted-foreground mt-1">{t('healthScore.basedOn3Months')}</p>
 
               {/* Quick Summary */}
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-8 w-full max-w-2xl">
                 <div className="text-center">
-                  <p className="text-xs text-muted-foreground">Avg. Monthly Income</p>
+                  <p className="text-xs text-muted-foreground">{t('healthScore.avgMonthlyIncome')}</p>
                   <p className="text-lg font-semibold">${Number(health.summary.monthly_income).toLocaleString('en-CA', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
                 </div>
                 <div className="text-center">
-                  <p className="text-xs text-muted-foreground">Avg. Monthly Expenses</p>
+                  <p className="text-xs text-muted-foreground">{t('healthScore.avgMonthlyExpenses')}</p>
                   <p className="text-lg font-semibold">${Number(health.summary.monthly_expenses).toLocaleString('en-CA', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
                 </div>
                 <div className="text-center">
-                  <p className="text-xs text-muted-foreground">Savings Rate</p>
+                  <p className="text-xs text-muted-foreground">{t('healthScore.savingsRate')}</p>
                   <p className="text-lg font-semibold">{health.summary.savings_rate}%</p>
                 </div>
                 <div className="text-center">
-                  <p className="text-xs text-muted-foreground">Debt Ratio</p>
+                  <p className="text-xs text-muted-foreground">{t('healthScore.debtRatio')}</p>
                   <p className="text-lg font-semibold">
                     {Number(health.summary.total_assets) + Number(health.summary.total_debt) > 0
                       ? ((Number(health.summary.total_debt) / (Number(health.summary.total_assets) + Number(health.summary.total_debt))) * 100).toFixed(1)
@@ -112,14 +112,14 @@ const HealthScore = () => {
                   </p>
                 </div>
               </div>
-              <p className="text-xs text-muted-foreground mt-3">Income and expenses are averaged over the last 3 months. Pending transactions are excluded.</p>
+              <p className="text-xs text-muted-foreground mt-3">{t('healthScore.incomeExpensesNote')}</p>
             </CardContent>
           </Card>
 
           {/* Score Breakdown */}
           <Card>
             <CardHeader>
-              <CardTitle className="text-lg">Score Breakdown</CardTitle>
+              <CardTitle className="text-lg">{t('healthScore.scoreBreakdown')}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-5">
               {health.breakdown.map((item, i) => (
@@ -141,7 +141,7 @@ const HealthScore = () => {
               <CardHeader>
                 <CardTitle className="text-lg flex items-center gap-2">
                   <Lightbulb className="h-5 w-5" />
-                  Tips & Recommendations
+                  {t('healthScore.tipsTitle')}
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
