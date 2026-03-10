@@ -244,7 +244,7 @@ const Simulator = () => {
                             {sub.merchant}
                           </span>
                         </div>
-                        <span className="text-sm font-medium tabular-nums shrink-0">${sub.monthly_cost.toFixed(2)}/{t('simulator.1mo').split(' ')[0]}</span>
+                        <span className="text-sm font-medium tabular-nums shrink-0">${sub.monthly_cost.toFixed(2)}{t('simulator.perMonth')}</span>
                       </div>
                     ))}
                   </div>
