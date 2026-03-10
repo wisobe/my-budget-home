@@ -252,7 +252,7 @@ const Simulator = () => {
                 {cancelledSavings > 0 && (
                   <div className="mt-4 pt-3 border-t border-border flex items-center justify-between">
                     <span className="text-sm font-medium">{t('simulator.totalSaved')}</span>
-                    <span className="text-sm font-bold text-green-600 dark:text-green-400">${cancelledSavings.toFixed(2)}/{t('simulator.1mo').split(' ')[0]}</span>
+                    <span className="text-sm font-bold text-green-600 dark:text-green-400">${cancelledSavings.toFixed(2)}{t('simulator.perMonth')}</span>
                   </div>
                 )}
               </CardContent>
