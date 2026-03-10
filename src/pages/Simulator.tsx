@@ -33,7 +33,7 @@ const Simulator = () => {
     return all.filter((s: any) => !s.dismissed);
   }, [subData]);
 
-  const [spendingAdjust, setSpendingAdjust] = useState(0); // % change
+  const [spendingAdjust, setSpendingAdjust] = useState(0);
   const [extraSavings, setExtraSavings] = useState(0);
   const [cancelledSubs, setCancelledSubs] = useState<Set<number>>(new Set());
 
@@ -44,6 +44,18 @@ const Simulator = () => {
     });
     return total;
   }, [cancelledSubs, subscriptions]);
+
+  const timeLabels: Record<number, string> = {
+    0: t('simulator.today'),
+    1: t('simulator.1mo'),
+    3: t('simulator.3mo'),
+    6: t('simulator.6mo'),
+    12: t('simulator.1yr'),
+    24: t('simulator.2yr'),
+    36: t('simulator.3yr'),
+    60: t('simulator.5yr'),
+    120: t('simulator.10yr'),
+  };
 
   const projections = useMemo(() => {
     if (!summary) return [];
@@ -60,25 +72,16 @@ const Simulator = () => {
     for (const m of months) {
       const projected = startingBalance + monthlySavings * m;
       const baseline = startingBalance + (monthlyIncome - baseExpenses) * m;
-      let label = 'Today';
-      if (m === 1) label = '1 mo';
-      else if (m === 3) label = '3 mo';
-      else if (m === 6) label = '6 mo';
-      else if (m === 12) label = '1 yr';
-      else if (m === 24) label = '2 yr';
-      else if (m === 36) label = '3 yr';
-      else if (m === 60) label = '5 yr';
-      else if (m === 120) label = '10 yr';
 
       points.push({
-        label,
+        label: timeLabels[m] || `${m}`,
         months: m,
         projected: Math.round(projected),
         baseline: Math.round(baseline),
       });
     }
     return points;
-  }, [summary, spendingAdjust, extraSavings, cancelledSavings]);
+  }, [summary, spendingAdjust, extraSavings, cancelledSavings, timeLabels]);
 
   const isLoading = healthLoading || subLoading;
 
@@ -90,7 +93,7 @@ const Simulator = () => {
   }, [summary, spendingAdjust, cancelledSavings, extraSavings]);
 
   return (
-    <AppLayout title={t('simulator.title', 'Financial Simulator')}>
+    <AppLayout title={t('simulator.title')}>
       {isLoading ? (
         <div className="space-y-4">
           <Skeleton className="h-48" />
@@ -99,7 +102,7 @@ const Simulator = () => {
       ) : !summary ? (
         <Card>
           <CardContent className="py-16 text-center text-muted-foreground">
-            Not enough data to run simulations. Add more transactions first.
+            {t('simulator.noData')}
           </CardContent>
         </Card>
       ) : (
@@ -108,15 +111,15 @@ const Simulator = () => {
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <Card>
               <CardContent className="pt-6 text-center">
-                <p className="text-sm text-muted-foreground">Monthly Impact</p>
+                <p className="text-sm text-muted-foreground">{t('simulator.monthlyImpact')}</p>
                 <p className={`text-2xl font-bold ${monthlySavingsDiff >= 0 ? 'text-green-600 dark:text-green-400' : 'text-destructive'}`}>
-                  {monthlySavingsDiff >= 0 ? '+' : ''}{monthlySavingsDiff.toFixed(0)}/mo
+                  {monthlySavingsDiff >= 0 ? '+' : ''}{monthlySavingsDiff.toFixed(0)}{t('simulator.perMonth')}
                 </p>
               </CardContent>
             </Card>
             <Card>
               <CardContent className="pt-6 text-center">
-                <p className="text-sm text-muted-foreground">1-Year Impact</p>
+                <p className="text-sm text-muted-foreground">{t('simulator.yearlyImpact')}</p>
                 <p className={`text-2xl font-bold ${monthlySavingsDiff >= 0 ? 'text-green-600 dark:text-green-400' : 'text-destructive'}`}>
                   ${(monthlySavingsDiff * 12).toLocaleString()}
                 </p>
@@ -124,7 +127,7 @@ const Simulator = () => {
             </Card>
             <Card>
               <CardContent className="pt-6 text-center">
-                <p className="text-sm text-muted-foreground">Subscriptions Cancelled</p>
+                <p className="text-sm text-muted-foreground">{t('simulator.subscriptionsCancelled')}</p>
                 <p className="text-2xl font-bold">{cancelledSubs.size}</p>
               </CardContent>
             </Card>
@@ -135,7 +138,7 @@ const Simulator = () => {
             <CardHeader>
               <CardTitle className="text-lg flex items-center gap-2">
                 <TrendingUp className="h-5 w-5" />
-                Projected Net Worth
+                {t('simulator.projectedNetWorth')}
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -150,11 +153,11 @@ const Simulator = () => {
                       contentStyle={{ backgroundColor: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px' }}
                     />
                     <Area
-                      type="monotone" dataKey="baseline" name="Current Path"
+                      type="monotone" dataKey="baseline" name={t('simulator.currentPath')}
                       stroke="hsl(var(--muted-foreground))" fill="hsl(var(--muted))" strokeDasharray="5 5" fillOpacity={0.3}
                     />
                     <Area
-                      type="monotone" dataKey="projected" name="Simulated"
+                      type="monotone" dataKey="projected" name={t('simulator.simulated')}
                       stroke="hsl(var(--primary))" fill="hsl(var(--primary))" fillOpacity={0.2}
                     />
                   </AreaChart>
@@ -163,11 +166,11 @@ const Simulator = () => {
               <div className="flex items-center gap-6 justify-center mt-4 text-sm">
                 <div className="flex items-center gap-2">
                   <div className="w-4 h-0.5 bg-muted-foreground" style={{ borderTop: '2px dashed' }} />
-                  <span className="text-muted-foreground">Current path</span>
+                  <span className="text-muted-foreground">{t('simulator.currentPath')}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <div className="w-4 h-0.5 bg-primary" />
-                  <span className="text-muted-foreground">Simulated</span>
+                  <span className="text-muted-foreground">{t('simulator.simulated')}</span>
                 </div>
               </div>
             </CardContent>
@@ -178,12 +181,12 @@ const Simulator = () => {
             {/* Spending Adjustment */}
             <Card>
               <CardHeader>
-                <CardTitle className="text-lg">Spending Adjustment</CardTitle>
+                <CardTitle className="text-lg">{t('simulator.spendingAdjustment')}</CardTitle>
               </CardHeader>
               <CardContent className="space-y-6">
                 <div>
                   <div className="flex items-center justify-between mb-3">
-                    <Label>Overall Spending</Label>
+                    <Label>{t('simulator.overallSpending')}</Label>
                     <Badge variant={spendingAdjust < 0 ? 'default' : spendingAdjust > 0 ? 'destructive' : 'secondary'}>
                       {spendingAdjust > 0 ? '+' : ''}{spendingAdjust}%
                     </Badge>
@@ -199,7 +202,7 @@ const Simulator = () => {
                 </div>
                 <div>
                   <div className="flex items-center justify-between mb-3">
-                    <Label>Extra Monthly Savings</Label>
+                    <Label>{t('simulator.extraMonthlySavings')}</Label>
                     <Badge variant="secondary">${extraSavings}</Badge>
                   </div>
                   <Slider
@@ -217,11 +220,11 @@ const Simulator = () => {
             {/* Cancel Subscriptions */}
             <Card>
               <CardHeader>
-                <CardTitle className="text-lg">Cancel Subscriptions</CardTitle>
+                <CardTitle className="text-lg">{t('simulator.cancelSubscriptions')}</CardTitle>
               </CardHeader>
               <CardContent>
                 {subscriptions.length === 0 ? (
-                  <p className="text-sm text-muted-foreground text-center py-4">No subscriptions detected</p>
+                  <p className="text-sm text-muted-foreground text-center py-4">{t('simulator.noSubscriptions')}</p>
                 ) : (
                   <div className="space-y-3 max-h-64 overflow-y-auto">
                     {subscriptions.map((sub: any, i: number) => (
@@ -241,15 +244,15 @@ const Simulator = () => {
                             {sub.merchant}
                           </span>
                         </div>
-                        <span className="text-sm font-medium tabular-nums shrink-0">${sub.monthly_cost.toFixed(2)}/mo</span>
+                        <span className="text-sm font-medium tabular-nums shrink-0">${sub.monthly_cost.toFixed(2)}{t('simulator.perMonth')}</span>
                       </div>
                     ))}
                   </div>
                 )}
                 {cancelledSavings > 0 && (
                   <div className="mt-4 pt-3 border-t border-border flex items-center justify-between">
-                    <span className="text-sm font-medium">Total saved</span>
-                    <span className="text-sm font-bold text-green-600 dark:text-green-400">${cancelledSavings.toFixed(2)}/mo</span>
+                    <span className="text-sm font-medium">{t('simulator.totalSaved')}</span>
+                    <span className="text-sm font-bold text-green-600 dark:text-green-400">${cancelledSavings.toFixed(2)}{t('simulator.perMonth')}</span>
                   </div>
                 )}
               </CardContent>

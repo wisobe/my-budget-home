@@ -42,7 +42,7 @@ const Insights = () => {
   const insights: Insight[] = data?.data ?? [];
 
   return (
-    <AppLayout title={t('insights.title', 'Insights')}>
+    <AppLayout title={t('insights.title')}>
       {isLoading ? (
         <div className="space-y-4">
           {[1, 2, 3].map(i => <Skeleton key={i} className="h-20" />)}
@@ -51,13 +51,15 @@ const Insights = () => {
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-16">
             <Lightbulb className="h-12 w-12 text-muted-foreground mb-4" />
-            <p className="text-lg font-medium text-foreground">No insights right now</p>
-            <p className="text-sm text-muted-foreground mt-1">Everything looks normal. Check back later!</p>
+            <p className="text-lg font-medium text-foreground">{t('insights.noInsightsTitle')}</p>
+            <p className="text-sm text-muted-foreground mt-1">{t('insights.noInsightsDesc')}</p>
           </CardContent>
         </Card>
       ) : (
         <div className="space-y-3">
-          <p className="text-sm text-muted-foreground">{insights.length} insight{insights.length !== 1 ? 's' : ''} found based on your recent activity</p>
+          <p className="text-sm text-muted-foreground">
+            {t('insights.insightCount', { count: insights.length })}
+          </p>
           {insights.map((insight, i) => {
             const config = severityConfig[insight.severity];
             const Icon = typeIcons[insight.type] || config.icon;
