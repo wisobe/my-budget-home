@@ -113,7 +113,7 @@ const Simulator = () => {
               <CardContent className="pt-6 text-center">
                 <p className="text-sm text-muted-foreground">{t('simulator.monthlyImpact')}</p>
                 <p className={`text-2xl font-bold ${monthlySavingsDiff >= 0 ? 'text-green-600 dark:text-green-400' : 'text-destructive'}`}>
-                  {monthlySavingsDiff >= 0 ? '+' : ''}{monthlySavingsDiff.toFixed(0)}/{t('subscriptions.monthly').charAt(0).toLowerCase()}o
+                  {monthlySavingsDiff >= 0 ? '+' : ''}{monthlySavingsDiff.toFixed(0)}{t('simulator.perMonth')}
                 </p>
               </CardContent>
             </Card>
