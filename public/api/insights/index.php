@@ -142,9 +142,9 @@ foreach ($duplicates as $dup) {
     $insights[] = [
         'type' => 'duplicate_charge',
         'severity' => 'warning',
-        'title' => 'Possible duplicate charge',
-        'description' => "{$dup['dup_count']} charges of \$" . number_format((float)$dup['amount'], 2) . " at \"{$merchant}\" on {$dup['date']}.",
-        'data' => ['merchant' => $merchant, 'amount' => (float)$dup['amount'], 'date' => $dup['date'], 'count' => (int)$dup['dup_count']],
+        'title' => 'duplicate_charge',
+        'description' => '',
+        'data' => ['merchant' => $merchant, 'amount' => number_format((float)$dup['amount'], 2), 'date' => $dup['date'], 'count' => (int)$dup['dup_count']],
     ];
 }
 
