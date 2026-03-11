@@ -118,9 +118,9 @@ foreach ($spikes as $spike) {
     $insights[] = [
         'type' => 'spending_spike',
         'severity' => $pctOver > 100 ? 'critical' : 'warning',
-        'title' => "Spending spike in {$spike['category_name']}",
-        'description' => "You spent \$" . number_format($spike['recent_total'], 2) . " this month on {$spike['category_name']}, which is {$pctOver}% more than your 3-month average of \$" . number_format($spike['avg_monthly'], 2) . ".",
-        'data' => ['category' => $spike['category_name'], 'recent' => (float)$spike['recent_total'], 'average' => (float)$spike['avg_monthly'], 'spike_percent' => $pctOver],
+        'title' => 'spending_spike',
+        'description' => '',
+        'data' => ['category' => $spike['category_name'], 'recent' => number_format((float)$spike['recent_total'], 2), 'average' => number_format((float)$spike['avg_monthly'], 2), 'spike_percent' => $pctOver],
     ];
 }
 
