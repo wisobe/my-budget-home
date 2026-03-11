@@ -159,12 +159,12 @@ $diversityScore = min(10, round($catCount / 5 * 10));
 $totalScore = $savingsScore + $budgetScore + $stabilityScore + $incomeScore + $debtScore + $diversityScore;
 
 $tips = [];
-if ($savingsRate < 0.10) $tips[] = ['type' => 'savings', 'text' => 'Try to save at least 10-20% of your income each month.'];
-if ($totalBudgets === 0) $tips[] = ['type' => 'budget', 'text' => 'Set up budgets to track spending limits by category.'];
-if ($debtRatio > 0.3) $tips[] = ['type' => 'debt', 'text' => 'Focus on reducing high-interest debt to improve your financial health.'];
-if ($catCount < 3) $tips[] = ['type' => 'categorize', 'text' => 'Categorize your transactions for better spending insights.'];
-if ($savingsRate >= 0.20) $tips[] = ['type' => 'positive', 'text' => 'Great job! Your savings rate is above 20%.'];
-if ($totalBudgets > 0 && $withinBudget === $totalBudgets) $tips[] = ['type' => 'positive', 'text' => "You're within all your budgets this month!"];
+if ($savingsRate < 0.10) $tips[] = ['type' => 'savings', 'text' => 'tip_savings'];
+if ($totalBudgets === 0) $tips[] = ['type' => 'budget', 'text' => 'tip_budget'];
+if ($debtRatio > 0.3) $tips[] = ['type' => 'debt', 'text' => 'tip_debt'];
+if ($catCount < 3) $tips[] = ['type' => 'categorize', 'text' => 'tip_categorize'];
+if ($savingsRate >= 0.20) $tips[] = ['type' => 'positive', 'text' => 'tip_positive_savings'];
+if ($totalBudgets > 0 && $withinBudget === $totalBudgets) $tips[] = ['type' => 'positive', 'text' => 'tip_positive_budgets'];
 
 $grade = 'F';
 if ($totalScore >= 90) $grade = 'A+';
@@ -177,12 +177,12 @@ Response::success([
     'score' => $totalScore,
     'grade' => $grade,
     'breakdown' => [
-        ['name' => 'Savings Rate', 'score' => $savingsScore, 'max' => 25, 'detail' => round($savingsRate * 100, 1) . '%'],
-        ['name' => 'Budget Adherence', 'score' => $budgetScore, 'max' => 20, 'detail' => $totalBudgets > 0 ? "{$withinBudget}/{$totalBudgets} within budget" : 'No budgets set'],
-        ['name' => 'Expense Stability', 'score' => $stabilityScore, 'max' => 15, 'detail' => count($monthlyExpenses) >= 3 ? 'Based on 6-month trend' : 'Not enough data'],
-        ['name' => 'Income Consistency', 'score' => $incomeScore, 'max' => 15, 'detail' => count($monthlyIncome) >= 3 ? 'Based on 6-month trend' : 'Not enough data'],
-        ['name' => 'Debt Ratio', 'score' => $debtScore, 'max' => 15, 'detail' => round($debtRatio * 100, 1) . '% debt-to-total'],
-        ['name' => 'Spending Diversity', 'score' => $diversityScore, 'max' => 10, 'detail' => "{$catCount} categories used"],
+        ['name' => 'savings_rate', 'score' => $savingsScore, 'max' => 25, 'detail' => 'savings_rate', 'detail_data' => ['value' => round($savingsRate * 100, 1)]],
+        ['name' => 'budget_adherence', 'score' => $budgetScore, 'max' => 20, 'detail' => $totalBudgets > 0 ? 'budget_within' : 'budget_none', 'detail_data' => ['within' => $withinBudget, 'total' => $totalBudgets]],
+        ['name' => 'expense_stability', 'score' => $stabilityScore, 'max' => 15, 'detail' => count($monthlyExpenses) >= 3 ? 'based_on_trend' : 'not_enough_data', 'detail_data' => []],
+        ['name' => 'income_consistency', 'score' => $incomeScore, 'max' => 15, 'detail' => count($monthlyIncome) >= 3 ? 'based_on_trend' : 'not_enough_data', 'detail_data' => []],
+        ['name' => 'debt_ratio', 'score' => $debtScore, 'max' => 15, 'detail' => 'debt_ratio', 'detail_data' => ['value' => round($debtRatio * 100, 1)]],
+        ['name' => 'spending_diversity', 'score' => $diversityScore, 'max' => 10, 'detail' => 'categories_used', 'detail_data' => ['count' => $catCount]],
     ],
     'tips' => $tips,
     'summary' => [

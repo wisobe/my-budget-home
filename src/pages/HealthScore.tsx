@@ -12,7 +12,7 @@ import { Heart, Lightbulb, TrendingUp, AlertTriangle, CheckCircle } from 'lucide
 interface HealthData {
   score: number;
   grade: string;
-  breakdown: { name: string; score: number; max: number; detail: string }[];
+  breakdown: { name: string; score: number; max: number; detail: string; detail_data?: Record<string, unknown> }[];
   tips: { type: string; text: string }[];
   summary: {
     monthly_income: number;
@@ -125,11 +125,13 @@ const HealthScore = () => {
               {health.breakdown.map((item, i) => (
                 <div key={i}>
                   <div className="flex items-center justify-between mb-1.5">
-                    <span className="text-sm font-medium">{item.name}</span>
+                    <span className="text-sm font-medium">{t(`healthScore.breakdown_${item.name}`)}</span>
                     <span className="text-sm text-muted-foreground">{item.score}/{item.max}</span>
                   </div>
                   <Progress value={(item.score / item.max) * 100} className="h-2" />
-                  <p className="text-xs text-muted-foreground mt-1">{item.detail}</p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {t(`healthScore.detail_${item.detail}`, item.detail_data || {})}
+                  </p>
                 </div>
               ))}
             </CardContent>
@@ -145,14 +147,14 @@ const HealthScore = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
-                {health.tips.map((tip, i) => (
+              {health.tips.map((tip, i) => (
                   <div key={i} className="flex items-start gap-3">
                     {tip.type === 'positive' ? (
                       <CheckCircle className="h-5 w-5 text-green-600 dark:text-green-400 shrink-0 mt-0.5" />
                     ) : (
                       <AlertTriangle className="h-5 w-5 text-orange-600 dark:text-orange-400 shrink-0 mt-0.5" />
                     )}
-                    <p className="text-sm">{tip.text}</p>
+                    <p className="text-sm">{t(`healthScore.${tip.text}`)}</p>
                   </div>
                 ))}
               </CardContent>

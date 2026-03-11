@@ -63,6 +63,36 @@ const Insights = () => {
           {insights.map((insight, i) => {
             const config = severityConfig[insight.severity];
             const Icon = typeIcons[insight.type] || config.icon;
+            const data = insight.data as Record<string, string | number>;
+            
+            // Build translated title and description
+            let translatedTitle = insight.title;
+            let translatedDesc = insight.description;
+            
+            if (insight.type === 'unusual_merchant') {
+              translatedTitle = t('insights.unusual_merchant_title');
+              translatedDesc = t('insights.unusual_merchant_desc', { merchant: data.merchant, amount: data.amount, date: data.date });
+            } else if (insight.type === 'salary_change') {
+              const direction = data.direction as string;
+              translatedTitle = t(`insights.salary_change_${direction}_title`);
+              translatedDesc = t('insights.salary_change_desc', {
+                source: data.source,
+                direction: t(`insights.salary_change_${direction}`),
+                percent: data.change_percent,
+                previous: data.previous,
+                current: data.current,
+              });
+            } else if (insight.type === 'spending_spike') {
+              translatedTitle = t('insights.spending_spike_title', { category: data.category });
+              translatedDesc = t('insights.spending_spike_desc', { recent: data.recent, category: data.category, percent: data.spike_percent, average: data.average });
+            } else if (insight.type === 'duplicate_charge') {
+              translatedTitle = t('insights.duplicate_charge_title');
+              translatedDesc = t('insights.duplicate_charge_desc', { count: Number(data.count), amount: String(data.amount), merchant: String(data.merchant), date: String(data.date) });
+            } else if (insight.type === 'large_transaction') {
+              translatedTitle = t('insights.large_transaction_title');
+              translatedDesc = t('insights.large_transaction_desc', { amount: data.amount, merchant: data.merchant, date: data.date });
+            }
+
             return (
               <Card key={i} className={`border ${config.border}`}>
                 <CardContent className="flex items-start gap-4 py-4">
@@ -70,8 +100,8 @@ const Insights = () => {
                     <Icon className={`h-5 w-5 ${config.color}`} />
                   </div>
                   <div className="min-w-0">
-                    <p className={`font-semibold ${config.color}`}>{insight.title}</p>
-                    <p className="text-sm text-muted-foreground mt-0.5">{insight.description}</p>
+                    <p className={`font-semibold ${config.color}`}>{translatedTitle}</p>
+                    <p className="text-sm text-muted-foreground mt-0.5">{translatedDesc}</p>
                   </div>
                 </CardContent>
               </Card>

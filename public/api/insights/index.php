@@ -48,9 +48,9 @@ foreach ($unusual as $u) {
         $insights[] = [
             'type' => 'unusual_merchant',
             'severity' => 'warning',
-            'title' => 'Unusual merchant detected',
-            'description' => "Transaction at \"{$merchantKey}\" for \$" . number_format((float)$u['amount'], 2) . " on {$u['date']}. You haven't transacted here before.",
-            'data' => ['merchant' => $merchantKey, 'amount' => (float)$u['amount'], 'date' => $u['date']],
+            'title' => 'unusual_merchant',
+            'description' => '',
+            'data' => ['merchant' => $merchantKey, 'amount' => number_format((float)$u['amount'], 2), 'date' => $u['date']],
         ];
     }
 }
@@ -88,9 +88,9 @@ foreach ($incomeSources as $source => $txns) {
             $insights[] = [
                 'type' => 'salary_change',
                 'severity' => $changePct > 0 ? 'positive' : 'warning',
-                'title' => "Income {$direction}",
-                'description' => "Your income from \"{$sourceName}\" {$direction} by " . abs(round($changePct, 1)) . "% (from $" . number_format($previous, 2) . " to $" . number_format($latest, 2) . ").",
-                'data' => ['source' => $sourceName, 'previous' => $previous, 'current' => $latest, 'change_percent' => round($changePct, 1)],
+                'title' => 'salary_change',
+                'description' => '',
+                'data' => ['source' => $sourceName, 'previous' => number_format($previous, 2), 'current' => number_format($latest, 2), 'change_percent' => round(abs($changePct), 1), 'direction' => $direction],
             ];
         }
     }
@@ -118,9 +118,9 @@ foreach ($spikes as $spike) {
     $insights[] = [
         'type' => 'spending_spike',
         'severity' => $pctOver > 100 ? 'critical' : 'warning',
-        'title' => "Spending spike in {$spike['category_name']}",
-        'description' => "You spent \$" . number_format($spike['recent_total'], 2) . " this month on {$spike['category_name']}, which is {$pctOver}% more than your 3-month average of \$" . number_format($spike['avg_monthly'], 2) . ".",
-        'data' => ['category' => $spike['category_name'], 'recent' => (float)$spike['recent_total'], 'average' => (float)$spike['avg_monthly'], 'spike_percent' => $pctOver],
+        'title' => 'spending_spike',
+        'description' => '',
+        'data' => ['category' => $spike['category_name'], 'recent' => number_format((float)$spike['recent_total'], 2), 'average' => number_format((float)$spike['avg_monthly'], 2), 'spike_percent' => $pctOver],
     ];
 }
 
@@ -142,9 +142,9 @@ foreach ($duplicates as $dup) {
     $insights[] = [
         'type' => 'duplicate_charge',
         'severity' => 'warning',
-        'title' => 'Possible duplicate charge',
-        'description' => "{$dup['dup_count']} charges of \$" . number_format((float)$dup['amount'], 2) . " at \"{$merchant}\" on {$dup['date']}.",
-        'data' => ['merchant' => $merchant, 'amount' => (float)$dup['amount'], 'date' => $dup['date'], 'count' => (int)$dup['dup_count']],
+        'title' => 'duplicate_charge',
+        'description' => '',
+        'data' => ['merchant' => $merchant, 'amount' => number_format((float)$dup['amount'], 2), 'date' => $dup['date'], 'count' => (int)$dup['dup_count']],
     ];
 }
 
@@ -167,9 +167,9 @@ foreach ($largest as $lg) {
         $insights[] = [
             'type' => 'large_transaction',
             'severity' => 'info',
-            'title' => 'Large transaction',
-            'description' => "\$" . number_format((float)$lg['amount'], 2) . " at \"{$merchant}\" on {$lg['date']}.",
-            'data' => ['merchant' => $merchant, 'amount' => (float)$lg['amount'], 'date' => $lg['date']],
+            'title' => 'large_transaction',
+            'description' => '',
+            'data' => ['merchant' => $merchant, 'amount' => number_format((float)$lg['amount'], 2), 'date' => $lg['date']],
         ];
     }
 }
