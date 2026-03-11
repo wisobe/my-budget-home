@@ -88,9 +88,9 @@ foreach ($incomeSources as $source => $txns) {
             $insights[] = [
                 'type' => 'salary_change',
                 'severity' => $changePct > 0 ? 'positive' : 'warning',
-                'title' => "Income {$direction}",
-                'description' => "Your income from \"{$sourceName}\" {$direction} by " . abs(round($changePct, 1)) . "% (from $" . number_format($previous, 2) . " to $" . number_format($latest, 2) . ").",
-                'data' => ['source' => $sourceName, 'previous' => $previous, 'current' => $latest, 'change_percent' => round($changePct, 1)],
+                'title' => 'salary_change',
+                'description' => '',
+                'data' => ['source' => $sourceName, 'previous' => number_format($previous, 2), 'current' => number_format($latest, 2), 'change_percent' => round(abs($changePct), 1), 'direction' => $direction],
             ];
         }
     }
