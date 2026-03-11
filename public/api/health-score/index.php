@@ -159,12 +159,12 @@ $diversityScore = min(10, round($catCount / 5 * 10));
 $totalScore = $savingsScore + $budgetScore + $stabilityScore + $incomeScore + $debtScore + $diversityScore;
 
 $tips = [];
-if ($savingsRate < 0.10) $tips[] = ['type' => 'savings', 'text' => 'Try to save at least 10-20% of your income each month.'];
-if ($totalBudgets === 0) $tips[] = ['type' => 'budget', 'text' => 'Set up budgets to track spending limits by category.'];
-if ($debtRatio > 0.3) $tips[] = ['type' => 'debt', 'text' => 'Focus on reducing high-interest debt to improve your financial health.'];
-if ($catCount < 3) $tips[] = ['type' => 'categorize', 'text' => 'Categorize your transactions for better spending insights.'];
-if ($savingsRate >= 0.20) $tips[] = ['type' => 'positive', 'text' => 'Great job! Your savings rate is above 20%.'];
-if ($totalBudgets > 0 && $withinBudget === $totalBudgets) $tips[] = ['type' => 'positive', 'text' => "You're within all your budgets this month!"];
+if ($savingsRate < 0.10) $tips[] = ['type' => 'savings', 'text' => 'tip_savings'];
+if ($totalBudgets === 0) $tips[] = ['type' => 'budget', 'text' => 'tip_budget'];
+if ($debtRatio > 0.3) $tips[] = ['type' => 'debt', 'text' => 'tip_debt'];
+if ($catCount < 3) $tips[] = ['type' => 'categorize', 'text' => 'tip_categorize'];
+if ($savingsRate >= 0.20) $tips[] = ['type' => 'positive', 'text' => 'tip_positive_savings'];
+if ($totalBudgets > 0 && $withinBudget === $totalBudgets) $tips[] = ['type' => 'positive', 'text' => 'tip_positive_budgets'];
 
 $grade = 'F';
 if ($totalScore >= 90) $grade = 'A+';
