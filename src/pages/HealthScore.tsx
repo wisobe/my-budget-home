@@ -12,7 +12,7 @@ import { Heart, Lightbulb, TrendingUp, AlertTriangle, CheckCircle } from 'lucide
 interface HealthData {
   score: number;
   grade: string;
-  breakdown: { name: string; score: number; max: number; detail: string }[];
+  breakdown: { name: string; score: number; max: number; detail: string; detail_data?: Record<string, unknown> }[];
   tips: { type: string; text: string }[];
   summary: {
     monthly_income: number;
