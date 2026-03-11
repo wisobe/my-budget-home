@@ -87,7 +87,7 @@ const Insights = () => {
               translatedDesc = t('insights.spending_spike_desc', { recent: data.recent, category: data.category, percent: data.spike_percent, average: data.average });
             } else if (insight.type === 'duplicate_charge') {
               translatedTitle = t('insights.duplicate_charge_title');
-              translatedDesc = t('insights.duplicate_charge_desc', { count: String(data.count), amount: String(data.amount), merchant: String(data.merchant), date: String(data.date) });
+              translatedDesc = t('insights.duplicate_charge_desc', { count: Number(data.count), amount: String(data.amount), merchant: String(data.merchant), date: String(data.date) });
             } else if (insight.type === 'large_transaction') {
               translatedTitle = t('insights.large_transaction_title');
               translatedDesc = t('insights.large_transaction_desc', { amount: data.amount, merchant: data.merchant, date: data.date });
