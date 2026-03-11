@@ -48,9 +48,9 @@ foreach ($unusual as $u) {
         $insights[] = [
             'type' => 'unusual_merchant',
             'severity' => 'warning',
-            'title' => 'Unusual merchant detected',
-            'description' => "Transaction at \"{$merchantKey}\" for \$" . number_format((float)$u['amount'], 2) . " on {$u['date']}. You haven't transacted here before.",
-            'data' => ['merchant' => $merchantKey, 'amount' => (float)$u['amount'], 'date' => $u['date']],
+            'title' => 'unusual_merchant',
+            'description' => '',
+            'data' => ['merchant' => $merchantKey, 'amount' => number_format((float)$u['amount'], 2), 'date' => $u['date']],
         ];
     }
 }
