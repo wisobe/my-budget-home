@@ -125,11 +125,13 @@ const HealthScore = () => {
               {health.breakdown.map((item, i) => (
                 <div key={i}>
                   <div className="flex items-center justify-between mb-1.5">
-                    <span className="text-sm font-medium">{item.name}</span>
+                    <span className="text-sm font-medium">{t(`healthScore.breakdown_${item.name}`)}</span>
                     <span className="text-sm text-muted-foreground">{item.score}/{item.max}</span>
                   </div>
                   <Progress value={(item.score / item.max) * 100} className="h-2" />
-                  <p className="text-xs text-muted-foreground mt-1">{item.detail}</p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {t(`healthScore.detail_${item.detail}`, item.detail_data || {})}
+                  </p>
                 </div>
               ))}
             </CardContent>
