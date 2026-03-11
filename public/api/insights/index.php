@@ -167,9 +167,9 @@ foreach ($largest as $lg) {
         $insights[] = [
             'type' => 'large_transaction',
             'severity' => 'info',
-            'title' => 'Large transaction',
-            'description' => "\$" . number_format((float)$lg['amount'], 2) . " at \"{$merchant}\" on {$lg['date']}.",
-            'data' => ['merchant' => $merchant, 'amount' => (float)$lg['amount'], 'date' => $lg['date']],
+            'title' => 'large_transaction',
+            'description' => '',
+            'data' => ['merchant' => $merchant, 'amount' => number_format((float)$lg['amount'], 2), 'date' => $lg['date']],
         ];
     }
 }
