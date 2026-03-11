@@ -714,6 +714,7 @@
     "cancelSubscriptions": "Cancel Subscriptions",
     "noSubscriptions": "No subscriptions detected",
     "totalSaved": "Total saved",
+    "perMonth": "/mo",
     "today": "Today",
     "1mo": "1 mo",
     "3mo": "3 mo",
