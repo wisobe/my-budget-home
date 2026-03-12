@@ -105,7 +105,7 @@ function SortableNavItem({ item, isActive, onNavigate }: { item: NavItem; isActi
           tooltip={name}
           className="flex-1"
         >
-          <Link to={item.href}>
+          <Link to={item.href} onClick={onNavigate}>
             <item.icon className="h-5 w-5" />
             <span>{name}</span>
           </Link>
