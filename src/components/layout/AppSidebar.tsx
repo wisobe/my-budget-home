@@ -190,27 +190,47 @@ export function AppSidebar() {
       </SidebarHeader>
 
       <SidebarContent className="px-3 py-4">
-        <DndContext
-          sensors={sensors}
-          collisionDetection={closestCenter}
-          onDragEnd={handleDragEnd}
-        >
-          <SortableContext
-            items={sortedNavigation.map(n => n.key)}
-            strategy={verticalListSortingStrategy}
+        {isMobile ? (
+          <SidebarMenu>
+            {sortedNavigation.map((item) => {
+              const isActive = location.pathname === item.href;
+              const name = t(item.key);
+              return (
+                <SidebarMenuItem key={item.key}>
+                  <SidebarMenuButton asChild isActive={isActive} tooltip={name}>
+                    <Link to={item.href} onClick={closeMobileMenu}>
+                      <item.icon className="h-5 w-5" />
+                      <span>{name}</span>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              );
+            })}
+          </SidebarMenu>
+        ) : (
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragEnd={handleDragEnd}
           >
-            <SidebarMenu>
-              {sortedNavigation.map((item) => (
-                <SortableNavItem
-                  key={item.key}
-                  item={item}
-                  isActive={location.pathname === item.href}
-                  onNavigate={closeMobileMenu}
-                />
-              ))}
-            </SidebarMenu>
-          </SortableContext>
-        </DndContext>
+            <SortableContext
+              items={sortedNavigation.map(n => n.key)}
+              strategy={verticalListSortingStrategy}
+            >
+              <SidebarMenu>
+                {sortedNavigation.map((item) => (
+                  <SortableNavItem
+                    key={item.key}
+                    item={item}
+                    isActive={location.pathname === item.href}
+                    onNavigate={closeMobileMenu}
+                    showDragHandle
+                  />
+                ))}
+              </SidebarMenu>
+            </SortableContext>
+          </DndContext>
+        )}
 
         {isAdmin && (
           <div className="mt-4 pt-4 border-t border-sidebar-border">
