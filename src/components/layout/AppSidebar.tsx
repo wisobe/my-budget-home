@@ -214,7 +214,7 @@ export function AppSidebar() {
                       isActive={isActive}
                       tooltip={name}
                     >
-                      <Link to={item.href}>
+                      <Link to={item.href} onClick={closeMobileMenu}>
                         <item.icon className="h-5 w-5" />
                         <span>{name}</span>
                       </Link>
