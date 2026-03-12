@@ -266,13 +266,13 @@ export function TransactionList() {
                       })()}
                     </TableCell>
                     <TableCell>
-                      <DropdownMenu>
+                      <DropdownMenu modal={false}>
                         <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                          <Button variant="ghost" size="sm" className="h-8 w-8 p-0 touch-manipulation">
                             <MoreHorizontal className="h-4 w-4" />
                           </Button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
+                        <DropdownMenuContent align="end" className="z-50">
                           <DropdownMenuItem onClick={() => handleSplit(transaction)}>
                             <Split className="h-4 w-4 mr-2" />
                             {hasSplits ? t('transactions.editSplit') : t('transactions.split')}

@@ -57,13 +57,13 @@ export function CookieConsentBanner() {
         </div>
 
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
-          <Button variant="destructive" size="sm" onClick={() => setConsent('declined')} className="flex-1 sm:flex-none">
+          <Button variant="destructive" size="sm" onClick={() => setConsent('declined')} className="flex-1 sm:flex-none min-h-[44px]">
             {t('consent.declineAll')}
           </Button>
-          <Button variant="outline" size="sm" onClick={() => setConsent('essential')} className="flex-1 sm:flex-none">
+          <Button variant="outline" size="sm" onClick={() => setConsent('essential')} className="flex-1 sm:flex-none min-h-[44px]">
             {t('consent.essentialOnly')}
           </Button>
-          <Button size="sm" onClick={() => setConsent('accepted')} className="flex-1 sm:flex-none">
+          <Button size="sm" onClick={() => setConsent('accepted')} className="flex-1 sm:flex-none min-h-[44px]">
             {t('consent.acceptAll')}
           </Button>
         </div>
