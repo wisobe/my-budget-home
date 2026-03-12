@@ -193,6 +193,7 @@ export function AppSidebar() {
                   key={item.key}
                   item={item}
                   isActive={location.pathname === item.href}
+                  onNavigate={closeMobileMenu}
                 />
               ))}
             </SidebarMenu>
