@@ -120,14 +120,16 @@ function SortableNavItem({
             <span>{name}</span>
           </Link>
         </SidebarMenuButton>
-        <button
-          {...attributes}
-          {...listeners}
-          className="opacity-0 group-hover/nav-item:opacity-60 hover:!opacity-100 cursor-grab active:cursor-grabbing p-1 text-sidebar-foreground/40 transition-opacity shrink-0"
-          tabIndex={-1}
-        >
-          <GripVertical className="h-3.5 w-3.5" />
-        </button>
+        {showDragHandle && (
+          <button
+            {...attributes}
+            {...listeners}
+            className="hidden md:flex opacity-0 group-hover/nav-item:opacity-60 hover:!opacity-100 cursor-grab active:cursor-grabbing p-1 text-sidebar-foreground/40 transition-opacity shrink-0"
+            tabIndex={-1}
+          >
+            <GripVertical className="h-3.5 w-3.5" />
+          </button>
+        )}
       </div>
     </SidebarMenuItem>
   );
