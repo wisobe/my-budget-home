@@ -77,7 +77,17 @@ const adminNavigationKeys: NavItem[] = [
   { key: 'nav.auditLog', href: '/admin/audit', icon: ClipboardList },
 ];
 
-function SortableNavItem({ item, isActive, onNavigate }: { item: NavItem; isActive: boolean; onNavigate?: () => void }) {
+function SortableNavItem({
+  item,
+  isActive,
+  onNavigate,
+  showDragHandle = true,
+}: {
+  item: NavItem;
+  isActive: boolean;
+  onNavigate?: () => void;
+  showDragHandle?: boolean;
+}) {
   const { t } = useTranslation();
   const name = t(item.key);
   const {
