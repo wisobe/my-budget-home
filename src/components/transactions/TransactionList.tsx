@@ -90,7 +90,7 @@ export function TransactionList() {
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap gap-4 items-center">
-        <div className="relative w-full sm:w-[200px]">
+        <div className="relative w-full sm:w-[400px]">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
             placeholder={t('transactions.searchPlaceholder')}
@@ -266,13 +266,13 @@ export function TransactionList() {
                       })()}
                     </TableCell>
                     <TableCell>
-                      <DropdownMenu>
+                      <DropdownMenu modal={false}>
                         <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                          <Button variant="ghost" size="sm" className="h-8 w-8 p-0 touch-manipulation">
                             <MoreHorizontal className="h-4 w-4" />
                           </Button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
+                        <DropdownMenuContent align="end" className="z-50">
                           <DropdownMenuItem onClick={() => handleSplit(transaction)}>
                             <Split className="h-4 w-4 mr-2" />
                             {hasSplits ? t('transactions.editSplit') : t('transactions.split')}

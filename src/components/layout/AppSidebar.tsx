@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useCallback } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
@@ -45,6 +45,7 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  useSidebar,
 } from '@/components/ui/sidebar';
 import { useAuth } from '@/contexts/AuthContext';
 import { usePreferences } from '@/contexts/PreferencesContext';
@@ -76,7 +77,7 @@ const adminNavigationKeys: NavItem[] = [
   { key: 'nav.auditLog', href: '/admin/audit', icon: ClipboardList },
 ];
 
-function SortableNavItem({ item, isActive }: { item: NavItem; isActive: boolean }) {
+function SortableNavItem({ item, isActive, onNavigate }: { item: NavItem; isActive: boolean; onNavigate?: () => void }) {
   const { t } = useTranslation();
   const name = t(item.key);
   const {
@@ -104,7 +105,7 @@ function SortableNavItem({ item, isActive }: { item: NavItem; isActive: boolean 
           tooltip={name}
           className="flex-1"
         >
-          <Link to={item.href}>
+          <Link to={item.href} onClick={onNavigate}>
             <item.icon className="h-5 w-5" />
             <span>{name}</span>
           </Link>
@@ -127,6 +128,11 @@ export function AppSidebar() {
   const location = useLocation();
   const { logout, authEnabled, user, isAdmin } = useAuth();
   const { sidebarOrder, setSidebarOrder } = usePreferences();
+  const { isMobile, setOpenMobile } = useSidebar();
+
+  const closeMobileMenu = useCallback(() => {
+    if (isMobile) setOpenMobile(false);
+  }, [isMobile, setOpenMobile]);
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
@@ -187,6 +193,7 @@ export function AppSidebar() {
                   key={item.key}
                   item={item}
                   isActive={location.pathname === item.href}
+                  onNavigate={closeMobileMenu}
                 />
               ))}
             </SidebarMenu>
@@ -207,7 +214,7 @@ export function AppSidebar() {
                       isActive={isActive}
                       tooltip={name}
                     >
-                      <Link to={item.href}>
+                      <Link to={item.href} onClick={closeMobileMenu}>
                         <item.icon className="h-5 w-5" />
                         <span>{name}</span>
                       </Link>
