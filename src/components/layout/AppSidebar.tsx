@@ -128,6 +128,11 @@ export function AppSidebar() {
   const location = useLocation();
   const { logout, authEnabled, user, isAdmin } = useAuth();
   const { sidebarOrder, setSidebarOrder } = usePreferences();
+  const { isMobile, setOpenMobile } = useSidebar();
+
+  const closeMobileMenu = useCallback(() => {
+    if (isMobile) setOpenMobile(false);
+  }, [isMobile, setOpenMobile]);
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
