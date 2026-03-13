@@ -52,6 +52,9 @@ export function TransactionList() {
   const [endDate, setEndDate] = useState<Date | undefined>(initialEndDate ? new Date(initialEndDate + 'T00:00:00') : undefined);
   const [splitTransaction, setSplitTransaction] = useState<Transaction | null>(null);
   const [splitOpen, setSplitOpen] = useState(false);
+  const [openActionMenuId, setOpenActionMenuId] = useState<string | null>(null);
+
+  const isMobile = useIsMobile();
 
   const { data: transactionsData, isLoading } = useTransactions({
     page,
