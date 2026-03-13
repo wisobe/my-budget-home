@@ -32,6 +32,7 @@ import {
 import { SplitTransactionDialog } from './SplitTransactionDialog';
 import { CategoryPicker } from './CategoryPicker';
 import { usePreferences } from '@/contexts/PreferencesContext';
+import { useIsMobile } from '@/hooks/use-mobile';
 import type { Transaction } from '@/types';
 
 export function TransactionList() {
@@ -51,6 +52,9 @@ export function TransactionList() {
   const [endDate, setEndDate] = useState<Date | undefined>(initialEndDate ? new Date(initialEndDate + 'T00:00:00') : undefined);
   const [splitTransaction, setSplitTransaction] = useState<Transaction | null>(null);
   const [splitOpen, setSplitOpen] = useState(false);
+  const [openActionMenuId, setOpenActionMenuId] = useState<string | null>(null);
+
+  const isMobile = useIsMobile();
 
   const { data: transactionsData, isLoading } = useTransactions({
     page,
@@ -173,7 +177,7 @@ export function TransactionList() {
         </div>
       </div>
 
-      <div className="rounded-lg border bg-card overflow-x-auto">
+      <div className="rounded-lg border bg-card">
         <Table>
           <TableHeader>
             <TableRow>
@@ -266,23 +270,42 @@ export function TransactionList() {
                       })()}
                     </TableCell>
                     <TableCell className="p-1">
-                      <DropdownMenu modal={false}>
+                      <DropdownMenu
+                        open={openActionMenuId === transaction.id}
+                        onOpenChange={(open) => setOpenActionMenuId(open ? transaction.id : null)}
+                        modal={!isMobile}
+                      >
                         <DropdownMenuTrigger asChild>
                           <Button
                             variant="ghost"
                             size="sm"
                             className="h-10 w-10 min-h-[44px] min-w-[44px] p-0 touch-manipulation"
-                            onClick={(e) => e.stopPropagation()}
+                            onPointerDown={(e) => {
+                              if (!isMobile) return;
+                              e.preventDefault();
+                              e.stopPropagation();
+                              setOpenActionMenuId((current) => (current === transaction.id ? null : transaction.id));
+                            }}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              if (isMobile) e.preventDefault();
+                            }}
                           >
                             <MoreHorizontal className="h-4 w-4" />
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end" side="bottom" sideOffset={4} className="z-[100]">
-                          <DropdownMenuItem onSelect={() => handleSplit(transaction)}>
+                          <DropdownMenuItem onSelect={() => {
+                            setOpenActionMenuId(null);
+                            handleSplit(transaction);
+                          }}>
                             <Split className="h-4 w-4 mr-2" />
                             {hasSplits ? t('transactions.editSplit') : t('transactions.split')}
                           </DropdownMenuItem>
-                          <DropdownMenuItem onSelect={() => handleExclude(transaction)}>
+                          <DropdownMenuItem onSelect={() => {
+                            setOpenActionMenuId(null);
+                            handleExclude(transaction);
+                          }}>
                             {isExcluded ? (
                               <><Eye className="h-4 w-4 mr-2" /> {t('transactions.include')}</>
                             ) : (
