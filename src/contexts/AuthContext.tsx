@@ -8,6 +8,7 @@ interface AuthContextType {
   authEnabled: boolean;
   user: User | null;
   isAdmin: boolean;
+  backendError: string | null;
   login: (email: string, password: string) => Promise<{ requires2fa: boolean; tempToken?: string }>;
   verify2fa: (tempToken: string, code: string) => Promise<void>;
   logout: () => void;
@@ -20,11 +21,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
   const [authEnabled, setAuthEnabled] = useState(false);
   const [user, setUser] = useState<User | null>(null);
+  const [backendError, setBackendError] = useState<string | null>(null);
 
   useEffect(() => {
     const checkAuth = async () => {
       try {
         const result = await authApi.verify();
+        setBackendError(null);
         setAuthEnabled(result.data.auth_enabled);
         if (!result.data.auth_enabled) {
           setIsAuthenticated(true);
@@ -36,9 +39,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             sessionStorage.removeItem('auth_token');
           }
         }
-      } catch {
-        // API not reachable — allow access (first-time setup)
-        setIsAuthenticated(true);
+      } catch (error) {
+        sessionStorage.removeItem('auth_token');
+        setUser(null);
+        setIsAuthenticated(false);
+        setBackendError(
+          error instanceof Error && error.message
+            ? error.message
+            : 'Unable to connect to the backend database. Please verify your backend and database settings.'
+        );
       } finally {
         setIsLoading(false);
       }
@@ -48,6 +57,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = useCallback(async (email: string, password: string) => {
     const result = await authApi.login(email, password);
+    setBackendError(null);
     if (result.data.requires_2fa && result.data.temp_token) {
       return { requires2fa: true, tempToken: result.data.temp_token };
     }
@@ -60,6 +70,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const verify2fa = useCallback(async (tempToken: string, code: string) => {
     const result = await authApi.verify2fa(tempToken, code);
+    setBackendError(null);
     sessionStorage.setItem('auth_token', result.data.token);
     setUser(result.data.user);
     setIsAuthenticated(true);
@@ -75,7 +86,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const isAdmin = user?.role === 'admin';
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, isLoading, authEnabled, user, isAdmin, login, verify2fa, logout }}>
+    <AuthContext.Provider value={{ isAuthenticated, isLoading, authEnabled, user, isAdmin, backendError, login, verify2fa, logout }}>
       {children}
     </AuthContext.Provider>
   );

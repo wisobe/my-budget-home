@@ -49,21 +49,41 @@ async function request<T>(
 
   const response = await fetch(url, config);
 
+  const parseErrorMessage = async (fallback: string) => {
+    try {
+      const contentType = response.headers.get('content-type') ?? '';
+      if (!contentType.includes('application/json')) return fallback;
+      const error = await response.json();
+      return typeof error?.message === 'string' ? error.message : fallback;
+    } catch {
+      return fallback;
+    }
+  };
+
   if (response.status === 401) {
     if (!endpoint.includes('/auth/')) {
       sessionStorage.removeItem('auth_token');
       window.location.reload();
     }
-    const error = await response.json().catch(() => ({ message: 'Unauthorized' }));
-    throw new ApiError(401, error.message || 'Unauthorized');
+    const message = await parseErrorMessage('Unauthorized');
+    throw new ApiError(401, message);
   }
 
   if (!response.ok) {
-    const error = await response.json().catch(() => ({ message: 'Request failed' }));
-    throw new ApiError(response.status, error.message || 'Request failed');
+    const message = await parseErrorMessage('Request failed');
+    throw new ApiError(response.status, message);
   }
 
-  return response.json();
+  const contentType = response.headers.get('content-type') ?? '';
+  if (!contentType.includes('application/json')) {
+    throw new ApiError(500, 'Backend unavailable or API endpoint is misconfigured.');
+  }
+
+  try {
+    return await response.json();
+  } catch {
+    throw new ApiError(500, 'Invalid API response received.');
+  }
 }
 
 // ============ Auth API ============
