@@ -177,7 +177,7 @@ export function TransactionList() {
         </div>
       </div>
 
-      <div className="rounded-lg border bg-card overflow-x-auto">
+      <div className="rounded-lg border bg-card">
         <Table>
           <TableHeader>
             <TableRow>
