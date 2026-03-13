@@ -64,12 +64,24 @@ function CookieGate({ children }: { children: React.ReactNode }) {
 }
 
 function AuthGate({ children }: { children: React.ReactNode }) {
-  const { isAuthenticated, isLoading } = useAuth();
+  const { isAuthenticated, isLoading, backendError } = useAuth();
 
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (backendError) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center p-6">
+        <div className="w-full max-w-md rounded-lg border bg-card text-card-foreground p-6 space-y-2">
+          <h1 className="text-lg font-semibold">Backend connection required</h1>
+          <p className="text-sm text-muted-foreground">{backendError}</p>
+          <p className="text-sm text-muted-foreground">Please verify your API URL and database settings, then refresh.</p>
+        </div>
       </div>
     );
   }
