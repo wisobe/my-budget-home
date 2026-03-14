@@ -264,34 +264,13 @@ export function TransactionList() {
                       })()}
                     </TableCell>
                     <TableCell className="p-1">
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="sm"
-                            className="h-10 w-10 min-h-[44px] min-w-[44px] p-0 touch-manipulation"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                            }}
-                          >
-                            <MoreHorizontal className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" side="bottom" sideOffset={4} className="z-[100]">
-                          <DropdownMenuItem onSelect={() => handleSplit(transaction)}>
-                            <Split className="h-4 w-4 mr-2" />
-                            {hasSplits ? t('transactions.editSplit') : t('transactions.split')}
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onSelect={() => handleExclude(transaction)}>
-                            {isExcluded ? (
-                              <><Eye className="h-4 w-4 mr-2" /> {t('transactions.include')}</>
-                            ) : (
-                              <><EyeOff className="h-4 w-4 mr-2" /> {t('transactions.exclude')}</>
-                            )}
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
+                      <TransactionActions
+                        transaction={transaction}
+                        hasSplits={hasSplits}
+                        isExcluded={isExcluded}
+                        onSplit={handleSplit}
+                        onToggleExclude={handleExclude}
+                      />
                     </TableCell>
                   </TableRow>
                 );
