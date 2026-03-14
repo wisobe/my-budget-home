@@ -16,9 +16,6 @@ import { Button } from '@/components/ui/button';
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '@/components/ui/select';
-import {
-  DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
 import { Badge } from '@/components/ui/badge';
@@ -27,10 +24,11 @@ import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
 import {
   Search, ChevronLeft, ChevronRight, ArrowUpRight, ArrowDownRight,
-  MoreHorizontal, Split, EyeOff, Eye, CalendarIcon, X,
+  CalendarIcon, X,
 } from 'lucide-react';
 import { SplitTransactionDialog } from './SplitTransactionDialog';
 import { CategoryPicker } from './CategoryPicker';
+import { TransactionActions } from './TransactionActions';
 import { usePreferences } from '@/contexts/PreferencesContext';
 import type { Transaction } from '@/types';
 
