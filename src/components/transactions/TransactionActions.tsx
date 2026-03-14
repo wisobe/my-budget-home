@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, type MouseEvent, type PointerEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Eye, EyeOff, MoreHorizontal, Split } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -40,7 +40,7 @@ export function TransactionActions({
   const actionsLabel = t('transactions.actions', { defaultValue: 'Transaction actions' });
 
   const openMobileActions = (
-    event: React.MouseEvent<HTMLButtonElement> | React.PointerEvent<HTMLButtonElement>,
+    event: MouseEvent<HTMLButtonElement> | PointerEvent<HTMLButtonElement>,
   ) => {
     event.stopPropagation();
     setMobileOpen(true);
