@@ -266,42 +266,26 @@ export function TransactionList() {
                       })()}
                     </TableCell>
                     <TableCell className="p-1">
-                      <DropdownMenu
-                        open={openActionMenuId === transaction.id}
-                        onOpenChange={(open) => setOpenActionMenuId(open ? transaction.id : null)}
-                        modal={!isMobile}
-                      >
+                      <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                           <Button
+                            type="button"
                             variant="ghost"
                             size="sm"
                             className="h-10 w-10 min-h-[44px] min-w-[44px] p-0 touch-manipulation"
-                            onPointerDown={(e) => {
-                              if (!isMobile) return;
-                              e.preventDefault();
-                              e.stopPropagation();
-                              setOpenActionMenuId((current) => (current === transaction.id ? null : transaction.id));
-                            }}
                             onClick={(e) => {
                               e.stopPropagation();
-                              if (isMobile) e.preventDefault();
                             }}
                           >
                             <MoreHorizontal className="h-4 w-4" />
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end" side="bottom" sideOffset={4} className="z-[100]">
-                          <DropdownMenuItem onSelect={() => {
-                            setOpenActionMenuId(null);
-                            handleSplit(transaction);
-                          }}>
+                          <DropdownMenuItem onSelect={() => handleSplit(transaction)}>
                             <Split className="h-4 w-4 mr-2" />
                             {hasSplits ? t('transactions.editSplit') : t('transactions.split')}
                           </DropdownMenuItem>
-                          <DropdownMenuItem onSelect={() => {
-                            setOpenActionMenuId(null);
-                            handleExclude(transaction);
-                          }}>
+                          <DropdownMenuItem onSelect={() => handleExclude(transaction)}>
                             {isExcluded ? (
                               <><Eye className="h-4 w-4 mr-2" /> {t('transactions.include')}</>
                             ) : (
