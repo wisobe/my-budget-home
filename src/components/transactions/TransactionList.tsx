@@ -16,9 +16,6 @@ import { Button } from '@/components/ui/button';
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '@/components/ui/select';
-import {
-  DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
 import { Badge } from '@/components/ui/badge';
@@ -27,10 +24,11 @@ import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
 import {
   Search, ChevronLeft, ChevronRight, ArrowUpRight, ArrowDownRight,
-  MoreHorizontal, Split, EyeOff, Eye, CalendarIcon, X,
+  CalendarIcon, X,
 } from 'lucide-react';
 import { SplitTransactionDialog } from './SplitTransactionDialog';
 import { CategoryPicker } from './CategoryPicker';
+import { TransactionActions } from './TransactionActions';
 import { usePreferences } from '@/contexts/PreferencesContext';
 import type { Transaction } from '@/types';
 
@@ -266,34 +264,13 @@ export function TransactionList() {
                       })()}
                     </TableCell>
                     <TableCell className="p-1">
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="sm"
-                            className="h-10 w-10 min-h-[44px] min-w-[44px] p-0 touch-manipulation"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                            }}
-                          >
-                            <MoreHorizontal className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" side="bottom" sideOffset={4} className="z-[100]">
-                          <DropdownMenuItem onSelect={() => handleSplit(transaction)}>
-                            <Split className="h-4 w-4 mr-2" />
-                            {hasSplits ? t('transactions.editSplit') : t('transactions.split')}
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onSelect={() => handleExclude(transaction)}>
-                            {isExcluded ? (
-                              <><Eye className="h-4 w-4 mr-2" /> {t('transactions.include')}</>
-                            ) : (
-                              <><EyeOff className="h-4 w-4 mr-2" /> {t('transactions.exclude')}</>
-                            )}
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
+                      <TransactionActions
+                        transaction={transaction}
+                        hasSplits={hasSplits}
+                        isExcluded={isExcluded}
+                        onSplit={handleSplit}
+                        onToggleExclude={handleExclude}
+                      />
                     </TableCell>
                   </TableRow>
                 );
