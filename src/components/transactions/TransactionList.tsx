@@ -32,7 +32,6 @@ import {
 import { SplitTransactionDialog } from './SplitTransactionDialog';
 import { CategoryPicker } from './CategoryPicker';
 import { usePreferences } from '@/contexts/PreferencesContext';
-import { useIsMobile } from '@/hooks/use-mobile';
 import type { Transaction } from '@/types';
 
 export function TransactionList() {
