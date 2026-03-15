@@ -416,6 +416,16 @@ export const auditApi = {
     targeted_accounts: { email: string; failure_count: number }[];
     security_events: Record<string, number>;
   }>>(`/audit/security-stats.php`),
+  activeSessions: () => request<ApiResponse<{
+    user_id: string;
+    name: string;
+    email: string;
+    role: string;
+    session_started: string;
+    expires_at: string;
+    last_ip: string | null;
+    last_login: string | null;
+  }[]>>(`/audit/active-sessions.php`),
 };
 
 // ============ Subscriptions API ============
