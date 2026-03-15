@@ -275,6 +275,62 @@ const AdminAuditLog = () => {
           </CardContent>
         </Card>
 
+        {/* Active Sessions Card */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Monitor className="h-5 w-5" />
+              {t('auditLog.activeSessions')}
+            </CardTitle>
+            <CardDescription>{t('auditLog.activeSessionsDesc')}</CardDescription>
+          </CardHeader>
+          <CardContent>
+            {sessionsLoading ? (
+              <div className="flex items-center justify-center py-8">
+                <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+              </div>
+            ) : activeSessions.length === 0 ? (
+              <p className="text-sm text-muted-foreground text-center py-4">{t('auditLog.noActiveSessions')}</p>
+            ) : (
+              <div className="space-y-3">
+                <p className="text-sm text-muted-foreground">
+                  {t('auditLog.activeSessionCount', { count: activeSessions.length })}
+                </p>
+                <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                  {activeSessions.map((session) => (
+                    <div key={session.user_id} className="flex items-start gap-3 p-3 rounded-lg border bg-card">
+                      <div className="h-9 w-9 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                        <Users className="h-4 w-4 text-primary" />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="text-sm font-medium truncate">{session.name}</p>
+                        <p className="text-xs text-muted-foreground truncate">{session.email}</p>
+                        <div className="flex items-center gap-2 mt-1.5">
+                          <Badge variant="outline" className="text-xs">{session.role}</Badge>
+                          <span className="inline-flex items-center gap-1 text-xs text-income">
+                            <span className="h-1.5 w-1.5 rounded-full bg-income animate-pulse" />
+                            {t('auditLog.online')}
+                          </span>
+                        </div>
+                        {session.last_ip && (
+                          <p className="text-xs text-muted-foreground mt-1 font-mono">{session.last_ip}</p>
+                        )}
+                        {session.last_login && (
+                          <p className="text-xs text-muted-foreground mt-0.5">
+                            {t('auditLog.lastLogin')}: {new Date(session.last_login).toLocaleString('en-CA', {
+                              month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit',
+                            })}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
         {/* Existing Audit Log Card */}
         <Card>
           <CardHeader>
