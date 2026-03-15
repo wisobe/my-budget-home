@@ -5,6 +5,9 @@ import fr from './fr.json';
 
 const savedLang = (() => {
   try {
+    // Check login_language first (set by login page language toggle)
+    const loginLang = localStorage.getItem('login_language');
+    if (loginLang && ['en', 'fr'].includes(loginLang)) return loginLang;
     const prefs = localStorage.getItem('app_preferences');
     if (prefs) {
       const parsed = JSON.parse(prefs);

@@ -127,25 +127,16 @@ export function PreferencesProvider({ children }: { children: React.ReactNode })
   useEffect(() => {
     preferencesApi.get()
       .then(res => {
-        const loginLang = localStorage.getItem('login_language');
+        // Clear login_language — the user's stored preference takes priority after auth
         localStorage.removeItem('login_language');
 
         if (res.data) {
           const apiPrefs = fromApi(res.data);
-          if (loginLang) {
-            apiPrefs.language = loginLang;
-          }
           setPrefs(p => ({ ...p, ...apiPrefs }));
-        } else if (loginLang) {
-          setPrefs(p => ({ ...p, language: loginLang }));
         }
       })
       .catch(() => {
-        const loginLang = localStorage.getItem('login_language');
         localStorage.removeItem('login_language');
-        if (loginLang) {
-          setPrefs(p => ({ ...p, language: loginLang }));
-        }
       })
       .finally(() => {
         setIsLoaded(true);

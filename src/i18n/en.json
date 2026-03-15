@@ -20,7 +20,8 @@
     "subscriptions": "Subscriptions",
     "insights": "Insights",
     "healthScore": "Health Score",
-    "simulator": "Simulator"
+    "simulator": "Simulator",
+    "reorder": "Reorder"
   },
   "auth": {
     "signIn": "Sign In",
@@ -537,7 +538,14 @@
     "targetedAccounts": "Targeted Accounts (7d)",
     "attempts": "{{count}} attempts",
     "securityEvents30d": "Security Events (30d)",
-    "overallStatus": "Overall Status"
+    "overallStatus": "Overall Status",
+    "activeSessions": "Active Sessions",
+    "activeSessionsDesc": "Users currently logged in with valid sessions.",
+    "noActiveSessions": "No active sessions found.",
+    "activeSessionCount": "{{count}} user currently logged in",
+    "activeSessionCount_other": "{{count}} users currently logged in",
+    "online": "Online",
+    "lastLogin": "Last login"
   },
   "privacy": {
     "title": "Privacy Policy",
@@ -693,7 +701,7 @@
     "salary_change_increased": "increased",
     "salary_change_decreased": "decreased",
     "spending_spike_title": "Spending spike in {{category}}",
-    "spending_spike_desc": "You spent ${{recent}} this month on {{category}}, which is {{percent}}% more than your 3-month average of ${{average}}.",
+    "spending_spike_desc": "You spent ${{recent}} in the last 30 days on {{category}}, which is {{percent}}% more than your 3-month average of ${{average}}.",
     "duplicate_charge_title": "Possible duplicate charge",
     "duplicate_charge_desc": "{{count}} charges of ${{amount}} at \"{{merchant}}\" on {{date}}.",
     "large_transaction_title": "Large transaction",
