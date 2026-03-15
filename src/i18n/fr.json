@@ -693,7 +693,7 @@
     "salary_change_increased": "augmenté",
     "salary_change_decreased": "diminué",
     "spending_spike_title": "Pic de dépenses dans {{category}}",
-    "spending_spike_desc": "Vous avez dépensé {{recent}} $ ce mois-ci dans {{category}}, soit {{percent}} % de plus que votre moyenne sur 3 mois de {{average}} $.",
+    "spending_spike_desc": "Vous avez dépensé {{recent}} $ au cours des 30 derniers jours dans {{category}}, soit {{percent}} % de plus que votre moyenne sur 3 mois de {{average}} $.",
     "duplicate_charge_title": "Possible charge en double",
     "duplicate_charge_desc": "{{count}} charges de {{amount}} $ chez « {{merchant}} » le {{date}}.",
     "large_transaction_title": "Transaction importante",

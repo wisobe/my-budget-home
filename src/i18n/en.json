@@ -693,7 +693,7 @@
     "salary_change_increased": "increased",
     "salary_change_decreased": "decreased",
     "spending_spike_title": "Spending spike in {{category}}",
-    "spending_spike_desc": "You spent ${{recent}} this month on {{category}}, which is {{percent}}% more than your 3-month average of ${{average}}.",
+    "spending_spike_desc": "You spent ${{recent}} in the last 30 days on {{category}}, which is {{percent}}% more than your 3-month average of ${{average}}.",
     "duplicate_charge_title": "Possible duplicate charge",
     "duplicate_charge_desc": "{{count}} charges of ${{amount}} at \"{{merchant}}\" on {{date}}.",
     "large_transaction_title": "Large transaction",
