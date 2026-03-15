@@ -1,13 +1,14 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
+import { format, startOfMonth } from 'date-fns';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { StatCard } from '@/components/dashboard/StatCard';
 import { AccountsList } from '@/components/dashboard/AccountsList';
 import { RecentTransactions } from '@/components/dashboard/RecentTransactions';
 import { SpendingChart } from '@/components/dashboard/SpendingChart';
 import { BalanceAccountsPicker } from '@/components/dashboard/BalanceAccountsPicker';
-import { useAccounts, useTotalBalance } from '@/hooks/use-accounts';
-import { useTransactions } from '@/hooks/use-transactions';
+import { useTotalBalance } from '@/hooks/use-accounts';
+import { useMonthlyOverviewByRange } from '@/hooks/use-reports';
 import { SyncButton } from '@/components/transactions/SyncButton';
 import { useSyncAllConnections } from '@/hooks/use-plaid';
 import { usePreferences } from '@/contexts/PreferencesContext';
@@ -17,8 +18,7 @@ import { Wallet, TrendingUp, TrendingDown, PiggyBank } from 'lucide-react';
 const Dashboard = () => {
   const { t } = useTranslation();
   const totalBalance = useTotalBalance();
-  const { data: transactionsData } = useTransactions({ per_page: 100 });
-  const { autoSync, showPending, isLoaded: prefsLoaded, consentDataProcessing } = usePreferences();
+  const { autoSync, isLoaded: prefsLoaded, consentDataProcessing } = usePreferences();
   const syncAll = useSyncAllConnections();
   const hasSynced = useRef(false);
 
@@ -30,30 +30,15 @@ const Dashboard = () => {
   }, [prefsLoaded, autoSync]);
 
   const now = new Date();
-  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-  
-  const transactions = (transactionsData?.data || [])
-    .filter(t => !t.pending)
-    .filter(t => !t.excluded);
-  const thisMonthTransactions = transactions.filter(t => new Date(t.date) >= startOfMonth);
-  
-  const getEffectiveAmount = (t: typeof transactions[0]) => {
-    if ((t.split_count ?? 0) > 0 && t.included_split_amount != null) {
-      return Number(t.included_split_amount);
-    }
-    return Number(t.amount);
-  };
+  const currentMonthStart = format(startOfMonth(now), 'yyyy-MM-dd');
+  const today = format(now, 'yyyy-MM-dd');
 
-  const isIncomeTransaction = (t: typeof transactions[0]) => t.category_is_income === true || Number(t.category_is_income) === 1;
+  const { data: overviewData } = useMonthlyOverviewByRange(currentMonthStart, today);
+  const monthlyData = overviewData?.data || [];
 
-  const monthlyIncome = thisMonthTransactions
-    .filter(t => isIncomeTransaction(t))
-    .reduce((sum, t) => sum + Math.abs(getEffectiveAmount(t)), 0);
-  
-  const monthlyExpenses = thisMonthTransactions
-    .filter(t => !isIncomeTransaction(t))
-    .reduce((sum, t) => sum + getEffectiveAmount(t), 0);
-
+  // Sum all months in the range (should be just current month)
+  const monthlyIncome = monthlyData.reduce((sum, m) => sum + Number(m.total_income), 0);
+  const monthlyExpenses = monthlyData.reduce((sum, m) => sum + Number(m.total_expenses), 0);
   const netSavings = monthlyIncome - monthlyExpenses;
 
   if (!consentDataProcessing) {
