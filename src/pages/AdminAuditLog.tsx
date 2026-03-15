@@ -98,7 +98,15 @@ const AdminAuditLog = () => {
     refetchInterval: 60000,
   });
 
+  const { data: activeSessionsData, isLoading: sessionsLoading } = useQuery({
+    queryKey: ['active-sessions'],
+    queryFn: () => auditApi.activeSessions(),
+    enabled: isAdmin,
+    refetchInterval: 60000,
+  });
+
   const stats = securityStats?.data;
+  const activeSessions = activeSessionsData?.data || [];
 
   if (!isAdmin) {
     return <Navigate to="/" replace />;
