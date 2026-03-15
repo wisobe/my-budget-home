@@ -537,7 +537,14 @@
     "targetedAccounts": "Targeted Accounts (7d)",
     "attempts": "{{count}} attempts",
     "securityEvents30d": "Security Events (30d)",
-    "overallStatus": "Overall Status"
+    "overallStatus": "Overall Status",
+    "activeSessions": "Active Sessions",
+    "activeSessionsDesc": "Users currently logged in with valid sessions.",
+    "noActiveSessions": "No active sessions found.",
+    "activeSessionCount": "{{count}} user currently logged in",
+    "activeSessionCount_other": "{{count}} users currently logged in",
+    "online": "Online",
+    "lastLogin": "Last login"
   },
   "privacy": {
     "title": "Privacy Policy",

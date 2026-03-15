@@ -537,7 +537,14 @@
     "targetedAccounts": "Comptes ciblés (7j)",
     "attempts": "{{count}} tentatives",
     "securityEvents30d": "Événements de sécurité (30j)",
-    "overallStatus": "État général"
+    "overallStatus": "État général",
+    "activeSessions": "Sessions actives",
+    "activeSessionsDesc": "Utilisateurs actuellement connectés avec des sessions valides.",
+    "noActiveSessions": "Aucune session active trouvée.",
+    "activeSessionCount": "{{count}} utilisateur actuellement connecté",
+    "activeSessionCount_other": "{{count}} utilisateurs actuellement connectés",
+    "online": "En ligne",
+    "lastLogin": "Dernière connexion"
   },
   "privacy": {
     "title": "Politique de confidentialité",
