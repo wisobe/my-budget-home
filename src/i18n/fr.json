@@ -20,7 +20,8 @@
     "subscriptions": "Abonnements",
     "insights": "Analyses",
     "healthScore": "Santé financière",
-    "simulator": "Simulateur"
+    "simulator": "Simulateur",
+    "reorder": "Réorganiser"
   },
   "auth": {
     "signIn": "Se connecter",

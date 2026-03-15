@@ -20,7 +20,8 @@
     "subscriptions": "Subscriptions",
     "insights": "Insights",
     "healthScore": "Health Score",
-    "simulator": "Simulator"
+    "simulator": "Simulator",
+    "reorder": "Reorder"
   },
   "auth": {
     "signIn": "Sign In",
