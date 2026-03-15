@@ -1,4 +1,4 @@
-import { useMemo, useCallback } from 'react';
+import { useMemo, useCallback, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
@@ -19,6 +19,10 @@ import {
   Heart,
   Calculator,
   GripVertical,
+  ChevronUp,
+  ChevronDown,
+  Pencil,
+  Check,
 } from 'lucide-react';
 import {
   DndContext,
@@ -47,6 +51,7 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from '@/components/ui/sidebar';
+import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
 import { usePreferences } from '@/contexts/PreferencesContext';
 
@@ -81,12 +86,10 @@ function SortableNavItem({
   item,
   isActive,
   onNavigate,
-  showDragHandle = true,
 }: {
   item: NavItem;
   isActive: boolean;
   onNavigate?: () => void;
-  showDragHandle?: boolean;
 }) {
   const { t } = useTranslation();
   const name = t(item.key);
@@ -120,19 +123,24 @@ function SortableNavItem({
             <span>{name}</span>
           </Link>
         </SidebarMenuButton>
-        {showDragHandle && (
-          <button
-            {...attributes}
-            {...listeners}
-            className="hidden md:flex opacity-0 group-hover/nav-item:opacity-60 hover:!opacity-100 cursor-grab active:cursor-grabbing p-1 text-sidebar-foreground/40 transition-opacity shrink-0"
-            tabIndex={-1}
-          >
-            <GripVertical className="h-3.5 w-3.5" />
-          </button>
-        )}
+        <button
+          {...attributes}
+          {...listeners}
+          className="hidden md:flex opacity-0 group-hover/nav-item:opacity-60 hover:!opacity-100 cursor-grab active:cursor-grabbing p-1 text-sidebar-foreground/40 transition-opacity shrink-0"
+          tabIndex={-1}
+        >
+          <GripVertical className="h-3.5 w-3.5" />
+        </button>
       </div>
     </SidebarMenuItem>
   );
+}
+
+function useTouchDevice() {
+  return useMemo(() => {
+    if (typeof window === 'undefined') return false;
+    return window.matchMedia('(pointer: coarse)').matches;
+  }, []);
 }
 
 export function AppSidebar() {
@@ -141,6 +149,8 @@ export function AppSidebar() {
   const { logout, authEnabled, user, isAdmin } = useAuth();
   const { sidebarOrder, setSidebarOrder } = usePreferences();
   const { isMobile, setOpenMobile } = useSidebar();
+  const isTouchDevice = useTouchDevice();
+  const [reorderMode, setReorderMode] = useState(false);
 
   const closeMobileMenu = useCallback(() => {
     if (isMobile) setOpenMobile(false);
@@ -158,7 +168,6 @@ export function AppSidebar() {
       const item = defaultNavigation.find(n => n.key === key);
       if (item) ordered.push(item);
     }
-    // Append any new items not in saved order
     for (const item of defaultNavigation) {
       if (!ordered.find(n => n.key === item.key)) ordered.push(item);
     }
@@ -173,6 +182,96 @@ export function AppSidebar() {
     const newIndex = sortedNavigation.findIndex(n => n.key === over.id);
     const newOrder = arrayMove(sortedNavigation, oldIndex, newIndex);
     setSidebarOrder(newOrder.map(n => n.key));
+  };
+
+  const moveItem = (index: number, direction: 'up' | 'down') => {
+    const newIndex = direction === 'up' ? index - 1 : index + 1;
+    if (newIndex < 0 || newIndex >= sortedNavigation.length) return;
+    const newOrder = arrayMove(sortedNavigation, index, newIndex);
+    setSidebarOrder(newOrder.map(n => n.key));
+  };
+
+  const renderNavItems = () => {
+    // Touch devices (phone + tablet): use tap-to-reorder mode
+    if (isTouchDevice) {
+      return (
+        <SidebarMenu>
+          {sortedNavigation.map((item, index) => {
+            const isActive = location.pathname === item.href;
+            const name = t(item.key);
+            return (
+              <SidebarMenuItem key={item.key}>
+                <div className="flex items-center">
+                  <SidebarMenuButton
+                    asChild
+                    isActive={isActive}
+                    tooltip={name}
+                    className="flex-1"
+                  >
+                    <Link
+                      to={reorderMode ? '#' : item.href}
+                      onClick={(e) => {
+                        if (reorderMode) {
+                          e.preventDefault();
+                        } else {
+                          closeMobileMenu();
+                        }
+                      }}
+                    >
+                      <item.icon className="h-5 w-5" />
+                      <span>{name}</span>
+                    </Link>
+                  </SidebarMenuButton>
+                  {reorderMode && (
+                    <div className="flex flex-col shrink-0 mr-1">
+                      <button
+                        onClick={() => moveItem(index, 'up')}
+                        disabled={index === 0}
+                        className="p-0.5 text-sidebar-foreground/60 hover:text-sidebar-foreground disabled:opacity-20 disabled:cursor-not-allowed"
+                      >
+                        <ChevronUp className="h-3.5 w-3.5" />
+                      </button>
+                      <button
+                        onClick={() => moveItem(index, 'down')}
+                        disabled={index === sortedNavigation.length - 1}
+                        className="p-0.5 text-sidebar-foreground/60 hover:text-sidebar-foreground disabled:opacity-20 disabled:cursor-not-allowed"
+                      >
+                        <ChevronDown className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </SidebarMenuItem>
+            );
+          })}
+        </SidebarMenu>
+      );
+    }
+
+    // Desktop: use drag-and-drop
+    return (
+      <DndContext
+        sensors={sensors}
+        collisionDetection={closestCenter}
+        onDragEnd={handleDragEnd}
+      >
+        <SortableContext
+          items={sortedNavigation.map(n => n.key)}
+          strategy={verticalListSortingStrategy}
+        >
+          <SidebarMenu>
+            {sortedNavigation.map((item) => (
+              <SortableNavItem
+                key={item.key}
+                item={item}
+                isActive={location.pathname === item.href}
+                onNavigate={closeMobileMenu}
+              />
+            ))}
+          </SidebarMenu>
+        </SortableContext>
+      </DndContext>
+    );
   };
 
   return (
@@ -190,47 +289,30 @@ export function AppSidebar() {
       </SidebarHeader>
 
       <SidebarContent className="px-3 py-4">
-        {isMobile ? (
-          <SidebarMenu>
-            {sortedNavigation.map((item) => {
-              const isActive = location.pathname === item.href;
-              const name = t(item.key);
-              return (
-                <SidebarMenuItem key={item.key}>
-                  <SidebarMenuButton asChild isActive={isActive} tooltip={name}>
-                    <Link to={item.href} onClick={closeMobileMenu}>
-                      <item.icon className="h-5 w-5" />
-                      <span>{name}</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              );
-            })}
-          </SidebarMenu>
-        ) : (
-          <DndContext
-            sensors={sensors}
-            collisionDetection={closestCenter}
-            onDragEnd={handleDragEnd}
-          >
-            <SortableContext
-              items={sortedNavigation.map(n => n.key)}
-              strategy={verticalListSortingStrategy}
+        {isTouchDevice && (
+          <div className="flex justify-end px-2 mb-2">
+            <Button
+              variant={reorderMode ? 'default' : 'ghost'}
+              size="sm"
+              className="h-7 gap-1.5 text-xs"
+              onClick={() => setReorderMode(!reorderMode)}
             >
-              <SidebarMenu>
-                {sortedNavigation.map((item) => (
-                  <SortableNavItem
-                    key={item.key}
-                    item={item}
-                    isActive={location.pathname === item.href}
-                    onNavigate={closeMobileMenu}
-                    showDragHandle
-                  />
-                ))}
-              </SidebarMenu>
-            </SortableContext>
-          </DndContext>
+              {reorderMode ? (
+                <>
+                  <Check className="h-3.5 w-3.5" />
+                  {t('common.save')}
+                </>
+              ) : (
+                <>
+                  <Pencil className="h-3.5 w-3.5" />
+                  {t('nav.reorder')}
+                </>
+              )}
+            </Button>
+          </div>
         )}
+
+        {renderNavItems()}
 
         {isAdmin && (
           <div className="mt-4 pt-4 border-t border-sidebar-border">
