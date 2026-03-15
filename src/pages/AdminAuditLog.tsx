@@ -19,7 +19,7 @@ import {
   Search, ChevronLeft, ChevronRight, CalendarIcon, X,
   Shield, LogIn, LogOut, UserPlus, UserMinus, UserCog, KeyRound,
   ClipboardList, Loader2, CheckCircle2, AlertTriangle, AlertCircle,
-  Activity, Globe,
+  Activity, Globe, Users, Monitor,
 } from 'lucide-react';
 import type { AuditLogEntry } from '@/types';
 
