@@ -46,7 +46,7 @@ const Login = () => {
     setError('');
     setLoading(true);
     try {
-      await verify2fa(tempToken, totpCode);
+      await verify2fa(tempToken, totpCode, trustDevice);
     } catch (err: any) {
       setError(err.message || t('auth.invalid2faCode'));
     } finally {
