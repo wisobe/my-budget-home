@@ -212,9 +212,9 @@ export function TransactionList() {
                         isIncome ? "bg-income/10" : "bg-expense/10"
                       )}>
                         {isIncome ? (
-                          <ArrowDownRight className="h-4 w-4 text-income" />
+                          <ArrowUpRight className="h-4 w-4 text-income" />
                         ) : (
-                          <ArrowUpRight className="h-4 w-4 text-expense" />
+                          <ArrowDownRight className="h-4 w-4 text-expense" />
                         )}
                       </div>
                     </TableCell>
