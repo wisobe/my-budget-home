@@ -56,7 +56,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const login = useCallback(async (email: string, password: string) => {
-    const result = await authApi.login(email, password);
+    const deviceToken = localStorage.getItem('device_token') || undefined;
+    const result = await authApi.login(email, password, deviceToken);
     setBackendError(null);
     if (result.data.requires_2fa && result.data.temp_token) {
       return { requires2fa: true, tempToken: result.data.temp_token };
