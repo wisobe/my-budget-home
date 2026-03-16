@@ -25,7 +25,7 @@ export function ExportDialog({ trigger, format }: ExportDialogProps) {
   const handleExport = async () => {
     setExporting(true);
     try {
-      const token = sessionStorage.getItem('auth_token');
+      const token = localStorage.getItem('auth_token');
       const params = new URLSearchParams({ format, plaid_environment: plaidEnvironment });
       if (startDate) params.set('start_date', startDate);
       if (endDate) params.set('end_date', endDate);

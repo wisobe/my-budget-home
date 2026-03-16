@@ -42,7 +42,7 @@ export function PlaidCredentialsSettings() {
   const [showSandboxSecret, setShowSandboxSecret] = useState(false);
   const [showProdSecret, setShowProdSecret] = useState(false);
 
-  const token = sessionStorage.getItem('auth_token');
+  const token = localStorage.getItem('auth_token');
   const headers: HeadersInit = {
     'Content-Type': 'application/json',
     ...(token ? { Authorization: `Bearer ${token}` } : {}),

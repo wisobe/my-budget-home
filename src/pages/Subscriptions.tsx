@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -49,6 +49,8 @@ const Subscriptions = () => {
   const { plaidEnvironment: environment } = usePlaidEnvironment();
   const queryClient = useQueryClient();
   const [showDismissed, setShowDismissed] = useState(false);
+  const [filterAlerts, setFilterAlerts] = useState(false);
+  const listRef = useRef<HTMLDivElement>(null);
 
   const { data, isLoading } = useQuery({
     queryKey: ['subscriptions', environment],
@@ -66,7 +68,8 @@ const Subscriptions = () => {
 
   const subData = data?.data as SubscriptionData | undefined;
 
-  const visibleSubs = subData?.subscriptions.filter(s => showDismissed || !s.dismissed) ?? [];
+  const visibleSubs = (subData?.subscriptions.filter(s => showDismissed || !s.dismissed) ?? [])
+    .filter(s => !filterAlerts || s.status === 'missed' || s.price_change !== null);
   const activeSubs = subData?.subscriptions.filter(s => !s.dismissed) ?? [];
 
   const statusConfig = {
@@ -140,7 +143,13 @@ const Subscriptions = () => {
                 </div>
               </CardContent>
             </Card>
-            <Card>
+            <Card
+              className={`cursor-pointer transition-colors ${filterAlerts ? 'ring-2 ring-destructive' : 'hover:bg-muted/50'}`}
+              onClick={() => {
+                setFilterAlerts(!filterAlerts);
+                setTimeout(() => listRef.current?.scrollIntoView({ behavior: 'smooth' }), 100);
+              }}
+            >
               <CardContent className="pt-6">
                 <div className="flex items-center gap-3">
                   <div className="h-10 w-10 rounded-lg bg-destructive/10 flex items-center justify-center">
@@ -156,8 +165,16 @@ const Subscriptions = () => {
           </div>
 
           {/* Subscription List */}
-          <Card>
+          <Card ref={listRef}>
             <CardHeader className="flex flex-row items-center justify-between">
+              <div className="flex items-center gap-2">
+                <CardTitle className="text-lg">{t('subscriptions.detectedSubscriptions')}</CardTitle>
+                {filterAlerts && (
+                  <Badge variant="destructive" className="cursor-pointer" onClick={() => setFilterAlerts(false)}>
+                    {t('subscriptions.alerts')} ✕
+                  </Badge>
+                )}
+              </div>
               <CardTitle className="text-lg">{t('subscriptions.detectedSubscriptions')}</CardTitle>
               <Button
                 variant="ghost"

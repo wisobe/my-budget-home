@@ -15,7 +15,7 @@ const AdminBackend = () => {
     setDbTestStatus('testing');
     try {
       const apiUrl = `${API_BASE_URL}/settings/test-db.php`;
-      const token = sessionStorage.getItem('auth_token');
+      const token = localStorage.getItem('auth_token');
       const response = await fetch(apiUrl, {
         method: 'POST',
         headers: token ? { 'Authorization': `Bearer ${token}` } : {},

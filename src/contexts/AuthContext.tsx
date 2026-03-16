@@ -36,11 +36,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           if (result.data.token_valid && result.data.user) {
             setUser(result.data.user);
           } else {
-            sessionStorage.removeItem('auth_token');
+            localStorage.removeItem('auth_token');
           }
         }
       } catch (error) {
-        sessionStorage.removeItem('auth_token');
+        localStorage.removeItem('auth_token');
         setUser(null);
         setIsAuthenticated(false);
         setBackendError(
@@ -61,7 +61,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (result.data.requires_2fa && result.data.temp_token) {
       return { requires2fa: true, tempToken: result.data.temp_token };
     }
-    sessionStorage.setItem('auth_token', result.data.token!);
+    localStorage.setItem('auth_token', result.data.token!);
     setUser(result.data.user!);
     setIsAuthenticated(true);
     setAuthEnabled(true);
@@ -71,14 +71,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const verify2fa = useCallback(async (tempToken: string, code: string) => {
     const result = await authApi.verify2fa(tempToken, code);
     setBackendError(null);
-    sessionStorage.setItem('auth_token', result.data.token);
+    localStorage.setItem('auth_token', result.data.token);
     setUser(result.data.user);
     setIsAuthenticated(true);
     setAuthEnabled(true);
   }, []);
 
   const logout = useCallback(() => {
-    sessionStorage.removeItem('auth_token');
+    localStorage.removeItem('auth_token');
     setUser(null);
     setIsAuthenticated(false);
   }, []);

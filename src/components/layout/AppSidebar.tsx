@@ -206,7 +206,7 @@ export function AppSidebar() {
                     asChild
                     isActive={isActive}
                     tooltip={name}
-                    className="flex-1"
+                    className="flex-1 min-h-[48px]"
                   >
                     <Link
                       to={reorderMode ? '#' : item.href}
@@ -219,24 +219,24 @@ export function AppSidebar() {
                       }}
                     >
                       <item.icon className="h-5 w-5" />
-                      <span>{name}</span>
+                      <span className="text-base">{name}</span>
                     </Link>
                   </SidebarMenuButton>
                   {reorderMode && (
-                    <div className="flex flex-col shrink-0 mr-1">
+                    <div className="flex flex-col shrink-0 mr-1 gap-1">
                       <button
                         onClick={() => moveItem(index, 'up')}
                         disabled={index === 0}
-                        className="p-0.5 text-sidebar-foreground/60 hover:text-sidebar-foreground disabled:opacity-20 disabled:cursor-not-allowed"
+                        className="p-2 text-sidebar-foreground/60 hover:text-sidebar-foreground disabled:opacity-20 disabled:cursor-not-allowed touch-manipulation"
                       >
-                        <ChevronUp className="h-3.5 w-3.5" />
+                        <ChevronUp className="h-5 w-5" />
                       </button>
                       <button
                         onClick={() => moveItem(index, 'down')}
                         disabled={index === sortedNavigation.length - 1}
-                        className="p-0.5 text-sidebar-foreground/60 hover:text-sidebar-foreground disabled:opacity-20 disabled:cursor-not-allowed"
+                        className="p-2 text-sidebar-foreground/60 hover:text-sidebar-foreground disabled:opacity-20 disabled:cursor-not-allowed touch-manipulation"
                       >
-                        <ChevronDown className="h-3.5 w-3.5" />
+                        <ChevronDown className="h-5 w-5" />
                       </button>
                     </div>
                   )}

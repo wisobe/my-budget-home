@@ -15,7 +15,7 @@ interface PlaidEnvironmentContextType {
 const PlaidEnvironmentContext = createContext<PlaidEnvironmentContextType | undefined>(undefined);
 
 async function fetchUserPreferences(): Promise<Record<string, string>> {
-  const token = sessionStorage.getItem('auth_token');
+  const token = localStorage.getItem('auth_token');
   try {
     const res = await fetch(`${API_BASE_URL}/settings/user-preferences.php`, {
       headers: {
@@ -32,7 +32,7 @@ async function fetchUserPreferences(): Promise<Record<string, string>> {
 }
 
 async function saveUserPreference(key: string, value: string) {
-  const token = sessionStorage.getItem('auth_token');
+  const token = localStorage.getItem('auth_token');
   try {
     await fetch(`${API_BASE_URL}/settings/user-preferences.php`, {
       method: 'POST',

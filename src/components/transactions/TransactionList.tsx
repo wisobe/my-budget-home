@@ -88,7 +88,7 @@ export function TransactionList() {
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap gap-4 items-center">
-        <div className="relative w-full sm:w-[400px]">
+        <div className="relative w-full sm:w-[485px]">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
             placeholder={t('transactions.searchPlaceholder')}
@@ -212,9 +212,9 @@ export function TransactionList() {
                         isIncome ? "bg-income/10" : "bg-expense/10"
                       )}>
                         {isIncome ? (
-                          <ArrowDownRight className="h-4 w-4 text-income" />
+                          <ArrowUpRight className="h-4 w-4 text-income" />
                         ) : (
-                          <ArrowUpRight className="h-4 w-4 text-expense" />
+                          <ArrowDownRight className="h-4 w-4 text-expense" />
                         )}
                       </div>
                     </TableCell>
