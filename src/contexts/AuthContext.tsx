@@ -61,7 +61,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (result.data.requires_2fa && result.data.temp_token) {
       return { requires2fa: true, tempToken: result.data.temp_token };
     }
-    sessionStorage.setItem('auth_token', result.data.token!);
+    localStorage.setItem('auth_token', result.data.token!);
     setUser(result.data.user!);
     setIsAuthenticated(true);
     setAuthEnabled(true);
