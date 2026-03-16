@@ -10,7 +10,7 @@ interface AuthContextType {
   isAdmin: boolean;
   backendError: string | null;
   login: (email: string, password: string) => Promise<{ requires2fa: boolean; tempToken?: string }>;
-  verify2fa: (tempToken: string, code: string) => Promise<void>;
+  verify2fa: (tempToken: string, code: string, trustDevice?: boolean) => Promise<void>;
   logout: () => void;
 }
 
