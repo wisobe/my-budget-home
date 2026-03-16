@@ -92,16 +92,16 @@ export const authApi = {
   verify: () =>
     request<ApiResponse<AuthVerifyResponse>>('/auth/verify.php'),
 
-  login: (email: string, password: string) =>
+  login: (email: string, password: string, deviceToken?: string) =>
     request<ApiResponse<{ token?: string; expires_at?: string; user?: User; requires_2fa?: boolean; temp_token?: string }>>('/auth/login.php', {
       method: 'POST',
-      body: JSON.stringify({ email, password }),
+      body: JSON.stringify({ email, password, ...(deviceToken ? { device_token: deviceToken } : {}) }),
     }),
 
-  verify2fa: (temp_token: string, code: string) =>
-    request<ApiResponse<{ token: string; expires_at: string; user: User }>>('/auth/2fa-verify.php', {
+  verify2fa: (temp_token: string, code: string, trustDevice?: boolean) =>
+    request<ApiResponse<{ token: string; expires_at: string; user: User; device_token?: string }>>('/auth/2fa-verify.php', {
       method: 'POST',
-      body: JSON.stringify({ temp_token, code }),
+      body: JSON.stringify({ temp_token, code, ...(trustDevice ? { trust_device: true } : {}) }),
     }),
 
   get2faStatus: () =>
