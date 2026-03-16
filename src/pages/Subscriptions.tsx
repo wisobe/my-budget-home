@@ -88,8 +88,8 @@ const Subscriptions = () => {
 
   const summaryMonthly = activeSubs.reduce((sum, s) => sum + s.monthly_cost, 0);
   const summaryAnnual = activeSubs.reduce((sum, s) => sum + s.annual_cost, 0);
-  const summaryAlerts = activeSubs.filter(s => s.status === 'missed').length +
-    activeSubs.filter(s => s.price_change !== null).length;
+  const alertSubs = activeSubs.filter(s => s.status === 'missed' || (s.price_change !== null && s.price_change.direction === 'increase'));
+  const summaryAlerts = alertSubs.length;
 
   return (
     <AppLayout title={t('subscriptions.title')}>
