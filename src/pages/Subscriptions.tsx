@@ -165,8 +165,16 @@ const Subscriptions = () => {
           </div>
 
           {/* Subscription List */}
-          <Card>
+          <Card ref={listRef}>
             <CardHeader className="flex flex-row items-center justify-between">
+              <div className="flex items-center gap-2">
+                <CardTitle className="text-lg">{t('subscriptions.detectedSubscriptions')}</CardTitle>
+                {filterAlerts && (
+                  <Badge variant="destructive" className="cursor-pointer" onClick={() => setFilterAlerts(false)}>
+                    {t('subscriptions.alerts')} ✕
+                  </Badge>
+                )}
+              </div>
               <CardTitle className="text-lg">{t('subscriptions.detectedSubscriptions')}</CardTitle>
               <Button
                 variant="ghost"
