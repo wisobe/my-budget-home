@@ -143,7 +143,13 @@ const Subscriptions = () => {
                 </div>
               </CardContent>
             </Card>
-            <Card>
+            <Card
+              className={`cursor-pointer transition-colors ${filterAlerts ? 'ring-2 ring-destructive' : 'hover:bg-muted/50'}`}
+              onClick={() => {
+                setFilterAlerts(!filterAlerts);
+                setTimeout(() => listRef.current?.scrollIntoView({ behavior: 'smooth' }), 100);
+              }}
+            >
               <CardContent className="pt-6">
                 <div className="flex items-center gap-3">
                   <div className="h-10 w-10 rounded-lg bg-destructive/10 flex items-center justify-center">
