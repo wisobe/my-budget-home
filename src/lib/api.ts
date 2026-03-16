@@ -62,7 +62,7 @@ async function request<T>(
 
   if (response.status === 401) {
     if (!endpoint.includes('/auth/')) {
-      sessionStorage.removeItem('auth_token');
+      localStorage.removeItem('auth_token');
       window.location.reload();
     }
     const message = await parseErrorMessage('Unauthorized');

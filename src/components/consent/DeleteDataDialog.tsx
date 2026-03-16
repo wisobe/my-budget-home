@@ -28,7 +28,7 @@ export function DeleteDataDialog({ open, onOpenChange }: DeleteDataDialogProps) 
     if (!canDelete) return;
     setIsDeleting(true);
     try {
-      const token = sessionStorage.getItem('auth_token');
+      const token = localStorage.getItem('auth_token');
       const res = await fetch(`${API_BASE_URL}/settings/delete-user-data.php`, {
         method: 'POST',
         headers: {
