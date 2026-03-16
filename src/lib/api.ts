@@ -36,7 +36,7 @@ async function request<T>(
   options: RequestInit = {}
 ): Promise<T> {
   const url = `${API_BASE_URL}${endpoint}`;
-  const token = sessionStorage.getItem('auth_token');
+  const token = localStorage.getItem('auth_token');
 
   const config: RequestInit = {
     ...options,
