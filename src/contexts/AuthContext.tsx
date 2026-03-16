@@ -36,11 +36,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           if (result.data.token_valid && result.data.user) {
             setUser(result.data.user);
           } else {
-            sessionStorage.removeItem('auth_token');
+            localStorage.removeItem('auth_token');
           }
         }
       } catch (error) {
-        sessionStorage.removeItem('auth_token');
+        localStorage.removeItem('auth_token');
         setUser(null);
         setIsAuthenticated(false);
         setBackendError(
