@@ -35,6 +35,7 @@
     "recoveryCodeHint": "Vous pouvez aussi utiliser un code de récupération",
     "invalid2faCode": "Code de vérification invalide",
     "verify": "Vérifier",
+    "trustDevice": "Faire confiance à cet appareil pour 30 jours",
     "backToLogin": "Retour à la connexion"
   },
   "dashboard": {
