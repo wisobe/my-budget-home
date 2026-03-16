@@ -49,6 +49,8 @@ const Subscriptions = () => {
   const { plaidEnvironment: environment } = usePlaidEnvironment();
   const queryClient = useQueryClient();
   const [showDismissed, setShowDismissed] = useState(false);
+  const [filterAlerts, setFilterAlerts] = useState(false);
+  const listRef = useRef<HTMLDivElement>(null);
 
   const { data, isLoading } = useQuery({
     queryKey: ['subscriptions', environment],
