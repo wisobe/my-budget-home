@@ -22,6 +22,7 @@ const Login = () => {
   const [needs2fa, setNeeds2fa] = useState(false);
   const [tempToken, setTempToken] = useState('');
   const [totpCode, setTotpCode] = useState('');
+  const [trustDevice, setTrustDevice] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
