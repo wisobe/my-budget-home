@@ -86,6 +86,16 @@ const Login = () => {
                 />
                 <p className="text-xs text-muted-foreground">{t('auth.recoveryCodeHint')}</p>
               </div>
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="trust-device"
+                  checked={trustDevice}
+                  onCheckedChange={(checked) => setTrustDevice(checked === true)}
+                />
+                <Label htmlFor="trust-device" className="text-sm font-normal cursor-pointer">
+                  {t('auth.trustDevice')}
+                </Label>
+              </div>
               {error && (
                 <p className="text-sm text-destructive">{error}</p>
               )}
