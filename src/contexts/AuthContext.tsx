@@ -71,14 +71,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const verify2fa = useCallback(async (tempToken: string, code: string) => {
     const result = await authApi.verify2fa(tempToken, code);
     setBackendError(null);
-    sessionStorage.setItem('auth_token', result.data.token);
+    localStorage.setItem('auth_token', result.data.token);
     setUser(result.data.user);
     setIsAuthenticated(true);
     setAuthEnabled(true);
   }, []);
 
   const logout = useCallback(() => {
-    sessionStorage.removeItem('auth_token');
+    localStorage.removeItem('auth_token');
     setUser(null);
     setIsAuthenticated(false);
   }, []);
