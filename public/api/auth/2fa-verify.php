@@ -73,7 +73,7 @@ try {
 
     AuditLog::log('login_success', $row['user_id'], null, json_encode(['method' => '2fa']));
 
-    Response::success([
+    $responseData = [
         'token' => $token,
         'expires_at' => $expiresAt,
         'user' => [
@@ -83,7 +83,33 @@ try {
             'role' => $row['role'],
             'allow_sandbox' => (bool)$row['allow_sandbox'],
         ],
-    ]);
+    ];
+
+    // Issue device trust token if requested
+    if ($trustDevice) {
+        $rawDeviceToken = bin2hex(random_bytes(32));
+        $hashedDeviceToken = hash('sha256', $rawDeviceToken);
+        $deviceExpires = date('Y-m-d H:i:s', strtotime('+30 days'));
+
+        $pdo->exec("CREATE TABLE IF NOT EXISTS trusted_devices (
+            token VARCHAR(64) PRIMARY KEY,
+            user_id VARCHAR(50) NOT NULL,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            expires_at DATETIME NOT NULL,
+            INDEX idx_user (user_id),
+            FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+
+        // Clean expired
+        $pdo->exec("DELETE FROM trusted_devices WHERE expires_at < NOW()");
+
+        $pdo->prepare("INSERT INTO trusted_devices (token, user_id, expires_at) VALUES (:token, :user_id, :expires)")
+            ->execute(['token' => $hashedDeviceToken, 'user_id' => $row['user_id'], 'expires' => $deviceExpires]);
+
+        $responseData['device_token'] = $rawDeviceToken;
+    }
+
+    Response::success($responseData);
 } catch (Exception $e) {
     Response::error('2FA verification failed: ' . $e->getMessage(), 500);
 }
