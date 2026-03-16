@@ -30,17 +30,39 @@ try {
     
     // Check if 2FA is enabled
     if (!empty($user['totp_enabled'])) {
-        // Issue a short-lived temp token for the 2FA step
-        $tempToken = bin2hex(random_bytes(32));
-        $tempExpires = date('Y-m-d H:i:s', strtotime('+5 minutes'));
+        // Check for trusted device token
+        $deviceToken = $body['device_token'] ?? null;
+        $deviceTrusted = false;
         
-        $pdo->prepare("INSERT INTO auth_tokens (token, user_id, expires_at, is_2fa_pending) VALUES (:token, :user_id, :expires, 1)")
-            ->execute(['token' => $tempToken, 'user_id' => $user['id'], 'expires' => $tempExpires]);
+        if ($deviceToken) {
+            // Create table if not exists
+            $pdo->exec("CREATE TABLE IF NOT EXISTS trusted_devices (
+                token VARCHAR(64) PRIMARY KEY,
+                user_id VARCHAR(50) NOT NULL,
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                expires_at DATETIME NOT NULL,
+                INDEX idx_user (user_id),
+                FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+            
+            $stmt2 = $pdo->prepare("SELECT token FROM trusted_devices WHERE token = :token AND user_id = :user_id AND expires_at > NOW()");
+            $stmt2->execute(['token' => hash('sha256', $deviceToken), 'user_id' => $user['id']]);
+            $deviceTrusted = (bool)$stmt2->fetch();
+        }
         
-        Response::success([
-            'requires_2fa' => true,
-            'temp_token' => $tempToken,
-        ]);
+        if (!$deviceTrusted) {
+            // Issue a short-lived temp token for the 2FA step
+            $tempToken = bin2hex(random_bytes(32));
+            $tempExpires = date('Y-m-d H:i:s', strtotime('+5 minutes'));
+            
+            $pdo->prepare("INSERT INTO auth_tokens (token, user_id, expires_at, is_2fa_pending) VALUES (:token, :user_id, :expires, 1)")
+                ->execute(['token' => $tempToken, 'user_id' => $user['id'], 'expires' => $tempExpires]);
+            
+            Response::success([
+                'requires_2fa' => true,
+                'temp_token' => $tempToken,
+            ]);
+        }
     }
     
     // No 2FA — issue normal session token

@@ -16,6 +16,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 try {
     $body = getJsonBody();
     validateRequired($body, ['temp_token', 'code']);
+    $trustDevice = !empty($body['trust_device']);
 
     $pdo = Database::getConnection();
     $code = trim($body['code']);
