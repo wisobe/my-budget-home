@@ -69,7 +69,7 @@ const Subscriptions = () => {
   const subData = data?.data as SubscriptionData | undefined;
 
   const visibleSubs = (subData?.subscriptions.filter(s => showDismissed || !s.dismissed) ?? [])
-    .filter(s => !filterAlerts || s.status === 'missed' || s.price_change !== null);
+    .filter(s => !filterAlerts || s.status === 'missed' || (s.price_change !== null && s.price_change.direction === 'increase'));
   const activeSubs = subData?.subscriptions.filter(s => !s.dismissed) ?? [];
 
   const statusConfig = {
