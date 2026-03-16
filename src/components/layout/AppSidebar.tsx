@@ -327,10 +327,11 @@ export function AppSidebar() {
                       asChild
                       isActive={isActive}
                       tooltip={name}
+                      className={isTouchDevice ? 'min-h-[48px]' : ''}
                     >
                       <Link to={item.href} onClick={closeMobileMenu}>
                         <item.icon className="h-5 w-5" />
-                        <span>{name}</span>
+                        <span className={isTouchDevice ? 'text-base' : ''}>{name}</span>
                       </Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>

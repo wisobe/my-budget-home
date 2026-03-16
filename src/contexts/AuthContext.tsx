@@ -10,7 +10,7 @@ interface AuthContextType {
   isAdmin: boolean;
   backendError: string | null;
   login: (email: string, password: string) => Promise<{ requires2fa: boolean; tempToken?: string }>;
-  verify2fa: (tempToken: string, code: string) => Promise<void>;
+  verify2fa: (tempToken: string, code: string, trustDevice?: boolean) => Promise<void>;
   logout: () => void;
 }
 
@@ -56,7 +56,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const login = useCallback(async (email: string, password: string) => {
-    const result = await authApi.login(email, password);
+    const deviceToken = localStorage.getItem('device_token') || undefined;
+    const result = await authApi.login(email, password, deviceToken);
     setBackendError(null);
     if (result.data.requires_2fa && result.data.temp_token) {
       return { requires2fa: true, tempToken: result.data.temp_token };
@@ -68,10 +69,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return { requires2fa: false };
   }, []);
 
-  const verify2fa = useCallback(async (tempToken: string, code: string) => {
-    const result = await authApi.verify2fa(tempToken, code);
+  const verify2fa = useCallback(async (tempToken: string, code: string, trustDevice?: boolean) => {
+    const result = await authApi.verify2fa(tempToken, code, trustDevice);
     setBackendError(null);
     localStorage.setItem('auth_token', result.data.token);
+    if (result.data.device_token) {
+      localStorage.setItem('device_token', result.data.device_token);
+    }
     setUser(result.data.user);
     setIsAuthenticated(true);
     setAuthEnabled(true);

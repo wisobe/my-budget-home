@@ -29,6 +29,16 @@ CREATE TABLE IF NOT EXISTS auth_tokens (
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- Trusted Devices (skip 2FA for 30 days)
+CREATE TABLE IF NOT EXISTS trusted_devices (
+    token VARCHAR(64) PRIMARY KEY,
+    user_id VARCHAR(50) NOT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    expires_at DATETIME NOT NULL,
+    INDEX idx_user (user_id),
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 -- Plaid Connections (stores bank connections)
 CREATE TABLE IF NOT EXISTS plaid_connections (
     id VARCHAR(50) PRIMARY KEY,

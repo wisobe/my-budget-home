@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Wallet, Loader2, Eye, EyeOff, ShieldCheck, Globe } from 'lucide-react';
 
 const Login = () => {
@@ -21,6 +22,7 @@ const Login = () => {
   const [needs2fa, setNeeds2fa] = useState(false);
   const [tempToken, setTempToken] = useState('');
   const [totpCode, setTotpCode] = useState('');
+  const [trustDevice, setTrustDevice] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -44,7 +46,7 @@ const Login = () => {
     setError('');
     setLoading(true);
     try {
-      await verify2fa(tempToken, totpCode);
+      await verify2fa(tempToken, totpCode, trustDevice);
     } catch (err: any) {
       setError(err.message || t('auth.invalid2faCode'));
     } finally {
@@ -83,6 +85,16 @@ const Login = () => {
                   className="text-center text-lg tracking-widest"
                 />
                 <p className="text-xs text-muted-foreground">{t('auth.recoveryCodeHint')}</p>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="trust-device"
+                  checked={trustDevice}
+                  onCheckedChange={(checked) => setTrustDevice(checked === true)}
+                />
+                <Label htmlFor="trust-device" className="text-sm font-normal cursor-pointer">
+                  {t('auth.trustDevice')}
+                </Label>
               </div>
               {error && (
                 <p className="text-sm text-destructive">{error}</p>

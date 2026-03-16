@@ -69,7 +69,7 @@ const Subscriptions = () => {
   const subData = data?.data as SubscriptionData | undefined;
 
   const visibleSubs = (subData?.subscriptions.filter(s => showDismissed || !s.dismissed) ?? [])
-    .filter(s => !filterAlerts || s.status === 'missed' || s.price_change !== null);
+    .filter(s => !filterAlerts || s.status === 'missed' || (s.price_change !== null && s.price_change.direction === 'increase'));
   const activeSubs = subData?.subscriptions.filter(s => !s.dismissed) ?? [];
 
   const statusConfig = {
@@ -88,8 +88,8 @@ const Subscriptions = () => {
 
   const summaryMonthly = activeSubs.reduce((sum, s) => sum + s.monthly_cost, 0);
   const summaryAnnual = activeSubs.reduce((sum, s) => sum + s.annual_cost, 0);
-  const summaryAlerts = activeSubs.filter(s => s.status === 'missed').length +
-    activeSubs.filter(s => s.price_change !== null).length;
+  const alertSubs = activeSubs.filter(s => s.status === 'missed' || (s.price_change !== null && s.price_change.direction === 'increase'));
+  const summaryAlerts = alertSubs.length;
 
   return (
     <AppLayout title={t('subscriptions.title')}>
@@ -175,7 +175,6 @@ const Subscriptions = () => {
                   </Badge>
                 )}
               </div>
-              <CardTitle className="text-lg">{t('subscriptions.detectedSubscriptions')}</CardTitle>
               <Button
                 variant="ghost"
                 size="sm"
@@ -217,13 +216,27 @@ const Subscriptions = () => {
                           </div>
                         </div>
                         <div className="flex items-center gap-3 shrink-0">
-                          {sub.price_change && (
-                            <div className={`flex items-center gap-1 text-xs ${sub.price_change.direction === 'increase' ? 'text-destructive' : 'text-green-600'}`}>
-                              {sub.price_change.direction === 'increase' ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
+                          {sub.status === 'missed' && (
+                            <Badge variant="destructive" className="text-xs gap-1">
+                              <AlertTriangle className="h-3 w-3" />
+                              {t('subscriptions.missed')}
+                            </Badge>
+                          )}
+                          {sub.price_change && sub.price_change.direction === 'increase' && (
+                            <Badge variant="destructive" className="text-xs gap-1">
+                              <TrendingUp className="h-3 w-3" />
+                              +{Math.abs(sub.price_change.change_percent)}%
+                            </Badge>
+                          )}
+                          {sub.price_change && sub.price_change.direction === 'decrease' && (
+                            <div className="flex items-center gap-1 text-xs text-green-600">
+                              <TrendingDown className="h-3 w-3" />
                               {Math.abs(sub.price_change.change_percent)}%
                             </div>
                           )}
-                          <Badge variant={statusCfg.variant}>{statusCfg.label}</Badge>
+                          {sub.status !== 'missed' && (
+                            <Badge variant={statusCfg.variant}>{statusCfg.label}</Badge>
+                          )}
                           <span className="font-semibold tabular-nums">{formatCurrency(sub.amount)}</span>
                           <Button
                             variant="ghost"
