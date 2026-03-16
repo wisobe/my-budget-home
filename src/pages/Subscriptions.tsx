@@ -175,7 +175,6 @@ const Subscriptions = () => {
                   </Badge>
                 )}
               </div>
-              <CardTitle className="text-lg">{t('subscriptions.detectedSubscriptions')}</CardTitle>
               <Button
                 variant="ghost"
                 size="sm"
