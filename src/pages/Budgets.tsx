@@ -219,15 +219,8 @@ export default function Budgets() {
       }
     >
       <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-muted-foreground">{t('budgets.description')}</p>
-          </div>
-          <Button onClick={openAddDialog}>
-            <Plus className="h-4 w-4 mr-2" />
-            {t('budgets.addBudget')}
-          </Button>
-        </div>
+        <p className="text-muted-foreground">{t('budgets.description')}</p>
+
 
         {isLoading ? (
           <div className="flex justify-center py-12">
