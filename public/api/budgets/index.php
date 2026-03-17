@@ -85,12 +85,14 @@ try {
 
             // Also account for splits assigned to this category
             $splitStmt = $pdo->prepare('
-                SELECT COALESCE(SUM(ABS(ts.amount)), 0) as split_spent
+                SELECT COALESCE(SUM(ts.amount), 0) as split_spent
                 FROM transaction_splits ts
                 JOIN transactions t ON ts.transaction_id = t.id
                 JOIN accounts a ON t.account_id = a.id
                 WHERE a.user_id = :uid
+                  AND a.excluded = 0
                   AND ts.is_excluded = 0
+                  AND t.pending = 0
                   AND t.date BETWEEN :start AND :end
                   AND (
                     ts.category_id = :cat_id
@@ -105,8 +107,6 @@ try {
                 'cat_id' => $budget['category_id'],
                 'cat_id2' => $budget['category_id'],
             ]);
-            // For split transactions, use split amounts instead of transaction amount
-            // We need to subtract the main transaction amount if it was already counted and has splits
             $splitSpent = (float)$splitStmt->fetchColumn();
             
             // Get the sum of main transactions that HAVE splits (to avoid double counting)
