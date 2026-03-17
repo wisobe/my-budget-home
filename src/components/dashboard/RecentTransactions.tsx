@@ -46,7 +46,9 @@ export function RecentTransactions() {
         <CardTitle>{t('dashboard.recentTransactions')}</CardTitle>
       </CardHeader>
       <CardContent className="space-y-2">
-        {transactions.map(transaction => {
+        {transactions.length === 0 ? (
+          <p className="text-sm text-muted-foreground text-center py-6">{t('dashboard.noRecentTransactions')}</p>
+        ) : transactions.map(transaction => {
           const effectiveAmount = (transaction.split_count ?? 0) > 0 && transaction.included_split_amount != null
             ? transaction.included_split_amount
             : transaction.amount;
