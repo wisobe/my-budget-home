@@ -209,11 +209,18 @@ export default function Budgets() {
   const isEditing = !!editingBudget;
 
   return (
-    <AppLayout>
+    <AppLayout
+      title={t('budgets.title')}
+      actions={
+        <Button onClick={openAddDialog}>
+          <Plus className="h-4 w-4 mr-2" />
+          {t('budgets.addBudget')}
+        </Button>
+      }
+    >
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-foreground">{t('budgets.title')}</h1>
             <p className="text-muted-foreground">{t('budgets.description')}</p>
           </div>
           <Button onClick={openAddDialog}>
