@@ -48,6 +48,7 @@
     "thisMonth": "This month",
     "connectedAccounts": "Connected Accounts",
     "recentTransactions": "Recent Transactions",
+    "noRecentTransactions": "No recent transactions in the last 3 days.",
     "spendingByCategory": "Spending by Category",
     "noSpendingData": "No spending data for this month",
     "totalSpending": "Total",
