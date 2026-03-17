@@ -675,6 +675,7 @@
     "hideDismissed": "Hide dismissed",
     "showDismissed": "Show dismissed",
     "noSubscriptions": "No recurring subscriptions detected yet. More transaction history will improve detection.",
+    "noAlerts": "No alerts — all your subscriptions look good!",
     "dueSoon": "Due Soon",
     "missed": "Missed",
     "next": "Next: {{date}}",

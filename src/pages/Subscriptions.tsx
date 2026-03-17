@@ -187,7 +187,9 @@ const Subscriptions = () => {
             </CardHeader>
             <CardContent>
               {!visibleSubs.length ? (
-                <p className="text-muted-foreground text-center py-8">{t('subscriptions.noSubscriptions')}</p>
+                <p className="text-muted-foreground text-center py-8">
+                  {filterAlerts ? t('subscriptions.noAlerts') : t('subscriptions.noSubscriptions')}
+                </p>
               ) : (
                 <div className="space-y-3">
                   {visibleSubs.map((sub, i) => {

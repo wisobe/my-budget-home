@@ -675,6 +675,7 @@
     "hideDismissed": "Masquer les ignorés",
     "showDismissed": "Afficher les ignorés",
     "noSubscriptions": "Aucun abonnement récurrent détecté pour le moment. Plus d'historique de transactions améliorera la détection.",
+    "noAlerts": "Aucune alerte — tous vos abonnements semblent en ordre !",
     "dueSoon": "Échéance proche",
     "missed": "Manqué",
     "next": "Prochain : {{date}}",
