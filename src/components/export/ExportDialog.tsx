@@ -87,11 +87,11 @@ export function ExportDialog({ trigger, format }: ExportDialogProps) {
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label>{t('export.startDate')}</Label>
-              <Input type="date" value={startDate} onChange={e => setStartDate(e.target.value)} />
+              <Input type="date" value={startDate} onChange={e => setStartDate(e.target.value)} className="[color-scheme:light] dark:[color-scheme:dark]" />
             </div>
             <div className="space-y-2">
               <Label>{t('export.endDate')}</Label>
-              <Input type="date" value={endDate} onChange={e => setEndDate(e.target.value)} />
+              <Input type="date" value={endDate} onChange={e => setEndDate(e.target.value)} className="[color-scheme:light] dark:[color-scheme:dark]" />
             </div>
           </div>
           <p className="text-xs text-muted-foreground">{t('export.leaveEmpty')}</p>

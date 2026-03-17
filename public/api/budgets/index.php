@@ -111,11 +111,13 @@ try {
             
             // Get the sum of main transactions that HAVE splits (to avoid double counting)
             $mainWithSplitsStmt = $pdo->prepare('
-                SELECT COALESCE(SUM(ABS(t.amount)), 0) as main_spent
+                SELECT COALESCE(SUM(t.amount), 0) as main_spent
                 FROM transactions t
                 JOIN accounts a ON t.account_id = a.id
                 WHERE a.user_id = :uid
+                  AND a.excluded = 0
                   AND t.excluded = 0
+                  AND t.pending = 0
                   AND t.date BETWEEN :start AND :end
                   AND (
                     t.category_id = :cat_id
