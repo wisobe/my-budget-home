@@ -61,11 +61,13 @@ try {
             // For expense categories, amount > 0 means spending
             // For income categories, amount < 0 means income received
             $spentStmt = $pdo->prepare('
-                SELECT COALESCE(SUM(ABS(t.amount)), 0) as spent
+                SELECT COALESCE(SUM(t.amount), 0) as spent
                 FROM transactions t
                 JOIN accounts a ON t.account_id = a.id
                 WHERE a.user_id = :uid
+                  AND a.excluded = 0
                   AND t.excluded = 0
+                  AND t.pending = 0
                   AND t.date BETWEEN :start AND :end
                   AND (
                     t.category_id = :cat_id
