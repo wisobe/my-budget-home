@@ -110,7 +110,8 @@ export function CategoryBreakdown({ startDate, endDate }: CategoryBreakdownProps
     setDrillLevel('parents');
   };
 
-  const transactions = txData?.data || [];
+  const { showPending } = usePreferences();
+  const transactions = (txData?.data || []).filter(t => showPending || !t.pending);
 
   return (
     <Card>
