@@ -190,6 +190,12 @@ export const transactionsApi = {
       body: JSON.stringify({ transaction_id, excluded }),
     }),
 
+  lock: (transaction_id: string, locked: boolean) =>
+    request<ApiResponse<{ auto_categorize_locked: boolean }>>('/transactions/lock.php', {
+      method: 'POST',
+      body: JSON.stringify({ transaction_id, locked }),
+    }),
+
   create: (data: {
     account_id: string;
     date: string;

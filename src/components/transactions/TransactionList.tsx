@@ -7,6 +7,7 @@ import {
   useCategories,
   useCategorizeTransaction,
   useExcludeTransaction,
+  useLockTransaction,
 } from '@/hooks/use-transactions';
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
@@ -24,7 +25,7 @@ import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
 import {
   Search, ChevronLeft, ChevronRight, ArrowUpRight, ArrowDownRight,
-  CalendarIcon, X,
+  CalendarIcon, X, Lock,
 } from 'lucide-react';
 import { SplitTransactionDialog } from './SplitTransactionDialog';
 import { CategoryPicker } from './CategoryPicker';
@@ -63,6 +64,7 @@ export function TransactionList() {
   const { data: categoriesData } = useCategories();
   const categorize = useCategorizeTransaction();
   const excludeMutation = useExcludeTransaction();
+  const lockMutation = useLockTransaction();
 
   const { showPending } = usePreferences();
   const transactions = (transactionsData?.data || []).filter(t => showPending || !t.pending);
@@ -78,6 +80,10 @@ export function TransactionList() {
 
   const handleExclude = (transaction: Transaction) => {
     excludeMutation.mutate({ id: transaction.id, excluded: !transaction.excluded });
+  };
+
+  const handleLock = (transaction: Transaction) => {
+    lockMutation.mutate({ id: transaction.id, locked: !transaction.auto_categorize_locked });
   };
 
   const handleSplit = (transaction: Transaction) => {
@@ -228,6 +234,17 @@ export function TransactionList() {
                           {!!transaction.pending && <Badge variant="outline" className="text-xs">{t('transactions.pending')}</Badge>}
                           {hasSplits && <Badge variant="secondary" className="text-xs">{t('transactions.split')}</Badge>}
                           {isExcluded && <Badge variant="destructive" className="text-xs">{t('transactions.excluded')}</Badge>}
+                          {!!transaction.auto_categorize_locked && (
+                            <Badge
+                              variant="outline"
+                              className="text-xs cursor-pointer gap-1"
+                              onClick={() => handleLock(transaction)}
+                              title={t('transactions.unlockCategory')}
+                            >
+                              <Lock className="h-3 w-3" />
+                              {t('transactions.lockCategory')}
+                            </Badge>
+                          )}
                         </div>
                       </div>
                     </TableCell>
@@ -270,6 +287,7 @@ export function TransactionList() {
                         isExcluded={isExcluded}
                         onSplit={handleSplit}
                         onToggleExclude={handleExclude}
+                        onToggleLock={handleLock}
                       />
                     </TableCell>
                   </TableRow>

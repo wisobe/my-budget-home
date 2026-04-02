@@ -1,6 +1,6 @@
 import { useState, type MouseEvent, type PointerEvent } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Eye, EyeOff, MoreHorizontal, Split } from 'lucide-react';
+import { Eye, EyeOff, Lock, LockOpen, MoreHorizontal, Split } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Button } from '@/components/ui/button';
 import {
@@ -24,6 +24,7 @@ interface TransactionActionsProps {
   isExcluded: boolean;
   onSplit: (transaction: Transaction) => void;
   onToggleExclude: (transaction: Transaction) => void;
+  onToggleLock: (transaction: Transaction) => void;
 }
 
 export function TransactionActions({
@@ -32,12 +33,14 @@ export function TransactionActions({
   isExcluded,
   onSplit,
   onToggleExclude,
+  onToggleLock,
 }: TransactionActionsProps) {
   const { t } = useTranslation();
   const isMobile = useIsMobile();
   const [mobileOpen, setMobileOpen] = useState(false);
 
   const actionsLabel = t('transactions.actions', { defaultValue: 'Transaction actions' });
+  const isLocked = !!transaction.auto_categorize_locked;
 
   const openMobileActions = (
     event: MouseEvent<HTMLButtonElement> | PointerEvent<HTMLButtonElement>,
@@ -93,6 +96,27 @@ export function TransactionActions({
                 variant="outline"
                 className="min-h-[44px] w-full justify-start"
                 onClick={() => {
+                  onToggleLock(transaction);
+                  setMobileOpen(false);
+                }}
+              >
+                {isLocked ? (
+                  <>
+                    <LockOpen className="mr-2 h-4 w-4" />
+                    {t('transactions.unlockCategory')}
+                  </>
+                ) : (
+                  <>
+                    <Lock className="mr-2 h-4 w-4" />
+                    {t('transactions.lockCategory')}
+                  </>
+                )}
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                className="min-h-[44px] w-full justify-start"
+                onClick={() => {
                   onToggleExclude(transaction);
                   setMobileOpen(false);
                 }}
@@ -137,6 +161,17 @@ export function TransactionActions({
         <DropdownMenuItem onSelect={() => onSplit(transaction)}>
           <Split className="mr-2 h-4 w-4" />
           {hasSplits ? t('transactions.editSplit') : t('transactions.split')}
+        </DropdownMenuItem>
+        <DropdownMenuItem onSelect={() => onToggleLock(transaction)}>
+          {isLocked ? (
+            <>
+              <LockOpen className="mr-2 h-4 w-4" /> {t('transactions.unlockCategory')}
+            </>
+          ) : (
+            <>
+              <Lock className="mr-2 h-4 w-4" /> {t('transactions.lockCategory')}
+            </>
+          )}
         </DropdownMenuItem>
         <DropdownMenuItem onSelect={() => onToggleExclude(transaction)}>
           {isExcluded ? (

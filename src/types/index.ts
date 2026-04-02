@@ -20,6 +20,7 @@ export interface Transaction {
   category_id?: string;
   pending: boolean;
   excluded: boolean;
+  auto_categorize_locked: boolean;
   notes?: string;
   split_count?: number;
   included_split_amount?: number;

@@ -115,6 +115,7 @@ CREATE TABLE IF NOT EXISTS transactions (
     category_id VARCHAR(50),
     pending BOOLEAN DEFAULT FALSE,
     excluded BOOLEAN DEFAULT FALSE,
+    auto_categorize_locked BOOLEAN DEFAULT FALSE,
     notes TEXT,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -275,3 +276,8 @@ CREATE TABLE IF NOT EXISTS subscription_dismissals (
 --
 -- Step 4: Clean up old app_settings password (optional)
 -- DELETE FROM app_settings WHERE setting_key = 'password_hash';
+--
+-- ============================================================
+-- MIGRATION: Add category lock support
+-- ============================================================
+-- ALTER TABLE transactions ADD COLUMN auto_categorize_locked BOOLEAN DEFAULT FALSE AFTER excluded;
