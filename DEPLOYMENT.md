@@ -372,6 +372,50 @@ sudo chmod 600 api/config.php
 
 ---
 
+## Moving Between Root and Subdirectory Deployment
+
+If you need to move BudgetWise from a subdirectory (e.g., `/budget`) to the root of a new domain (or vice versa), follow these steps:
+
+### Moving from Subdirectory to Root
+
+1. **Update `.env`** (or unset the variable entirely):
+   ```bash
+   VITE_BASE_PATH=/
+   # Or simply remove the VITE_BASE_PATH line
+   ```
+
+2. **Rebuild the frontend**:
+   ```bash
+   npm run build
+   ```
+
+3. **Upload `dist/` contents** to the new domain's web root.
+
+4. **Upload `public/api/`** as `api/` in the web root.
+
+5. **Update `config.php`** — make sure `allowed_origins` includes the new domain.
+
+6. **Ensure Apache rewrite rules** don't reference the old subfolder path. Use the `.htaccess` or VirtualHost config from Step 7/8 above.
+
+> **Common mistake**: If you get a blank screen, it's almost always because the frontend was not rebuilt after changing `VITE_BASE_PATH`. The old build has asset paths baked in for the subdirectory.
+
+### Moving from Root to Subdirectory
+
+1. **Set `.env`**:
+   ```bash
+   VITE_BASE_PATH=/your-subfolder
+   ```
+
+2. **Rebuild and upload** as described above, placing files under the subfolder.
+
+3. **Update Apache rewrite rules** to scope to the subfolder:
+   ```apache
+   RewriteCond %{REQUEST_URI} !^/your-subfolder/api/
+   RewriteRule ^your-subfolder/ /your-subfolder/index.html [L]
+   ```
+
+---
+
 ## Step 10: Test Your Setup
 
 ### Test 1: PHP is Working
