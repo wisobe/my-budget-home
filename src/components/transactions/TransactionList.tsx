@@ -7,6 +7,7 @@ import {
   useCategories,
   useCategorizeTransaction,
   useExcludeTransaction,
+  useLockTransaction,
 } from '@/hooks/use-transactions';
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
