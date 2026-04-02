@@ -234,6 +234,17 @@ export function TransactionList() {
                           {!!transaction.pending && <Badge variant="outline" className="text-xs">{t('transactions.pending')}</Badge>}
                           {hasSplits && <Badge variant="secondary" className="text-xs">{t('transactions.split')}</Badge>}
                           {isExcluded && <Badge variant="destructive" className="text-xs">{t('transactions.excluded')}</Badge>}
+                          {!!transaction.auto_categorize_locked && (
+                            <Badge
+                              variant="outline"
+                              className="text-xs cursor-pointer gap-1"
+                              onClick={() => handleLock(transaction)}
+                              title={t('transactions.unlockCategory')}
+                            >
+                              <Lock className="h-3 w-3" />
+                              {t('transactions.lockCategory')}
+                            </Badge>
+                          )}
                         </div>
                       </div>
                     </TableCell>
