@@ -25,7 +25,7 @@ import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
 import {
   Search, ChevronLeft, ChevronRight, ArrowUpRight, ArrowDownRight,
-  CalendarIcon, X,
+  CalendarIcon, X, Lock,
 } from 'lucide-react';
 import { SplitTransactionDialog } from './SplitTransactionDialog';
 import { CategoryPicker } from './CategoryPicker';
