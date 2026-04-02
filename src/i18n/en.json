@@ -95,7 +95,11 @@
     "descriptionPlaceholder": "e.g. Grocery store",
     "invalidAmount": "Please enter a valid amount",
     "transactionCreated": "Transaction created",
-    "failedCreate": "Failed to create transaction"
+    "failedCreate": "Failed to create transaction",
+    "lockCategory": "Lock Category",
+    "unlockCategory": "Unlock Category",
+    "categoryLocked": "Category locked",
+    "categoryUnlocked": "Category unlocked"
   },
   "sync": {
     "sync": "Sync",
