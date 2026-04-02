@@ -276,3 +276,8 @@ CREATE TABLE IF NOT EXISTS subscription_dismissals (
 --
 -- Step 4: Clean up old app_settings password (optional)
 -- DELETE FROM app_settings WHERE setting_key = 'password_hash';
+--
+-- ============================================================
+-- MIGRATION: Add category lock support
+-- ============================================================
+-- ALTER TABLE transactions ADD COLUMN auto_categorize_locked BOOLEAN DEFAULT FALSE AFTER excluded;
