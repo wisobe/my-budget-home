@@ -287,6 +287,7 @@ export function TransactionList() {
                         isExcluded={isExcluded}
                         onSplit={handleSplit}
                         onToggleExclude={handleExclude}
+                        onToggleLock={handleLock}
                       />
                     </TableCell>
                   </TableRow>
