@@ -64,6 +64,7 @@ export function TransactionList() {
   const { data: categoriesData } = useCategories();
   const categorize = useCategorizeTransaction();
   const excludeMutation = useExcludeTransaction();
+  const lockMutation = useLockTransaction();
 
   const { showPending } = usePreferences();
   const transactions = (transactionsData?.data || []).filter(t => showPending || !t.pending);
@@ -79,6 +80,10 @@ export function TransactionList() {
 
   const handleExclude = (transaction: Transaction) => {
     excludeMutation.mutate({ id: transaction.id, excluded: !transaction.excluded });
+  };
+
+  const handleLock = (transaction: Transaction) => {
+    lockMutation.mutate({ id: transaction.id, locked: !transaction.auto_categorize_locked });
   };
 
   const handleSplit = (transaction: Transaction) => {
