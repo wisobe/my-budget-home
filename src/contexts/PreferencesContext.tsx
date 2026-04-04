@@ -189,7 +189,7 @@ export function PreferencesProvider({ children }: { children: React.ReactNode })
   const setAutoLearnRules = useCallback((v: boolean) => setPrefs(p => ({ ...p, autoLearnRules: v })), []);
 
   return (
-    <PreferencesContext.Provider value={{ ...prefs, darkMode, setThemeMode, setDarkMode, setAutoSync, setShowPending, setLanguage, setBalanceAccounts, setConsentDataCollection, setConsentDataProcessing, setConsentDataStorage, setSettingsExpandedSections, setSidebarOrder, setAccountOrder, setAccountGroupOrder, isLoaded }}>
+    <PreferencesContext.Provider value={{ ...prefs, darkMode, setThemeMode, setDarkMode, setAutoSync, setShowPending, setLanguage, setBalanceAccounts, setConsentDataCollection, setConsentDataProcessing, setConsentDataStorage, setSettingsExpandedSections, setSidebarOrder, setAccountOrder, setAccountGroupOrder, setAutoLearnRules, isLoaded }}>
       {children}
     </PreferencesContext.Provider>
   );
