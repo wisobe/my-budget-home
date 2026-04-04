@@ -18,6 +18,7 @@ try {
     validateRequired($body, ['transaction_id']);
     
     $categoryId = !empty($body['category_id']) ? $body['category_id'] : null;
+    $learnRule = isset($body['learn_rule']) ? (bool)$body['learn_rule'] : true;
     
     $pdo = Database::getConnection();
     
