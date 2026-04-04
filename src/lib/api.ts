@@ -178,10 +178,10 @@ export const transactionsApi = {
 
   get: (id: string) => request<ApiResponse<Transaction>>(`/transactions/?id=${id}`),
 
-  categorize: (transaction_id: string, category_id: string | null, plaid_environment?: string) =>
+  categorize: (transaction_id: string, category_id: string | null, plaid_environment?: string, learn_rule?: boolean) =>
     request<ApiResponse<Transaction>>('/transactions/categorize.php', {
       method: 'POST',
-      body: JSON.stringify({ transaction_id, category_id, plaid_environment }),
+      body: JSON.stringify({ transaction_id, category_id, plaid_environment, learn_rule }),
     }),
 
   exclude: (transaction_id: string, excluded: boolean) =>
@@ -268,6 +268,12 @@ export const categoriesApi = {
     request<ApiResponse<void>>('/categories/rules.php', {
       method: 'DELETE',
       body: JSON.stringify({ id, plaid_environment }),
+    }),
+
+  applyAllRules: (plaid_environment?: string) =>
+    request<ApiResponse<{ applied_count: number }>>('/categories/apply-all-rules.php', {
+      method: 'POST',
+      body: JSON.stringify({ plaid_environment }),
     }),
 };
 

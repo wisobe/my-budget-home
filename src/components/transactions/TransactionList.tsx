@@ -66,7 +66,7 @@ export function TransactionList() {
   const excludeMutation = useExcludeTransaction();
   const lockMutation = useLockTransaction();
 
-  const { showPending } = usePreferences();
+  const { showPending, autoLearnRules } = usePreferences();
   const transactions = (transactionsData?.data || []).filter(t => showPending || !t.pending);
   const categories = categoriesData?.data || [];
   const totalPages = transactionsData?.total_pages || 1;
@@ -75,6 +75,7 @@ export function TransactionList() {
     categorize.mutate({
       id: transactionId,
       category_id: value === 'none' ? null : value,
+      learn_rule: autoLearnRules,
     });
   };
 

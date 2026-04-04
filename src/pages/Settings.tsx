@@ -13,7 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { useCategories, useDeleteCategory, useUpdateCategory, useCategoryRules, useCreateCategoryRule, useDeleteCategoryRule, useUpdateCategoryRule } from '@/hooks/use-transactions';
 import { useAuth } from '@/contexts/AuthContext';
-import { Plus, Trash2, Loader2, Lock, LogOut, Sparkles, Globe, ChevronRight, Pencil, ArrowLeft, FlaskConical, Building2, Key, ShieldCheck, Download, Tags, SlidersHorizontal, ChevronsDownUp } from 'lucide-react';
+import { Plus, Trash2, Loader2, Lock, LogOut, Sparkles, Globe, ChevronRight, Pencil, ArrowLeft, FlaskConical, Building2, Key, ShieldCheck, Download, Tags, SlidersHorizontal, ChevronsDownUp, Play } from 'lucide-react';
 import { usePlaidEnvironment } from '@/contexts/PlaidEnvironmentContext';
 import { TwoFactorSettings, TwoFactorHeader } from '@/components/settings/TwoFactorSettings';
 import { useState, useRef } from 'react';
@@ -25,6 +25,7 @@ import { cn } from '@/lib/utils';
 import { categoriesApi, authApi } from '@/lib/api';
 import { ExportDialog } from '@/components/export/ExportDialog';
 import { PrivacyConsentSettings } from '@/components/consent/PrivacyConsentSettings';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { EditCategoryDialog } from '@/components/categories/EditCategoryDialog';
 import { useQueryClient } from '@tanstack/react-query';
 import { toast } from '@/components/ui/sonner';
@@ -35,7 +36,7 @@ const Settings = () => {
   const { data: categoriesData } = useCategories();
   const categories = categoriesData?.data || [];
   const { logout, user, isAdmin } = useAuth();
-  const { themeMode, setThemeMode, autoSync, setAutoSync, showPending, setShowPending, language, setLanguage, settingsExpandedSections, setSettingsExpandedSections } = usePreferences();
+  const { themeMode, setThemeMode, autoSync, setAutoSync, showPending, setShowPending, language, setLanguage, settingsExpandedSections, setSettingsExpandedSections, autoLearnRules, setAutoLearnRules } = usePreferences();
   const { plaidEnvironment, setPlaidEnvironment, canUseSandbox } = usePlaidEnvironment();
   const deleteCategoryMutation = useDeleteCategory();
   const { data: rulesData } = useCategoryRules();
@@ -71,6 +72,7 @@ const Settings = () => {
   const [editRuleCategoryId, setEditRuleCategoryId] = useState('');
   const [editRuleMatchType, setEditRuleMatchType] = useState('contains');
   const [editRuleApplyExisting, setEditRuleApplyExisting] = useState(false);
+  const [applyingAllRules, setApplyingAllRules] = useState(false);
 
   const queryClient = useQueryClient();
 
@@ -416,7 +418,14 @@ const Settings = () => {
             </CardHeader>
             <AccordionContent>
               <CardContent className="pt-4">
-                <div className="flex justify-start mb-4">
+                <div className="flex items-center justify-between mb-4 p-3 rounded-lg bg-muted/50">
+                  <div>
+                    <Label className="font-medium">{t('settings.autoLearnRules')}</Label>
+                    <p className="text-xs text-muted-foreground">{t('settings.autoLearnRulesDesc')}</p>
+                  </div>
+                  <Switch checked={autoLearnRules} onCheckedChange={setAutoLearnRules} />
+                </div>
+                <div className="flex justify-start gap-2 mb-4">
                 <Dialog open={addRuleOpen} onOpenChange={setAddRuleOpen}>
                   <DialogTrigger asChild>
                     <Button size="sm"><Plus className="h-4 w-4 mr-2" />{t('settings.addRule')}</Button>
@@ -480,6 +489,36 @@ const Settings = () => {
                     </div>
                   </DialogContent>
                 </Dialog>
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button size="sm" variant="outline" disabled={rules.length === 0 || applyingAllRules}>
+                      {applyingAllRules ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Play className="h-4 w-4 mr-2" />}
+                      {t('settings.applyAllRules')}
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>{t('settings.applyAllRulesTitle')}</AlertDialogTitle>
+                      <AlertDialogDescription>{t('settings.applyAllRulesDesc')}</AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
+                      <AlertDialogAction onClick={async () => {
+                        setApplyingAllRules(true);
+                        try {
+                          const res = await categoriesApi.applyAllRules(plaidEnvironment);
+                          const count = res?.data?.applied_count ?? 0;
+                          toast.success(t('settings.applyAllRulesSuccess', { count }));
+                          queryClient.invalidateQueries({ queryKey: ['transactions'] });
+                        } catch (e: any) {
+                          toast.error(e.message || t('settings.applyAllRulesFailed'));
+                        } finally {
+                          setApplyingAllRules(false);
+                        }
+                      }}>{t('settings.applyAllRulesConfirm')}</AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
                 </div>
                 {rules.length === 0 ? (
                   <p className="text-sm text-muted-foreground text-center py-4">{t('settings.noRulesYet')}</p>

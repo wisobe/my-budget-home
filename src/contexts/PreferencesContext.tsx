@@ -20,6 +20,7 @@ interface Preferences {
   sidebarOrder: string[];
   accountOrder: string[];
   accountGroupOrder: string[];
+  autoLearnRules: boolean;
 }
 
 interface PreferencesContextType extends Preferences {
@@ -37,6 +38,7 @@ interface PreferencesContextType extends Preferences {
   setSidebarOrder: (v: string[]) => void;
   setAccountOrder: (v: string[]) => void;
   setAccountGroupOrder: (v: string[]) => void;
+  setAutoLearnRules: (v: boolean) => void;
   isLoaded: boolean;
 }
 
@@ -54,6 +56,7 @@ const defaults: Preferences = {
   sidebarOrder: [],
   accountOrder: [],
   accountGroupOrder: [],
+  autoLearnRules: true,
 };
 
 function fromApi(data: Record<string, string>): Partial<Preferences> {
@@ -76,6 +79,7 @@ function fromApi(data: Record<string, string>): Partial<Preferences> {
   if (data.sidebar_order !== undefined) p.sidebarOrder = data.sidebar_order ? data.sidebar_order.split(',') : [];
   if (data.account_order !== undefined) p.accountOrder = data.account_order ? data.account_order.split(',') : [];
   if (data.account_group_order !== undefined) p.accountGroupOrder = data.account_group_order ? data.account_group_order.split(',') : [];
+  if (data.auto_learn_rules !== undefined) p.autoLearnRules = data.auto_learn_rules !== '0';
   return p;
 }
 
@@ -93,6 +97,7 @@ function toApi(prefs: Preferences): Record<string, string> {
     sidebar_order: prefs.sidebarOrder.join(','),
     account_order: prefs.accountOrder.join(','),
     account_group_order: prefs.accountGroupOrder.join(','),
+    auto_learn_rules: prefs.autoLearnRules ? '1' : '0',
   };
 }
 
@@ -181,9 +186,10 @@ export function PreferencesProvider({ children }: { children: React.ReactNode })
   const setSidebarOrder = useCallback((v: string[]) => setPrefs(p => ({ ...p, sidebarOrder: v })), []);
   const setAccountOrder = useCallback((v: string[]) => setPrefs(p => ({ ...p, accountOrder: v })), []);
   const setAccountGroupOrder = useCallback((v: string[]) => setPrefs(p => ({ ...p, accountGroupOrder: v })), []);
+  const setAutoLearnRules = useCallback((v: boolean) => setPrefs(p => ({ ...p, autoLearnRules: v })), []);
 
   return (
-    <PreferencesContext.Provider value={{ ...prefs, darkMode, setThemeMode, setDarkMode, setAutoSync, setShowPending, setLanguage, setBalanceAccounts, setConsentDataCollection, setConsentDataProcessing, setConsentDataStorage, setSettingsExpandedSections, setSidebarOrder, setAccountOrder, setAccountGroupOrder, isLoaded }}>
+    <PreferencesContext.Provider value={{ ...prefs, darkMode, setThemeMode, setDarkMode, setAutoSync, setShowPending, setLanguage, setBalanceAccounts, setConsentDataCollection, setConsentDataProcessing, setConsentDataStorage, setSettingsExpandedSections, setSidebarOrder, setAccountOrder, setAccountGroupOrder, setAutoLearnRules, isLoaded }}>
       {children}
     </PreferencesContext.Provider>
   );

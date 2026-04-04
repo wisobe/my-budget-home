@@ -18,6 +18,7 @@ try {
     validateRequired($body, ['transaction_id']);
     
     $categoryId = !empty($body['category_id']) ? $body['category_id'] : null;
+    $learnRule = isset($body['learn_rule']) ? (bool)$body['learn_rule'] : true;
     
     $pdo = Database::getConnection();
     
@@ -53,7 +54,7 @@ try {
     $transaction = $fetchStmt->fetch();
     
     // Auto-learn rule (skip if transaction is locked)
-    if ($categoryId && $transaction && !$transaction['auto_categorize_locked']) {
+    if ($categoryId && $transaction && !$transaction['auto_categorize_locked'] && $learnRule) {
         AutoCategorizer::learnFromCategorization(
             $pdo,
             $transaction['name'],
