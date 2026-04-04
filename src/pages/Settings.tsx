@@ -25,6 +25,7 @@ import { cn } from '@/lib/utils';
 import { categoriesApi, authApi } from '@/lib/api';
 import { ExportDialog } from '@/components/export/ExportDialog';
 import { PrivacyConsentSettings } from '@/components/consent/PrivacyConsentSettings';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { EditCategoryDialog } from '@/components/categories/EditCategoryDialog';
 import { useQueryClient } from '@tanstack/react-query';
 import { toast } from '@/components/ui/sonner';
