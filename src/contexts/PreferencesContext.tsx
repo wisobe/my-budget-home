@@ -20,6 +20,7 @@ interface Preferences {
   sidebarOrder: string[];
   accountOrder: string[];
   accountGroupOrder: string[];
+  autoLearnRules: boolean;
 }
 
 interface PreferencesContextType extends Preferences {
