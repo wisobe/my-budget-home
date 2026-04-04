@@ -54,7 +54,7 @@ try {
     $transaction = $fetchStmt->fetch();
     
     // Auto-learn rule (skip if transaction is locked)
-    if ($categoryId && $transaction && !$transaction['auto_categorize_locked']) {
+    if ($categoryId && $transaction && !$transaction['auto_categorize_locked'] && $learnRule) {
         AutoCategorizer::learnFromCategorization(
             $pdo,
             $transaction['name'],

@@ -26,8 +26,8 @@ export function useCategorizeTransaction() {
   const queryClient = useQueryClient();
   const { plaidEnvironment } = usePlaidEnvironment();
   return useMutation({
-    mutationFn: ({ id, category_id }: { id: string; category_id: string | null }) =>
-      transactionsApi.categorize(id, category_id, plaidEnvironment),
+    mutationFn: ({ id, category_id, learn_rule }: { id: string; category_id: string | null; learn_rule?: boolean }) =>
+      transactionsApi.categorize(id, category_id, plaidEnvironment, learn_rule),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['transactions'] });
     },
