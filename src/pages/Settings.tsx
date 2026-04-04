@@ -489,6 +489,36 @@ const Settings = () => {
                     </div>
                   </DialogContent>
                 </Dialog>
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button size="sm" variant="outline" disabled={rules.length === 0 || applyingAllRules}>
+                      {applyingAllRules ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Play className="h-4 w-4 mr-2" />}
+                      {t('settings.applyAllRules')}
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>{t('settings.applyAllRulesTitle')}</AlertDialogTitle>
+                      <AlertDialogDescription>{t('settings.applyAllRulesDesc')}</AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
+                      <AlertDialogAction onClick={async () => {
+                        setApplyingAllRules(true);
+                        try {
+                          const res = await categoriesApi.applyAllRules(plaidEnvironment);
+                          const count = res?.data?.applied_count ?? 0;
+                          toast.success(t('settings.applyAllRulesSuccess', { count }));
+                          queryClient.invalidateQueries({ queryKey: ['transactions'] });
+                        } catch (e: any) {
+                          toast.error(e.message || t('settings.applyAllRulesFailed'));
+                        } finally {
+                          setApplyingAllRules(false);
+                        }
+                      }}>{t('settings.applyAllRulesConfirm')}</AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
                 </div>
                 {rules.length === 0 ? (
                   <p className="text-sm text-muted-foreground text-center py-4">{t('settings.noRulesYet')}</p>
