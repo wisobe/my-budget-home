@@ -38,6 +38,7 @@ interface PreferencesContextType extends Preferences {
   setSidebarOrder: (v: string[]) => void;
   setAccountOrder: (v: string[]) => void;
   setAccountGroupOrder: (v: string[]) => void;
+  setAutoLearnRules: (v: boolean) => void;
   isLoaded: boolean;
 }
 
