@@ -96,7 +96,7 @@
     "invalidAmount": "Veuillez entrer un montant valide",
     "transactionCreated": "Transaction créée",
     "failedCreate": "Échec de la création de la transaction",
-    "lockCategory": "Verrouiller la catégorie",
+    "lockCategory": "Catégorie verrouillée",
     "unlockCategory": "Déverrouiller la catégorie",
     "categoryLocked": "Catégorie verrouillée",
     "categoryUnlocked": "Catégorie déverrouillée"
