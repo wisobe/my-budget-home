@@ -269,6 +269,12 @@ export const categoriesApi = {
       method: 'DELETE',
       body: JSON.stringify({ id, plaid_environment }),
     }),
+
+  applyAllRules: (plaid_environment?: string) =>
+    request<ApiResponse<{ applied_count: number }>>('/categories/apply-all-rules.php', {
+      method: 'POST',
+      body: JSON.stringify({ plaid_environment }),
+    }),
 };
 
 // ============ Accounts API ============
