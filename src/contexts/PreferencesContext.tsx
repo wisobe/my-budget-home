@@ -79,6 +79,7 @@ function fromApi(data: Record<string, string>): Partial<Preferences> {
   if (data.sidebar_order !== undefined) p.sidebarOrder = data.sidebar_order ? data.sidebar_order.split(',') : [];
   if (data.account_order !== undefined) p.accountOrder = data.account_order ? data.account_order.split(',') : [];
   if (data.account_group_order !== undefined) p.accountGroupOrder = data.account_group_order ? data.account_group_order.split(',') : [];
+  if (data.auto_learn_rules !== undefined) p.autoLearnRules = data.auto_learn_rules !== '0';
   return p;
 }
 
