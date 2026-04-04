@@ -186,6 +186,7 @@ export function PreferencesProvider({ children }: { children: React.ReactNode })
   const setSidebarOrder = useCallback((v: string[]) => setPrefs(p => ({ ...p, sidebarOrder: v })), []);
   const setAccountOrder = useCallback((v: string[]) => setPrefs(p => ({ ...p, accountOrder: v })), []);
   const setAccountGroupOrder = useCallback((v: string[]) => setPrefs(p => ({ ...p, accountGroupOrder: v })), []);
+  const setAutoLearnRules = useCallback((v: boolean) => setPrefs(p => ({ ...p, autoLearnRules: v })), []);
 
   return (
     <PreferencesContext.Provider value={{ ...prefs, darkMode, setThemeMode, setDarkMode, setAutoSync, setShowPending, setLanguage, setBalanceAccounts, setConsentDataCollection, setConsentDataProcessing, setConsentDataStorage, setSettingsExpandedSections, setSidebarOrder, setAccountOrder, setAccountGroupOrder, isLoaded }}>
