@@ -13,7 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { useCategories, useDeleteCategory, useUpdateCategory, useCategoryRules, useCreateCategoryRule, useDeleteCategoryRule, useUpdateCategoryRule } from '@/hooks/use-transactions';
 import { useAuth } from '@/contexts/AuthContext';
-import { Plus, Trash2, Loader2, Lock, LogOut, Sparkles, Globe, ChevronRight, Pencil, ArrowLeft, FlaskConical, Building2, Key, ShieldCheck, Download, Tags, SlidersHorizontal, ChevronsDownUp } from 'lucide-react';
+import { Plus, Trash2, Loader2, Lock, LogOut, Sparkles, Globe, ChevronRight, Pencil, ArrowLeft, FlaskConical, Building2, Key, ShieldCheck, Download, Tags, SlidersHorizontal, ChevronsDownUp, Play } from 'lucide-react';
 import { usePlaidEnvironment } from '@/contexts/PlaidEnvironmentContext';
 import { TwoFactorSettings, TwoFactorHeader } from '@/components/settings/TwoFactorSettings';
 import { useState, useRef } from 'react';
