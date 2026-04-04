@@ -418,7 +418,14 @@ const Settings = () => {
             </CardHeader>
             <AccordionContent>
               <CardContent className="pt-4">
-                <div className="flex justify-start mb-4">
+                <div className="flex items-center justify-between mb-4 p-3 rounded-lg bg-muted/50">
+                  <div>
+                    <Label className="font-medium">{t('settings.autoLearnRules')}</Label>
+                    <p className="text-xs text-muted-foreground">{t('settings.autoLearnRulesDesc')}</p>
+                  </div>
+                  <Switch checked={autoLearnRules} onCheckedChange={setAutoLearnRules} />
+                </div>
+                <div className="flex justify-start gap-2 mb-4">
                 <Dialog open={addRuleOpen} onOpenChange={setAddRuleOpen}>
                   <DialogTrigger asChild>
                     <Button size="sm"><Plus className="h-4 w-4 mr-2" />{t('settings.addRule')}</Button>
