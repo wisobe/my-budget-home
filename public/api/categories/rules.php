@@ -179,6 +179,7 @@ function applyRuleToExistingTransactions(PDO $pdo, string $userId, string $keywo
         WHERE a.user_id = :user_id
           AND pc.plaid_environment = :env
           AND {$combinedCondition}
+          AND (t.auto_categorize_locked IS NULL OR t.auto_categorize_locked = 0)
     ");
     $stmt->execute($params);
     return $stmt->rowCount();

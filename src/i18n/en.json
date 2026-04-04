@@ -96,7 +96,7 @@
     "invalidAmount": "Please enter a valid amount",
     "transactionCreated": "Transaction created",
     "failedCreate": "Failed to create transaction",
-    "lockCategory": "Lock Category",
+    "lockCategory": "Category Locked",
     "unlockCategory": "Unlock Category",
     "categoryLocked": "Category locked",
     "categoryUnlocked": "Category unlocked"
