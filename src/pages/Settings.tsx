@@ -72,6 +72,7 @@ const Settings = () => {
   const [editRuleCategoryId, setEditRuleCategoryId] = useState('');
   const [editRuleMatchType, setEditRuleMatchType] = useState('contains');
   const [editRuleApplyExisting, setEditRuleApplyExisting] = useState(false);
+  const [applyingAllRules, setApplyingAllRules] = useState(false);
 
   const queryClient = useQueryClient();
 
