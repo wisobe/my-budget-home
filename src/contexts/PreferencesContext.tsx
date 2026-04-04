@@ -56,6 +56,7 @@ const defaults: Preferences = {
   sidebarOrder: [],
   accountOrder: [],
   accountGroupOrder: [],
+  autoLearnRules: true,
 };
 
 function fromApi(data: Record<string, string>): Partial<Preferences> {
