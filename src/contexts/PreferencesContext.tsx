@@ -97,6 +97,7 @@ function toApi(prefs: Preferences): Record<string, string> {
     sidebar_order: prefs.sidebarOrder.join(','),
     account_order: prefs.accountOrder.join(','),
     account_group_order: prefs.accountGroupOrder.join(','),
+    auto_learn_rules: prefs.autoLearnRules ? '1' : '0',
   };
 }
 
