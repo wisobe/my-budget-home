@@ -275,6 +275,22 @@ export const categoriesApi = {
       method: 'POST',
       body: JSON.stringify({ plaid_environment }),
     }),
+
+  previewApplyAllRules: (plaid_environment?: string) =>
+    request<ApiResponse<{ transactions: Array<{
+      id: string;
+      name: string;
+      merchant_name: string | null;
+      amount: number;
+      date: string;
+      current_category_name: string | null;
+      current_category_color: string | null;
+      new_category_name: string;
+      new_category_color: string;
+    }>; total_count: number }>>('/categories/preview-apply-rules.php', {
+      method: 'POST',
+      body: JSON.stringify({ plaid_environment }),
+    }),
 };
 
 // ============ Accounts API ============
