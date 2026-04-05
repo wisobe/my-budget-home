@@ -13,7 +13,9 @@ require_once __DIR__ . '/../includes/bootstrap.php';
  * Calculate the date range for a budget period relative to a reference date.
  */
 function getPeriodRange(string $period, string $refDate = null): array {
-    $ref = $refDate ? new DateTime($refDate) : new DateTime();
+    // Use date-only (no time component) to avoid timezone edge cases
+    // e.g. on March 31 at 23:00 in UTC+2, DateTime() could already be April 1
+    $ref = $refDate ? new DateTime($refDate) : new DateTime(date('Y-m-d'));
     
     switch ($period) {
         case 'weekly':
