@@ -496,36 +496,104 @@ const Settings = () => {
                     </div>
                   </DialogContent>
                 </Dialog>
-                <AlertDialog>
-                  <AlertDialogTrigger asChild>
-                    <Button size="sm" variant="outline" disabled={rules.length === 0 || applyingAllRules}>
+                <Dialog open={applyAllPreviewOpen} onOpenChange={(open) => {
+                  setApplyAllPreviewOpen(open);
+                  if (!open) { setApplyAllPreview(null); }
+                }}>
+                  <DialogTrigger asChild>
+                    <Button size="sm" variant="outline" disabled={rules.length === 0 || applyingAllRules} onClick={async () => {
+                      setApplyAllPreviewOpen(true);
+                      setApplyAllPreviewLoading(true);
+                      setApplyAllPreview(null);
+                      try {
+                        const res = await categoriesApi.previewApplyAllRules(plaidEnvironment);
+                        setApplyAllPreview(res?.data?.transactions ?? []);
+                      } catch {
+                        setApplyAllPreview([]);
+                      } finally {
+                        setApplyAllPreviewLoading(false);
+                      }
+                    }}>
                       {applyingAllRules ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Play className="h-4 w-4 mr-2" />}
                       {t('settings.applyAllRules')}
                     </Button>
-                  </AlertDialogTrigger>
-                  <AlertDialogContent>
-                    <AlertDialogHeader>
-                      <AlertDialogTitle>{t('settings.applyAllRulesTitle')}</AlertDialogTitle>
-                      <AlertDialogDescription>{t('settings.applyAllRulesDesc')}</AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                      <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
-                      <AlertDialogAction onClick={async () => {
-                        setApplyingAllRules(true);
-                        try {
-                          const res = await categoriesApi.applyAllRules(plaidEnvironment);
-                          const count = res?.data?.applied_count ?? 0;
-                          toast.success(t('settings.applyAllRulesSuccess', { count }));
-                          queryClient.invalidateQueries({ queryKey: ['transactions'] });
-                        } catch (e: any) {
-                          toast.error(e.message || t('settings.applyAllRulesFailed'));
-                        } finally {
-                          setApplyingAllRules(false);
-                        }
-                      }}>{t('settings.applyAllRulesConfirm')}</AlertDialogAction>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
+                  </DialogTrigger>
+                  <DialogContent className="max-w-2xl max-h-[80vh] flex flex-col">
+                    <DialogHeader>
+                      <DialogTitle>{t('settings.applyAllRulesTitle')}</DialogTitle>
+                    </DialogHeader>
+                    {applyAllPreviewLoading ? (
+                      <div className="flex items-center justify-center py-8">
+                        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                        <span className="ml-2 text-sm text-muted-foreground">{t('settings.applyAllRulesLoading')}</span>
+                      </div>
+                    ) : applyAllPreview && applyAllPreview.length === 0 ? (
+                      <p className="text-sm text-muted-foreground text-center py-8">{t('settings.applyAllRulesNoChanges')}</p>
+                    ) : applyAllPreview ? (
+                      <>
+                        <p className="text-sm text-muted-foreground">{t('settings.applyAllRulesDesc')}</p>
+                        <p className="text-sm font-medium">{t('settings.applyAllRulesCount', { count: applyAllPreview.length })}</p>
+                        <div className="flex-1 overflow-auto border rounded-md">
+                          <table className="w-full text-sm">
+                            <thead className="bg-muted/50 sticky top-0">
+                              <tr className="border-b">
+                                <th className="text-left p-2 font-medium">{t('transactions.date')}</th>
+                                <th className="text-left p-2 font-medium">{t('transactions.description')}</th>
+                                <th className="text-right p-2 font-medium">{t('transactions.amount')}</th>
+                                <th className="text-left p-2 font-medium">{t('settings.applyAllRulesCurrentCat')}</th>
+                                <th className="text-left p-2 font-medium">{t('settings.applyAllRulesNewCat')}</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {applyAllPreview.map((tx) => (
+                                <tr key={tx.id} className="border-b last:border-0">
+                                  <td className="p-2 whitespace-nowrap">{tx.date}</td>
+                                  <td className="p-2 truncate max-w-[200px]">{tx.merchant_name || tx.name}</td>
+                                  <td className="p-2 text-right whitespace-nowrap">${Math.abs(tx.amount).toFixed(2)}</td>
+                                  <td className="p-2">
+                                    <span className="inline-flex items-center gap-1">
+                                      {tx.current_category_color && <span className="w-2 h-2 rounded-full inline-block" style={{ backgroundColor: tx.current_category_color }} />}
+                                      {tx.current_category_name || t('settings.applyAllRulesNoCat')}
+                                    </span>
+                                  </td>
+                                  <td className="p-2">
+                                    <span className="inline-flex items-center gap-1">
+                                      {tx.new_category_color && <span className="w-2 h-2 rounded-full inline-block" style={{ backgroundColor: tx.new_category_color }} />}
+                                      {tx.new_category_name}
+                                    </span>
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      </>
+                    ) : null}
+                    <div className="flex justify-end gap-2 pt-2">
+                      <Button variant="outline" onClick={() => setApplyAllPreviewOpen(false)}>{t('common.cancel')}</Button>
+                      <Button
+                        disabled={applyAllPreviewLoading || !applyAllPreview || applyAllPreview.length === 0 || applyingAllRules}
+                        onClick={async () => {
+                          setApplyingAllRules(true);
+                          try {
+                            const res = await categoriesApi.applyAllRules(plaidEnvironment);
+                            const count = res?.data?.applied_count ?? 0;
+                            toast.success(t('settings.applyAllRulesSuccess', { count }));
+                            queryClient.invalidateQueries({ queryKey: ['transactions'] });
+                            setApplyAllPreviewOpen(false);
+                          } catch (e: any) {
+                            toast.error(e.message || t('settings.applyAllRulesFailed'));
+                          } finally {
+                            setApplyingAllRules(false);
+                          }
+                        }}
+                      >
+                        {applyingAllRules && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                        {t('settings.applyAllRulesConfirm')}
+                      </Button>
+                    </div>
+                  </DialogContent>
+                </Dialog>
                 </div>
                 {rules.length === 0 ? (
                   <p className="text-sm text-muted-foreground text-center py-4">{t('settings.noRulesYet')}</p>
