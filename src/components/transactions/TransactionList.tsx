@@ -243,7 +243,7 @@ export function TransactionList() {
                               title={t('transactions.unlockCategory')}
                             >
                               <Lock className="h-3 w-3" />
-                              {t('transactions.lockCategory')}
+                              {t('transactions.categoryLocked')}
                             </Badge>
                           )}
                         </div>
