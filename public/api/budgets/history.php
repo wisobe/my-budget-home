@@ -27,13 +27,15 @@ try {
     }
 
     // Always return 12 calendar months of data regardless of budget period
+    // Use the 1st of the current month as anchor to avoid month overflow issues
+    // (e.g. March 31 minus 1 month would give March 3 instead of Feb 28)
     $months = [];
-    $now = new DateTime();
+    $firstOfCurrentMonth = new DateTime(date('Y-m-01'));
 
     for ($i = 11; $i >= 0; $i--) {
-        $date = (clone $now)->modify("-{$i} months");
-        $startDate = $date->format('Y-m') . '-01';
-        $endDate = (new DateTime($startDate))->modify('last day of this month')->format('Y-m-d');
+        $date = (clone $firstOfCurrentMonth)->modify("-{$i} months");
+        $startDate = $date->format('Y-m-d');
+        $endDate = (clone $date)->modify('last day of this month')->format('Y-m-d');
         $label = $date->format('Y-m');
 
         // Sum non-split transactions for this category (and children) in this month
