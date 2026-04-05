@@ -73,6 +73,13 @@ const Settings = () => {
   const [editRuleMatchType, setEditRuleMatchType] = useState('contains');
   const [editRuleApplyExisting, setEditRuleApplyExisting] = useState(false);
   const [applyingAllRules, setApplyingAllRules] = useState(false);
+  const [applyAllPreviewOpen, setApplyAllPreviewOpen] = useState(false);
+  const [applyAllPreview, setApplyAllPreview] = useState<Array<{
+    id: string; name: string; merchant_name: string | null; amount: number; date: string;
+    current_category_name: string | null; current_category_color: string | null;
+    new_category_name: string; new_category_color: string;
+  }> | null>(null);
+  const [applyAllPreviewLoading, setApplyAllPreviewLoading] = useState(false);
 
   const queryClient = useQueryClient();
 
