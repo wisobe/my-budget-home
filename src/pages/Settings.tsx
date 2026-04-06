@@ -87,6 +87,22 @@ const Settings = () => {
   }> | null>(null);
   const [applyAllPreviewLoading, setApplyAllPreviewLoading] = useState(false);
 
+  // Exclusion rules state
+  const [addExclRuleOpen, setAddExclRuleOpen] = useState(false);
+  const [newExclKeyword, setNewExclKeyword] = useState('');
+  const [newExclMatchType, setNewExclMatchType] = useState('contains');
+  const [newExclApplyExisting, setNewExclApplyExisting] = useState(false);
+  const [editExclRuleId, setEditExclRuleId] = useState<string | null>(null);
+  const [editExclKeyword, setEditExclKeyword] = useState('');
+  const [editExclMatchType, setEditExclMatchType] = useState('contains');
+  const [editExclApplyExisting, setEditExclApplyExisting] = useState(false);
+  const [applyAllExclPreviewOpen, setApplyAllExclPreviewOpen] = useState(false);
+  const [applyAllExclPreview, setApplyAllExclPreview] = useState<Array<{
+    id: string; name: string; merchant_name: string | null; amount: number; date: string;
+  }> | null>(null);
+  const [applyAllExclPreviewLoading, setApplyAllExclPreviewLoading] = useState(false);
+  const [applyingAllExclRules, setApplyingAllExclRules] = useState(false);
+
   const queryClient = useQueryClient();
 
   const handleDeleteCategory = async (id: string, name: string) => {
