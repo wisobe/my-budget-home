@@ -181,3 +181,48 @@ export function useDeleteCategoryRule() {
     },
   });
 }
+
+export function useExclusionRules() {
+  const { plaidEnvironment } = usePlaidEnvironment();
+  return useQuery({
+    queryKey: ['exclusion-rules', plaidEnvironment],
+    queryFn: () => exclusionRulesApi.list(plaidEnvironment),
+  });
+}
+
+export function useCreateExclusionRule() {
+  const queryClient = useQueryClient();
+  const { plaidEnvironment } = usePlaidEnvironment();
+  return useMutation({
+    mutationFn: (data: { keyword: string; match_type?: string; priority?: number; apply_to_existing?: boolean }) =>
+      exclusionRulesApi.create({ ...data, plaid_environment: plaidEnvironment }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['exclusion-rules'] });
+      queryClient.invalidateQueries({ queryKey: ['transactions'] });
+    },
+  });
+}
+
+export function useUpdateExclusionRule() {
+  const queryClient = useQueryClient();
+  const { plaidEnvironment } = usePlaidEnvironment();
+  return useMutation({
+    mutationFn: (data: { id: string; keyword?: string; match_type?: string; priority?: number; apply_to_existing?: boolean }) =>
+      exclusionRulesApi.update({ ...data, plaid_environment: plaidEnvironment }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['exclusion-rules'] });
+      queryClient.invalidateQueries({ queryKey: ['transactions'] });
+    },
+  });
+}
+
+export function useDeleteExclusionRule() {
+  const queryClient = useQueryClient();
+  const { plaidEnvironment } = usePlaidEnvironment();
+  return useMutation({
+    mutationFn: (id: string) => exclusionRulesApi.delete(id, plaidEnvironment),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['exclusion-rules'] });
+    },
+  });
+}
