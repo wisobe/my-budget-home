@@ -181,6 +181,22 @@ CREATE TABLE IF NOT EXISTS category_rules (
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- Exclusion Rules (for auto-excluding transactions by keyword matching)
+CREATE TABLE IF NOT EXISTS exclusion_rules (
+    id VARCHAR(50) PRIMARY KEY,
+    user_id VARCHAR(50) NOT NULL,
+    keyword VARCHAR(255) NOT NULL,
+    match_type ENUM('contains', 'exact', 'starts_with') DEFAULT 'contains',
+    priority INT DEFAULT 0,
+    plaid_environment ENUM('sandbox', 'production') NOT NULL DEFAULT 'sandbox',
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_keyword (keyword),
+    INDEX idx_priority (priority),
+    INDEX idx_user (user_id),
+    INDEX idx_environment (plaid_environment),
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 -- Application Settings (key-value store for admin-configurable settings)
 CREATE TABLE IF NOT EXISTS app_settings (
     setting_key VARCHAR(100) PRIMARY KEY,
@@ -281,3 +297,21 @@ CREATE TABLE IF NOT EXISTS subscription_dismissals (
 -- MIGRATION: Add category lock support
 -- ============================================================
 -- ALTER TABLE transactions ADD COLUMN auto_categorize_locked BOOLEAN DEFAULT FALSE AFTER excluded;
+--
+-- ============================================================
+-- MIGRATION: Add exclusion rules support
+-- ============================================================
+-- CREATE TABLE IF NOT EXISTS exclusion_rules (
+--     id VARCHAR(50) PRIMARY KEY,
+--     user_id VARCHAR(50) NOT NULL,
+--     keyword VARCHAR(255) NOT NULL,
+--     match_type ENUM('contains', 'exact', 'starts_with') DEFAULT 'contains',
+--     priority INT DEFAULT 0,
+--     plaid_environment ENUM('sandbox', 'production') NOT NULL DEFAULT 'sandbox',
+--     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+--     INDEX idx_keyword (keyword),
+--     INDEX idx_priority (priority),
+--     INDEX idx_user (user_id),
+--     INDEX idx_environment (plaid_environment),
+--     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+-- ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
