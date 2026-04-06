@@ -734,7 +734,265 @@ const Settings = () => {
           </DialogContent>
         </Dialog>
 
-        {/* Preferences */}
+        {/* Exclusion Rules */}
+        <AccordionItem value="exclusionRules" className="border-none">
+          <Card>
+            <CardHeader className="pb-4">
+              <AccordionTrigger className="hover:no-underline py-0">
+                <div className="flex items-center gap-2">
+                  <EyeOff className="h-5 w-5" />
+                  <div className="text-left">
+                    <CardTitle className="text-lg">{t('settings.exclusionRules')}</CardTitle>
+                    <CardDescription>{t('settings.exclusionRulesDesc')}</CardDescription>
+                  </div>
+                </div>
+              </AccordionTrigger>
+            </CardHeader>
+            <AccordionContent>
+              <CardContent className="pt-4">
+                <div className="flex justify-start gap-2 mb-4">
+                <Dialog open={addExclRuleOpen} onOpenChange={setAddExclRuleOpen}>
+                  <DialogTrigger asChild>
+                    <Button size="sm"><Plus className="h-4 w-4 mr-2" />{t('settings.addExclusionRule')}</Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader><DialogTitle>{t('settings.addExclusionRule')}</DialogTitle></DialogHeader>
+                    <div className="space-y-4">
+                      <div className="space-y-2">
+                        <Label>{t('settings.keyword')}</Label>
+                        <Input value={newExclKeyword} onChange={e => setNewExclKeyword(e.target.value)} placeholder={t('settings.keywordPlaceholder')} />
+                        <p className="text-xs text-muted-foreground">{t('settings.keywordDesc')}</p>
+                      </div>
+                      <div className="space-y-2">
+                        <Label>{t('settings.matchType')}</Label>
+                        <Select value={newExclMatchType} onValueChange={setNewExclMatchType}>
+                          <SelectTrigger><SelectValue /></SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="contains">{t('settings.contains')}</SelectItem>
+                            <SelectItem value="exact">{t('settings.exactMatch')}</SelectItem>
+                            <SelectItem value="starts_with">{t('settings.startsWith')}</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Checkbox id="new-excl-rule-apply" checked={newExclApplyExisting} onCheckedChange={(v) => setNewExclApplyExisting(!!v)} />
+                        <Label htmlFor="new-excl-rule-apply" className="text-sm font-normal cursor-pointer">{t('settings.applyExclToExisting')}</Label>
+                      </div>
+                      <Button
+                        className="w-full"
+                        disabled={!newExclKeyword.trim() || createExclusionRuleMutation.isPending}
+                        onClick={async () => {
+                          try {
+                            await createExclusionRuleMutation.mutateAsync({
+                              keyword: newExclKeyword.trim(),
+                              match_type: newExclMatchType,
+                              apply_to_existing: newExclApplyExisting,
+                            });
+                            toast.success(t('settings.exclusionRuleCreated'));
+                            setNewExclKeyword('');
+                            setNewExclMatchType('contains');
+                            setNewExclApplyExisting(false);
+                            setAddExclRuleOpen(false);
+                          } catch (e: any) {
+                            toast.error(e.message || t('settings.failedCreateExclusionRule'));
+                          }
+                        }}
+                      >
+                        {createExclusionRuleMutation.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                        {t('settings.createExclusionRule')}
+                      </Button>
+                    </div>
+                  </DialogContent>
+                </Dialog>
+                <Dialog open={applyAllExclPreviewOpen} onOpenChange={(open) => {
+                  setApplyAllExclPreviewOpen(open);
+                  if (!open) { setApplyAllExclPreview(null); }
+                }}>
+                  <DialogTrigger asChild>
+                    <Button size="sm" variant="outline" disabled={exclusionRules.length === 0 || applyingAllExclRules} onClick={async () => {
+                      setApplyAllExclPreviewOpen(true);
+                      setApplyAllExclPreviewLoading(true);
+                      setApplyAllExclPreview(null);
+                      try {
+                        const res = await exclusionRulesApi.previewApplyAll(plaidEnvironment);
+                        setApplyAllExclPreview(res?.data?.transactions ?? []);
+                      } catch {
+                        setApplyAllExclPreview([]);
+                      } finally {
+                        setApplyAllExclPreviewLoading(false);
+                      }
+                    }}>
+                      {applyingAllExclRules ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Play className="h-4 w-4 mr-2" />}
+                      {t('settings.applyAllExclusionRules')}
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="max-w-2xl max-h-[80vh] flex flex-col">
+                    <DialogHeader>
+                      <DialogTitle>{t('settings.applyAllExclusionRulesTitle')}</DialogTitle>
+                    </DialogHeader>
+                    {applyAllExclPreviewLoading ? (
+                      <div className="flex items-center justify-center py-8">
+                        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                        <span className="ml-2 text-sm text-muted-foreground">{t('settings.applyAllRulesLoading')}</span>
+                      </div>
+                    ) : applyAllExclPreview && applyAllExclPreview.length === 0 ? (
+                      <p className="text-sm text-muted-foreground text-center py-8">{t('settings.applyAllExclusionRulesNoChanges')}</p>
+                    ) : applyAllExclPreview ? (
+                      <>
+                        <p className="text-sm text-muted-foreground">{t('settings.applyAllExclusionRulesPreviewDesc')}</p>
+                        <p className="text-sm font-medium">{t('settings.applyAllExclusionRulesCount', { count: applyAllExclPreview.length })}</p>
+                        <div className="flex-1 overflow-auto border rounded-md">
+                          <table className="w-full text-sm">
+                            <thead className="bg-muted/50 sticky top-0">
+                              <tr className="border-b">
+                                <th className="text-left p-2 font-medium">{t('transactions.date')}</th>
+                                <th className="text-left p-2 font-medium">{t('transactions.description')}</th>
+                                <th className="text-right p-2 font-medium">{t('transactions.amount')}</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {applyAllExclPreview.map((tx) => (
+                                <tr key={tx.id} className="border-b last:border-0">
+                                  <td className="p-2 whitespace-nowrap">{tx.date}</td>
+                                  <td className="p-2 truncate max-w-[300px]">{tx.merchant_name || tx.name}</td>
+                                  <td className="p-2 text-right whitespace-nowrap">${Math.abs(tx.amount).toFixed(2)}</td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      </>
+                    ) : null}
+                    <div className="flex justify-end gap-2 pt-2">
+                      <Button variant="outline" onClick={() => setApplyAllExclPreviewOpen(false)}>{t('common.cancel')}</Button>
+                      <Button
+                        disabled={applyAllExclPreviewLoading || !applyAllExclPreview || applyAllExclPreview.length === 0 || applyingAllExclRules}
+                        onClick={async () => {
+                          setApplyingAllExclRules(true);
+                          try {
+                            const res = await exclusionRulesApi.applyAll(plaidEnvironment);
+                            const count = res?.data?.applied_count ?? 0;
+                            toast.success(t('settings.applyAllExclusionRulesSuccess', { count }));
+                            queryClient.invalidateQueries({ queryKey: ['transactions'] });
+                            setApplyAllExclPreviewOpen(false);
+                          } catch (e: any) {
+                            toast.error(e.message || t('settings.applyAllExclusionRulesFailed'));
+                          } finally {
+                            setApplyingAllExclRules(false);
+                          }
+                        }}
+                      >
+                        {applyingAllExclRules && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                        {t('settings.applyAllExclusionRulesConfirm')}
+                      </Button>
+                    </div>
+                  </DialogContent>
+                </Dialog>
+                </div>
+                {exclusionRules.length === 0 ? (
+                  <p className="text-sm text-muted-foreground text-center py-4">{t('settings.noExclusionRulesYet')}</p>
+                ) : (
+                  <div className="space-y-2">
+                    {exclusionRules.map((rule: any) => (
+                      <div key={rule.id} className="flex items-center justify-between p-3 rounded-lg hover:bg-muted/50 transition-colors group">
+                        <div className="flex items-center gap-3 min-w-0">
+                          <EyeOff className="h-4 w-4 text-muted-foreground shrink-0" />
+                          <div className="min-w-0">
+                            <div className="flex items-center gap-2">
+                              <span className="font-medium font-mono text-sm">{rule.keyword}</span>
+                              <Badge variant="outline" className="text-xs shrink-0">{rule.match_type}</Badge>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="text-muted-foreground hover:text-foreground opacity-0 group-hover:opacity-100 transition-opacity"
+                            onClick={() => {
+                              setEditExclRuleId(rule.id);
+                              setEditExclKeyword(rule.keyword);
+                              setEditExclMatchType(rule.match_type);
+                            }}
+                          >
+                            <Pencil className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="text-muted-foreground hover:text-destructive opacity-0 group-hover:opacity-100 transition-opacity"
+                            onClick={async () => {
+                              if (!confirm(t('settings.deleteExclusionRuleConfirm', { keyword: rule.keyword }))) return;
+                              try {
+                                await deleteExclusionRuleMutation.mutateAsync(rule.id);
+                                toast.success(t('settings.exclusionRuleDeleted'));
+                              } catch (e: any) {
+                                toast.error(e.message || t('settings.failedDeleteExclusionRule'));
+                              }
+                            }}
+                            disabled={deleteExclusionRuleMutation.isPending}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </AccordionContent>
+          </Card>
+        </AccordionItem>
+
+        {/* Edit Exclusion Rule Dialog */}
+        <Dialog open={!!editExclRuleId} onOpenChange={(open) => { if (!open) setEditExclRuleId(null); }}>
+          <DialogContent>
+            <DialogHeader><DialogTitle>{t('settings.editExclusionRule')}</DialogTitle></DialogHeader>
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label>{t('settings.keyword')}</Label>
+                <Input value={editExclKeyword} onChange={e => setEditExclKeyword(e.target.value)} />
+              </div>
+              <div className="space-y-2">
+                <Label>{t('settings.matchType')}</Label>
+                <Select value={editExclMatchType} onValueChange={setEditExclMatchType}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="contains">{t('settings.contains')}</SelectItem>
+                    <SelectItem value="exact">{t('settings.exactMatch')}</SelectItem>
+                    <SelectItem value="starts_with">{t('settings.startsWith')}</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="flex items-center gap-2">
+                <Checkbox id="edit-excl-rule-apply" checked={editExclApplyExisting} onCheckedChange={(v) => setEditExclApplyExisting(!!v)} />
+                <Label htmlFor="edit-excl-rule-apply" className="text-sm font-normal cursor-pointer">{t('settings.applyExclToExisting')}</Label>
+              </div>
+              <Button
+                className="w-full"
+                disabled={!editExclKeyword.trim() || updateExclusionRuleMutation.isPending}
+                onClick={async () => {
+                  try {
+                    await updateExclusionRuleMutation.mutateAsync({
+                      id: editExclRuleId!,
+                      keyword: editExclKeyword.trim(),
+                      match_type: editExclMatchType,
+                      apply_to_existing: editExclApplyExisting,
+                    });
+                    toast.success(t('settings.exclusionRuleUpdated'));
+                    setEditExclRuleId(null);
+                    setEditExclApplyExisting(false);
+                  } catch (e: any) {
+                    toast.error(e.message || t('settings.failedUpdateExclusionRule'));
+                  }
+                }}
+              >
+                {updateExclusionRuleMutation.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                {t('settings.saveExclusionRule')}
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
         <AccordionItem value="preferences" className="border-none">
           <Card>
             <CardHeader className="pb-4">
