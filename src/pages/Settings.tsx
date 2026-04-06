@@ -45,6 +45,12 @@ const Settings = () => {
   const updateRuleMutation = useUpdateCategoryRule();
   const rules = rulesData?.data || [];
 
+  const { data: exclusionRulesData } = useExclusionRules();
+  const createExclusionRuleMutation = useCreateExclusionRule();
+  const deleteExclusionRuleMutation = useDeleteExclusionRule();
+  const updateExclusionRuleMutation = useUpdateExclusionRule();
+  const exclusionRules = exclusionRulesData?.data || [];
+
   const [newCatName, setNewCatName] = useState('');
   const [newCatColor, setNewCatColor] = useState('#6b7280');
   const [newCatIsIncome, setNewCatIsIncome] = useState(false);
