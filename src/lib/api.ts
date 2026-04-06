@@ -293,6 +293,45 @@ export const categoriesApi = {
     }),
 };
 
+// ============ Exclusion Rules API ============
+
+export const exclusionRulesApi = {
+  list: (plaid_environment?: string) =>
+    request<ApiResponse<any[]>>(`/exclusion-rules/${plaid_environment ? `?plaid_environment=${plaid_environment}` : ''}`),
+
+  create: (data: { keyword: string; match_type?: string; priority?: number; apply_to_existing?: boolean; plaid_environment?: string }) =>
+    request<ApiResponse<any>>('/exclusion-rules/', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+
+  update: (data: { id: string; keyword?: string; match_type?: string; priority?: number; apply_to_existing?: boolean; plaid_environment?: string }) =>
+    request<ApiResponse<any>>('/exclusion-rules/', {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    }),
+
+  delete: (id: string, plaid_environment?: string) =>
+    request<ApiResponse<void>>('/exclusion-rules/', {
+      method: 'DELETE',
+      body: JSON.stringify({ id, plaid_environment }),
+    }),
+
+  previewApplyAll: (plaid_environment?: string) =>
+    request<ApiResponse<{ transactions: Array<{
+      id: string; name: string; merchant_name: string | null; amount: number; date: string;
+    }>; total_count: number }>>('/exclusion-rules/preview-apply-all.php', {
+      method: 'POST',
+      body: JSON.stringify({ plaid_environment }),
+    }),
+
+  applyAll: (plaid_environment?: string) =>
+    request<ApiResponse<{ applied_count: number }>>('/exclusion-rules/apply-all.php', {
+      method: 'POST',
+      body: JSON.stringify({ plaid_environment }),
+    }),
+};
+
 // ============ Accounts API ============
 
 export const accountsApi = {

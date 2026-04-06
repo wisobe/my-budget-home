@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { transactionsApi, categoriesApi } from '@/lib/api';
+import { transactionsApi, categoriesApi, exclusionRulesApi } from '@/lib/api';
 import { usePlaidEnvironment } from '@/contexts/PlaidEnvironmentContext';
 
 interface UseTransactionsParams {
