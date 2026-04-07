@@ -135,9 +135,16 @@ try {
         'user_id' => $userId,
     ]);
     
-    // Update account balances
+    // Update account balances & discover new accounts
     $accountsResult = $plaid->getAccounts($accessToken);
+    
+    // Get institution name for potential new accounts
+    $instStmt = $pdo->prepare('SELECT institution_name FROM plaid_connections WHERE id = :id');
+    $instStmt->execute(['id' => $body['connection_id']]);
+    $institutionName = $instStmt->fetchColumn() ?: 'Unknown';
+    
     foreach ($accountsResult['accounts'] as $account) {
+        // Try to update existing account
         $updateAccStmt = $pdo->prepare('
             UPDATE accounts SET
                 current_balance = :current_balance,
@@ -151,6 +158,39 @@ try {
             'plaid_account_id' => $account['account_id'],
             'user_id' => $userId,
         ]);
+        
+        // If no existing account was updated, insert as new
+        if ($updateAccStmt->rowCount() === 0) {
+            $checkStmt = $pdo->prepare('SELECT id FROM accounts WHERE plaid_account_id = :plaid_account_id AND user_id = :user_id');
+            $checkStmt->execute(['plaid_account_id' => $account['account_id'], 'user_id' => $userId]);
+            if (!$checkStmt->fetch()) {
+                $insertAccStmt = $pdo->prepare('
+                    INSERT INTO accounts (
+                        id, user_id, plaid_account_id, plaid_connection_id, name, official_name,
+                        type, subtype, current_balance, available_balance, currency,
+                        institution_name, created_at, last_synced
+                    ) VALUES (
+                        :id, :user_id, :plaid_account_id, :plaid_connection_id, :name, :official_name,
+                        :type, :subtype, :current_balance, :available_balance, :currency,
+                        :institution_name, NOW(), NOW()
+                    )
+                ');
+                $insertAccStmt->execute([
+                    'id' => 'acc_' . uniqid(),
+                    'user_id' => $userId,
+                    'plaid_account_id' => $account['account_id'],
+                    'plaid_connection_id' => $body['connection_id'],
+                    'name' => $account['name'],
+                    'official_name' => $account['official_name'] ?? null,
+                    'type' => $account['type'],
+                    'subtype' => $account['subtype'] ?? null,
+                    'current_balance' => $account['balances']['current'] ?? 0,
+                    'available_balance' => $account['balances']['available'] ?? null,
+                    'currency' => $account['balances']['iso_currency_code'] ?? 'CAD',
+                    'institution_name' => $institutionName,
+                ]);
+            }
+        }
     }
     
     Response::success([
