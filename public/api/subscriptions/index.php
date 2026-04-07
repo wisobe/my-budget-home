@@ -49,13 +49,13 @@ try {
     $dStmt->execute([':user_id' => $userId, ':env' => $plaidEnv]);
     $dismissedKeys = array_column($dStmt->fetchAll(PDO::FETCH_ASSOC), 'merchant_key');
 } catch (Exception $e) {
-    // Table might not exist yet
     $dismissedKeys = [];
 }
 
-// Fetch ALL non-excluded, non-pending transactions from the last 18 months
+// Fetch non-excluded, non-pending transactions from the last 18 months
 // Exclude income categories (is_income = 1)
-$sql = "SELECT t.name, t.merchant_name, t.amount, t.date, t.category_id,
+// No GROUP BY — each transaction row is unique by t.id
+$sql = "SELECT t.id, t.name, t.merchant_name, t.amount, t.date, t.category_id,
                cat.name as category_name, cat.color as category_color
         FROM transactions t
         JOIN accounts a ON t.account_id = a.id
@@ -69,25 +69,26 @@ $sql = "SELECT t.name, t.merchant_name, t.amount, t.date, t.category_id,
           AND t.date >= DATE_SUB(CURDATE(), INTERVAL 18 MONTH)
           AND (c.plaid_environment = :plaid_env OR a.plaid_connection_id IS NULL)
           AND (cat.is_income = 0 OR cat.is_income IS NULL)
-        GROUP BY t.id
         ORDER BY t.date DESC";
 
-$params = [':user_id' => $userId, ':plaid_env' => $plaidEnv];
-
 $stmt = $pdo->prepare($sql);
-$stmt->execute($params);
+$stmt->execute([':user_id' => $userId, ':plaid_env' => $plaidEnv]);
 $transactions = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-// Normalize merchant names for better grouping
+// Aggressive merchant name normalization
 function normalizeMerchantKey($name) {
     $key = strtolower(trim($name));
-    // Remove common suffixes/noise
-    $key = preg_replace('/\s+(inc\.?|llc\.?|ltd\.?|co\.?|corp\.?|\.com|com)$/i', '', $key);
-    // Remove trailing numbers (order IDs, reference numbers, etc.)
-    $key = preg_replace('/\s+#?\d+$/', '', $key);
-    // Remove asterisk patterns common in credit card descriptors (e.g., "NETFLIX *MEMBER")
+    // Remove everything after asterisk (credit card descriptors like "NETFLIX *MEMBER")
     $key = preg_replace('/\s*\*\s*.*$/', '', $key);
-    // Remove special characters except spaces and letters/numbers
+    // Remove common prefixes
+    $key = preg_replace('/^(www\.|http[s]?:\/\/)/', '', $key);
+    // Remove common suffixes/noise
+    $key = preg_replace('/\s+(inc\.?|llc\.?|ltd\.?|co\.?|corp\.?|\.com|com|ca|org|net)$/i', '', $key);
+    // Remove trailing .com, .ca, etc. even without space
+    $key = preg_replace('/\.(com|ca|org|net|io)$/i', '', $key);
+    // Remove trailing numbers (order IDs, reference numbers)
+    $key = preg_replace('/\s+#?\d+$/', '', $key);
+    // Remove all special characters except spaces and alphanumeric
     $key = preg_replace('/[^a-z0-9\s]/', '', $key);
     // Collapse whitespace
     $key = preg_replace('/\s+/', ' ', trim($key));
@@ -96,7 +97,12 @@ function normalizeMerchantKey($name) {
 
 // Group by normalized merchant key, using absolute amounts
 $merchants = [];
+$seenTxnIds = [];
 foreach ($transactions as $t) {
+    // Skip duplicate transaction IDs (safety net for JOINs)
+    if (isset($seenTxnIds[$t['id']])) continue;
+    $seenTxnIds[$t['id']] = true;
+
     $rawName = $t['merchant_name'] ?: $t['name'];
     $key = normalizeMerchantKey($rawName);
     if (strlen($key) < 2) continue;
@@ -119,6 +125,37 @@ foreach ($transactions as $t) {
         'amount' => abs((float)$t['amount']),
         'date' => $t['date'],
     ];
+}
+
+// Fuzzy prefix merging: merge smaller groups into larger ones sharing the same prefix
+$keys = array_keys($merchants);
+sort($keys);
+$mergedInto = []; // maps old key -> new key
+
+for ($i = 0; $i < count($keys); $i++) {
+    if (isset($mergedInto[$keys[$i]])) continue;
+    for ($j = $i + 1; $j < count($keys); $j++) {
+        if (isset($mergedInto[$keys[$j]])) continue;
+        $a = $keys[$i];
+        $b = $keys[$j];
+        // Check if one is a prefix of the other (min 4 chars to avoid false matches)
+        $shorter = strlen($a) <= strlen($b) ? $a : $b;
+        $longer = strlen($a) <= strlen($b) ? $b : $a;
+        if (strlen($shorter) >= 4 && strpos($longer, $shorter) === 0) {
+            // Merge into whichever has more transactions
+            $target = count($merchants[$a]['transactions']) >= count($merchants[$b]['transactions']) ? $a : $b;
+            $source = $target === $a ? $b : $a;
+            foreach ($merchants[$source]['transactions'] as $txn) {
+                $dedupeKey = $txn['date'] . '|' . $txn['amount'];
+                if (!in_array($dedupeKey, $merchants[$target]['_seen'])) {
+                    $merchants[$target]['_seen'][] = $dedupeKey;
+                    $merchants[$target]['transactions'][] = $txn;
+                }
+            }
+            $mergedInto[$source] = $target;
+            unset($merchants[$source]);
+        }
+    }
 }
 
 $buckets = [
@@ -145,7 +182,7 @@ foreach ($merchants as $key => $merchant) {
     }
     if (empty($intervals)) continue;
 
-    // Use median interval for better resilience to billing date shifts
+    // Use median interval for resilience to billing date shifts
     $sorted = $intervals;
     sort($sorted);
     $mid = floor(count($sorted) / 2);
@@ -162,7 +199,7 @@ foreach ($merchants as $key => $merchant) {
     }
     if (!$matchedBucket) continue;
 
-    // Strict variance check — max 20% deviation from expected interval
+    // Interval variance check — max 20% deviation from expected interval
     // Skip for merchants with ≤3 transactions (not enough data for reliable variance)
     if (count($intervals) > 2) {
         $variance = 0;
@@ -174,10 +211,20 @@ foreach ($merchants as $key => $merchant) {
         if ($stdDev > $matchedBucket['days'] * $varianceThreshold) continue;
     }
 
+    // Amount consistency check — reject if amount std dev > 10% of mean
     $amounts = array_column($txns, 'amount');
+    $avgAmount = array_sum($amounts) / count($amounts);
+    if ($avgAmount > 0 && count($amounts) > 2) {
+        $amountVariance = 0;
+        foreach ($amounts as $amt) {
+            $amountVariance += pow($amt - $avgAmount, 2);
+        }
+        $amountStdDev = sqrt($amountVariance / count($amounts));
+        if ($amountStdDev > $avgAmount * 0.10) continue;
+    }
+
     $currentAmount = end($amounts);
     $previousAmount = count($amounts) >= 2 ? $amounts[count($amounts) - 2] : $currentAmount;
-    $avgAmount = array_sum($amounts) / count($amounts);
 
     $priceChange = null;
     if ($previousAmount > 0 && abs($currentAmount - $previousAmount) / $previousAmount > 0.05) {
