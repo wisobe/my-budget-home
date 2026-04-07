@@ -1,0 +1,24 @@
+# BudgetWise - Apache SPA Routing & Security
+# This file is auto-included in dist/ during build.
+# It handles React Router (SPA fallback) and basic security.
+
+# Enable rewrite engine
+RewriteEngine On
+
+# Handle React Router - SPA fallback
+# If the request is not for a file
+RewriteCond %{REQUEST_FILENAME} !-f
+# And not for a directory
+RewriteCond %{REQUEST_FILENAME} !-d
+# And not for the API
+RewriteCond %{REQUEST_URI} !^/api/
+# Send it to index.html (works for both root and subdirectory deployments)
+RewriteRule ^ index.html [L]
+
+# Security: Deny access to config and sensitive files
+<FilesMatch "(config\.php|\.env|\.git)">
+    Require all denied
+</FilesMatch>
+
+# Security: Disable directory listing
+Options -Indexes
