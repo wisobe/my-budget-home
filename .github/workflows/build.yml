@@ -3,7 +3,12 @@ name: Build and Package
 on:
   push:
     branches: [main]
-  workflow_dispatch:  # Allows manual trigger from GitHub
+  workflow_dispatch:
+    inputs:
+      base_path:
+        description: 'Base path for deployment (e.g. / for root, /budget for subdirectory)'
+        required: false
+        default: '/'
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
@@ -31,7 +36,7 @@ jobs:
       - name: Build project
         run: npm run build
         env:
-          VITE_BASE_PATH: /budget
+          VITE_BASE_PATH: ${{ github.event.inputs.base_path || '/' }}
 
       - name: Copy API files to dist
         run: |
