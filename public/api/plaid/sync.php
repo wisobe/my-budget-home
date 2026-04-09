@@ -144,26 +144,28 @@ try {
     $institutionName = $instStmt->fetchColumn() ?: 'Unknown';
     
     foreach ($accountsResult['accounts'] as $account) {
-        // Try to update existing account
-        $updateAccStmt = $pdo->prepare('
-            UPDATE accounts SET
-                current_balance = :current_balance,
-                available_balance = :available_balance,
-                last_synced = NOW()
-            WHERE plaid_account_id = :plaid_account_id AND user_id = :user_id
-        ');
-        $updateAccStmt->execute([
-            'current_balance' => $account['balances']['current'] ?? 0,
-            'available_balance' => $account['balances']['available'] ?? null,
-            'plaid_account_id' => $account['account_id'],
-            'user_id' => $userId,
-        ]);
+        // Check if account already exists
+        $checkStmt = $pdo->prepare('SELECT id FROM accounts WHERE plaid_account_id = :plaid_account_id AND user_id = :user_id');
+        $checkStmt->execute(['plaid_account_id' => $account['account_id'], 'user_id' => $userId]);
+        $existingAccount = $checkStmt->fetch();
         
-        // If no existing account was updated, insert as new
-        if ($updateAccStmt->rowCount() === 0) {
-            $checkStmt = $pdo->prepare('SELECT id FROM accounts WHERE plaid_account_id = :plaid_account_id AND user_id = :user_id');
-            $checkStmt->execute(['plaid_account_id' => $account['account_id'], 'user_id' => $userId]);
-            if (!$checkStmt->fetch()) {
+        if ($existingAccount) {
+            // Update existing account balances
+            $updateAccStmt = $pdo->prepare('
+                UPDATE accounts SET
+                    current_balance = :current_balance,
+                    available_balance = :available_balance,
+                    last_synced = NOW()
+                WHERE plaid_account_id = :plaid_account_id AND user_id = :user_id
+            ');
+            $updateAccStmt->execute([
+                'current_balance' => $account['balances']['current'] ?? 0,
+                'available_balance' => $account['balances']['available'] ?? null,
+                'plaid_account_id' => $account['account_id'],
+                'user_id' => $userId,
+            ]);
+        } else {
+            // Insert new account
                 $insertAccStmt = $pdo->prepare('
                     INSERT INTO accounts (
                         id, user_id, plaid_account_id, plaid_connection_id, name, official_name,
