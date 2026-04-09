@@ -194,10 +194,10 @@
     "confirmRemove": "Êtes-vous sûr de vouloir supprimer cette connexion bancaire ?",
     "bankRemoved": "Connexion bancaire supprimée",
     "failedRemove": "Échec de la suppression de la connexion",
-    "relink": "Reconnecter",
-    "relinkSuccess": "Banque ré-authentifiée avec succès ! Synchronisation...",
-    "relinkSyncComplete": "Reconnexion terminée — transactions synchronisées.",
-    "relinkSyncFailed": "Banque ré-authentifiée, mais la synchronisation a échoué. Essayez le bouton Synchroniser."
+    "relink": "Actualiser l’accès",
+    "relinkSuccess": "Accès bancaire actualisé avec succès ! Synchronisation...",
+    "relinkSyncComplete": "Actualisation terminée — transactions synchronisées et nouveaux comptes vérifiés.",
+    "relinkSyncFailed": "Accès bancaire actualisé, mais la synchronisation a échoué. Essayez le bouton Synchroniser."
   },
   "settings": {
     "title": "Paramètres",
