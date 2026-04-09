@@ -280,17 +280,14 @@ const Connections = () => {
                         </div>
                       </div>
                       <div className="flex gap-2">
-                        {isError ? (
-                          <Button variant="default" size="sm" onClick={() => handleRelink(connection.id)} disabled={isRelinking}>
-                            {isRelinking ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Link2 className="h-4 w-4 mr-2" />}
-                            {t('connections.relink')}
-                          </Button>
-                        ) : (
-                          <Button variant="outline" size="sm" onClick={() => handleSync(connection.id)} disabled={syncMutation.isPending}>
-                            {syncMutation.isPending ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <RefreshCw className="h-4 w-4 mr-2" />}
-                            {t('sync.sync')}
-                          </Button>
-                        )}
+                        <Button variant={isError ? "default" : "outline"} size="sm" onClick={() => handleRelink(connection.id)} disabled={isRelinking || syncMutation.isPending}>
+                          {isRelinking ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Link2 className="h-4 w-4 mr-2" />}
+                          {t('connections.relink')}
+                        </Button>
+                        <Button variant="outline" size="sm" onClick={() => handleSync(connection.id)} disabled={syncMutation.isPending || isRelinking}>
+                          {syncMutation.isPending ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <RefreshCw className="h-4 w-4 mr-2" />}
+                          {t('sync.sync')}
+                        </Button>
                         <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive" onClick={() => handleRemove(connection.id)} disabled={removeMutation.isPending}>
                           <Trash2 className="h-4 w-4" />
                         </Button>
