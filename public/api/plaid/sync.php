@@ -136,36 +136,35 @@ try {
     ]);
     
     // Update account balances & discover new accounts
-    $accountsResult = $plaid->getAccounts($accessToken);
-    
-    // Get institution name for potential new accounts
-    $instStmt = $pdo->prepare('SELECT institution_name FROM plaid_connections WHERE id = :id');
-    $instStmt->execute(['id' => $body['connection_id']]);
-    $institutionName = $instStmt->fetchColumn() ?: 'Unknown';
-    
-    foreach ($accountsResult['accounts'] as $account) {
-        // Check if account already exists
-        $checkStmt = $pdo->prepare('SELECT id FROM accounts WHERE plaid_account_id = :plaid_account_id AND user_id = :user_id');
-        $checkStmt->execute(['plaid_account_id' => $account['account_id'], 'user_id' => $userId]);
-        $existingAccount = $checkStmt->fetch();
+    $accountsUpdated = 0;
+    try {
+        $accountsResult = $plaid->getAccounts($accessToken);
         
-        if ($existingAccount) {
-            // Update existing account balances
-            $updateAccStmt = $pdo->prepare('
-                UPDATE accounts SET
-                    current_balance = :current_balance,
-                    available_balance = :available_balance,
-                    last_synced = NOW()
-                WHERE plaid_account_id = :plaid_account_id AND user_id = :user_id
-            ');
-            $updateAccStmt->execute([
-                'current_balance' => $account['balances']['current'] ?? 0,
-                'available_balance' => $account['balances']['available'] ?? null,
-                'plaid_account_id' => $account['account_id'],
-                'user_id' => $userId,
-            ]);
-        } else {
-            // Insert new account
+        // Get institution name for potential new accounts
+        $instStmt = $pdo->prepare('SELECT institution_name FROM plaid_connections WHERE id = :id');
+        $instStmt->execute(['id' => $body['connection_id']]);
+        $institutionName = $instStmt->fetchColumn() ?: 'Unknown';
+        
+        foreach ($accountsResult['accounts'] as $account) {
+            $checkStmt = $pdo->prepare('SELECT id FROM accounts WHERE plaid_account_id = :plaid_account_id AND user_id = :user_id');
+            $checkStmt->execute(['plaid_account_id' => $account['account_id'], 'user_id' => $userId]);
+            $existingAccount = $checkStmt->fetch();
+            
+            if ($existingAccount) {
+                $updateAccStmt = $pdo->prepare('
+                    UPDATE accounts SET
+                        current_balance = :current_balance,
+                        available_balance = :available_balance,
+                        last_synced = NOW()
+                    WHERE plaid_account_id = :plaid_account_id AND user_id = :user_id
+                ');
+                $updateAccStmt->execute([
+                    'current_balance' => $account['balances']['current'] ?? 0,
+                    'available_balance' => $account['balances']['available'] ?? null,
+                    'plaid_account_id' => $account['account_id'],
+                    'user_id' => $userId,
+                ]);
+            } else {
                 $insertAccStmt = $pdo->prepare('
                     INSERT INTO accounts (
                         id, user_id, plaid_account_id, plaid_connection_id, name, official_name,
@@ -192,14 +191,17 @@ try {
                     'institution_name' => $institutionName,
                 ]);
             }
+            $accountsUpdated++;
         }
+    } catch (Exception $accEx) {
+        // Account discovery/balance update failed — don't break the sync
     }
     
     Response::success([
         'added' => $added,
         'modified' => $modified,
         'removed' => $removed,
-        'accounts_updated' => count($accountsResult['accounts']),
+        'accounts_updated' => $accountsUpdated,
     ]);
 } catch (Exception $e) {
     if (isset($body['connection_id'])) {
