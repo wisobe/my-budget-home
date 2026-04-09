@@ -201,7 +201,7 @@ try {
         'added' => $added,
         'modified' => $modified,
         'removed' => $removed,
-        'accounts_updated' => count($accountsResult['accounts']),
+        'accounts_updated' => $accountsUpdated,
     ]);
 } catch (Exception $e) {
     if (isset($body['connection_id'])) {
