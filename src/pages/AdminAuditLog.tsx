@@ -591,6 +591,31 @@ const AdminAuditLog = () => {
           </CardContent>
         </Card>
       </div>
+
+      <AlertDialog open={!!logoutTarget} onOpenChange={(open) => !open && setLogoutTarget(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t('auditLog.forceLogoutTitle')}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {logoutTarget && t('auditLog.forceLogoutDesc', { name: logoutTarget.name, email: logoutTarget.email })}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={forceLogoutMutation.isPending}>{t('common.cancel')}</AlertDialogCancel>
+            <AlertDialogAction
+              disabled={forceLogoutMutation.isPending}
+              onClick={(e) => {
+                e.preventDefault();
+                if (logoutTarget) forceLogoutMutation.mutate(logoutTarget.user_id);
+              }}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {forceLogoutMutation.isPending && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
+              {t('auditLog.forceLogoutConfirm')}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </AppLayout>
   );
 };
