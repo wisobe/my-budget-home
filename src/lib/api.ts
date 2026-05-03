@@ -493,6 +493,11 @@ export const auditApi = {
     last_ip: string | null;
     last_login: string | null;
   }[]>>(`/audit/active-sessions.php`),
+  forceLogout: (user_id: string) =>
+    request<ApiResponse<{ revoked: number }>>(`/audit/force-logout.php`, {
+      method: 'POST',
+      body: JSON.stringify({ user_id }),
+    }),
 };
 
 // ============ Subscriptions API ============
