@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { format } from 'date-fns';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -11,6 +11,11 @@ import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
 import { auditApi, authApi } from '@/lib/api';
@@ -56,7 +61,8 @@ const eventBadgeVariant = (type: string): 'default' | 'secondary' | 'destructive
 
 const AdminAuditLog = () => {
   const { t } = useTranslation();
-  const { isAdmin } = useAuth();
+  const { isAdmin, user: currentUser } = useAuth();
+  const queryClient = useQueryClient();
 
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
@@ -64,6 +70,22 @@ const AdminAuditLog = () => {
   const [userFilter, setUserFilter] = useState<string>('all');
   const [startDate, setStartDate] = useState<Date | undefined>(undefined);
   const [endDate, setEndDate] = useState<Date | undefined>(undefined);
+  const [logoutTarget, setLogoutTarget] = useState<{ user_id: string; name: string; email: string } | null>(null);
+
+  const forceLogoutMutation = useMutation({
+    mutationFn: (user_id: string) => auditApi.forceLogout(user_id),
+    onSuccess: (res, _user_id) => {
+      const name = logoutTarget?.name ?? '';
+      toast.success(t('auditLog.forceLogoutSuccess', { name, count: res.data.revoked }));
+      queryClient.invalidateQueries({ queryKey: ['active-sessions'] });
+      queryClient.invalidateQueries({ queryKey: ['audit-log'] });
+      setLogoutTarget(null);
+    },
+    onError: (err: any) => {
+      toast.error(err?.message || t('auditLog.forceLogoutFailed'));
+      setLogoutTarget(null);
+    },
+  });
 
   const { data: usersData } = useQuery({
     queryKey: ['admin-users'],
@@ -322,6 +344,17 @@ const AdminAuditLog = () => {
                             })}
                           </p>
                         )}
+                        {currentUser?.id !== session.user_id && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="mt-2 h-7 text-xs gap-1 text-destructive hover:text-destructive"
+                            onClick={() => setLogoutTarget({ user_id: session.user_id, name: session.name, email: session.email })}
+                          >
+                            <LogOut className="h-3 w-3" />
+                            {t('auditLog.forceLogout')}
+                          </Button>
+                        )}
                       </div>
                     </div>
                   ))}
@@ -558,6 +591,31 @@ const AdminAuditLog = () => {
           </CardContent>
         </Card>
       </div>
+
+      <AlertDialog open={!!logoutTarget} onOpenChange={(open) => !open && setLogoutTarget(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t('auditLog.forceLogoutTitle')}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {logoutTarget && t('auditLog.forceLogoutDesc', { name: logoutTarget.name, email: logoutTarget.email })}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={forceLogoutMutation.isPending}>{t('common.cancel')}</AlertDialogCancel>
+            <AlertDialogAction
+              disabled={forceLogoutMutation.isPending}
+              onClick={(e) => {
+                e.preventDefault();
+                if (logoutTarget) forceLogoutMutation.mutate(logoutTarget.user_id);
+              }}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {forceLogoutMutation.isPending && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
+              {t('auditLog.forceLogoutConfirm')}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </AppLayout>
   );
 };
