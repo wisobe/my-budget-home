@@ -588,7 +588,13 @@
     "activeSessionCount": "{{count}} utilisateur actuellement connecté",
     "activeSessionCount_other": "{{count}} utilisateurs actuellement connectés",
     "online": "En ligne",
-    "lastLogin": "Dernière connexion"
+    "lastLogin": "Dernière connexion",
+    "forceLogout": "Forcer la déconnexion",
+    "forceLogoutTitle": "Forcer la déconnexion ?",
+    "forceLogoutDesc": "Cela révoquera immédiatement toutes les sessions actives de {{name}} ({{email}}). L'utilisateur devra se reconnecter.",
+    "forceLogoutConfirm": "Forcer la déconnexion",
+    "forceLogoutSuccess": "{{name}} déconnecté ({{count}} sessions révoquées)",
+    "forceLogoutFailed": "Échec de la déconnexion forcée"
   },
   "privacy": {
     "title": "Politique de confidentialité",
