@@ -344,6 +344,17 @@ const AdminAuditLog = () => {
                             })}
                           </p>
                         )}
+                        {currentUser?.id !== session.user_id && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="mt-2 h-7 text-xs gap-1 text-destructive hover:text-destructive"
+                            onClick={() => setLogoutTarget({ user_id: session.user_id, name: session.name, email: session.email })}
+                          >
+                            <LogOut className="h-3 w-3" />
+                            {t('auditLog.forceLogout')}
+                          </Button>
+                        )}
                       </div>
                     </div>
                   ))}
