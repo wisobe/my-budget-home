@@ -61,7 +61,8 @@ const eventBadgeVariant = (type: string): 'default' | 'secondary' | 'destructive
 
 const AdminAuditLog = () => {
   const { t } = useTranslation();
-  const { isAdmin } = useAuth();
+  const { isAdmin, user: currentUser } = useAuth();
+  const queryClient = useQueryClient();
 
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
@@ -69,6 +70,22 @@ const AdminAuditLog = () => {
   const [userFilter, setUserFilter] = useState<string>('all');
   const [startDate, setStartDate] = useState<Date | undefined>(undefined);
   const [endDate, setEndDate] = useState<Date | undefined>(undefined);
+  const [logoutTarget, setLogoutTarget] = useState<{ user_id: string; name: string; email: string } | null>(null);
+
+  const forceLogoutMutation = useMutation({
+    mutationFn: (user_id: string) => auditApi.forceLogout(user_id),
+    onSuccess: (res, _user_id) => {
+      const name = logoutTarget?.name ?? '';
+      toast.success(t('auditLog.forceLogoutSuccess', { name, count: res.data.revoked }));
+      queryClient.invalidateQueries({ queryKey: ['active-sessions'] });
+      queryClient.invalidateQueries({ queryKey: ['audit-log'] });
+      setLogoutTarget(null);
+    },
+    onError: (err: any) => {
+      toast.error(err?.message || t('auditLog.forceLogoutFailed'));
+      setLogoutTarget(null);
+    },
+  });
 
   const { data: usersData } = useQuery({
     queryKey: ['admin-users'],
