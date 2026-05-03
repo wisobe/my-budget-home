@@ -112,7 +112,7 @@ class PlaidClient {
         if ($accessToken) {
             // Update mode: re-authenticate an existing item and allow selecting newly available accounts
             $data['access_token'] = $accessToken;
-            $data['account_selection_enabled'] = true;
+            $data['update'] = ['account_selection_enabled' => true];
         } else {
             // New link: require products
             $data['products'] = $this->products;
