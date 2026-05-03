@@ -588,7 +588,13 @@
     "activeSessionCount": "{{count}} user currently logged in",
     "activeSessionCount_other": "{{count}} users currently logged in",
     "online": "Online",
-    "lastLogin": "Last login"
+    "lastLogin": "Last login",
+    "forceLogout": "Force logout",
+    "forceLogoutTitle": "Force logout user?",
+    "forceLogoutDesc": "This will immediately revoke all active sessions for {{name}} ({{email}}). They will need to log in again.",
+    "forceLogoutConfirm": "Force logout",
+    "forceLogoutSuccess": "Logged out {{name}} ({{count}} sessions revoked)",
+    "forceLogoutFailed": "Failed to force logout"
   },
   "privacy": {
     "title": "Privacy Policy",
