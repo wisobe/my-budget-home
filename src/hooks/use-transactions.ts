@@ -107,6 +107,29 @@ export function useDeleteTransactionSplits() {
   });
 }
 
+export function useUpdateTransactionAmount() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, amount, reset }: { id: string; amount?: number; reset?: boolean }) =>
+      reset
+        ? transactionsApi.resetAmount(id)
+        : transactionsApi.updateAmount(id, amount as number),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['transactions'] });
+    },
+  });
+}
+
+export function useBackfillCurrency() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (dry_run: boolean) => transactionsApi.backfillCurrency(dry_run),
+    onSuccess: (_data, dryRun) => {
+      if (!dryRun) queryClient.invalidateQueries({ queryKey: ['transactions'] });
+    },
+  });
+}
+
 export function useCategories() {
   return useQuery({
     queryKey: ['categories'],
