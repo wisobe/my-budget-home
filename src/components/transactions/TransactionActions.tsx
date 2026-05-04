@@ -1,6 +1,6 @@
 import { useState, type MouseEvent, type PointerEvent } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Eye, EyeOff, Lock, LockOpen, MoreHorizontal, Split } from 'lucide-react';
+import { Eye, EyeOff, Lock, LockOpen, MoreHorizontal, Split, Pencil } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Button } from '@/components/ui/button';
 import {
@@ -25,6 +25,7 @@ interface TransactionActionsProps {
   onSplit: (transaction: Transaction) => void;
   onToggleExclude: (transaction: Transaction) => void;
   onToggleLock: (transaction: Transaction) => void;
+  onEditAmount?: (transaction: Transaction) => void;
 }
 
 export function TransactionActions({
@@ -34,6 +35,7 @@ export function TransactionActions({
   onSplit,
   onToggleExclude,
   onToggleLock,
+  onEditAmount,
 }: TransactionActionsProps) {
   const { t } = useTranslation();
   const isMobile = useIsMobile();
@@ -133,6 +135,20 @@ export function TransactionActions({
                   </>
                 )}
               </Button>
+              {onEditAmount && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="min-h-[44px] w-full justify-start"
+                  onClick={() => {
+                    onEditAmount(transaction);
+                    setMobileOpen(false);
+                  }}
+                >
+                  <Pencil className="mr-2 h-4 w-4" />
+                  {t('transactions.editAmount')}
+                </Button>
+              )}
             </div>
           </DrawerContent>
         </Drawer>
@@ -184,6 +200,11 @@ export function TransactionActions({
             </>
           )}
         </DropdownMenuItem>
+        {onEditAmount && (
+          <DropdownMenuItem onSelect={() => onEditAmount(transaction)}>
+            <Pencil className="mr-2 h-4 w-4" /> {t('transactions.editAmount')}
+          </DropdownMenuItem>
+        )}
       </DropdownMenuContent>
     </DropdownMenu>
   );

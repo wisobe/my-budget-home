@@ -9,6 +9,7 @@
 require_once __DIR__ . '/../includes/bootstrap.php';
 require_once __DIR__ . '/../includes/AutoCategorizer.php';
 require_once __DIR__ . '/../includes/AutoExcluder.php';
+require_once __DIR__ . '/../includes/FxRates.php';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     Response::error('Method not allowed', 405);
@@ -57,21 +58,41 @@ try {
             if ($account) {
                 $autoCategoryId = AutoCategorizer::match($pdo, $tx['name'], $tx['merchant_name'] ?? null, $userId, $environment);
                 $autoExclude = AutoExcluder::shouldExclude($pdo, $tx['name'], $tx['merchant_name'] ?? null, $userId, $environment);
-                
+
+                // Currency conversion: convert non-CAD amounts to CAD using BoC rates.
+                $isoCurrency = $tx['iso_currency_code'] ?? ($tx['unofficial_currency_code'] ?? null);
+                $rawAmount = (float)$tx['amount'];
+                $cadAmount = $rawAmount;
+                $originalAmount = null;
+                $fxRate = null;
+                if ($isoCurrency && strtoupper($isoCurrency) !== 'CAD') {
+                    $conv = FxRates::convertToCad($pdo, $rawAmount, $isoCurrency, $tx['date']);
+                    if ($conv) {
+                        $cadAmount = $conv['cad_amount'];
+                        $originalAmount = $rawAmount;
+                        $fxRate = $conv['rate'];
+                    }
+                }
+
                 $insertStmt = $pdo->prepare('
                     INSERT INTO transactions (
                         id, plaid_transaction_id, account_id, date, name,
-                        merchant_name, amount, category_id, pending, excluded, created_at, updated_at
+                        merchant_name, amount, iso_currency_code, original_amount, fx_rate,
+                        category_id, pending, excluded, created_at, updated_at
                     ) VALUES (
                         :id, :plaid_tx_id, :account_id, :date, :name,
-                        :merchant_name, :amount, :category_id, :pending, :excluded, NOW(), NOW()
+                        :merchant_name, :amount, :iso_ccy, :orig_amount, :fx_rate,
+                        :category_id, :pending, :excluded, NOW(), NOW()
                     )
                     ON DUPLICATE KEY UPDATE
-                        amount = :amount2,
+                        amount = IF(amount_overridden = 1, amount, :amount2),
+                        iso_currency_code = :iso_ccy2,
+                        original_amount = IF(amount_overridden = 1, original_amount, :orig_amount2),
+                        fx_rate = IF(amount_overridden = 1, fx_rate, :fx_rate2),
                         pending = :pending2,
                         updated_at = NOW()
                 ');
-                
+
                 $insertStmt->execute([
                     'id' => 'tx_' . uniqid(),
                     'plaid_tx_id' => $tx['transaction_id'],
@@ -79,28 +100,53 @@ try {
                     'date' => $tx['date'],
                     'name' => $tx['name'],
                     'merchant_name' => $tx['merchant_name'] ?? null,
-                    'amount' => $tx['amount'],
+                    'amount' => $cadAmount,
+                    'iso_ccy' => $isoCurrency,
+                    'orig_amount' => $originalAmount,
+                    'fx_rate' => $fxRate,
                     'category_id' => $autoCategoryId,
                     'pending' => $tx['pending'] ? 1 : 0,
                     'excluded' => $autoExclude ? 1 : 0,
-                    'amount2' => $tx['amount'],
+                    'amount2' => $cadAmount,
+                    'iso_ccy2' => $isoCurrency,
+                    'orig_amount2' => $originalAmount,
+                    'fx_rate2' => $fxRate,
                     'pending2' => $tx['pending'] ? 1 : 0,
                 ]);
                 $added++;
             }
         }
-        
+
         foreach ($syncResult['modified'] as $tx) {
+            $isoCurrency = $tx['iso_currency_code'] ?? ($tx['unofficial_currency_code'] ?? null);
+            $rawAmount = (float)$tx['amount'];
+            $cadAmount = $rawAmount;
+            $originalAmount = null;
+            $fxRate = null;
+            if ($isoCurrency && strtoupper($isoCurrency) !== 'CAD') {
+                $conv = FxRates::convertToCad($pdo, $rawAmount, $isoCurrency, $tx['date']);
+                if ($conv) {
+                    $cadAmount = $conv['cad_amount'];
+                    $originalAmount = $rawAmount;
+                    $fxRate = $conv['rate'];
+                }
+            }
             $updateStmt = $pdo->prepare('
                 UPDATE transactions SET
-                    amount = :amount,
+                    amount = IF(amount_overridden = 1, amount, :amount),
+                    iso_currency_code = :iso_ccy,
+                    original_amount = IF(amount_overridden = 1, original_amount, :orig_amount),
+                    fx_rate = IF(amount_overridden = 1, fx_rate, :fx_rate),
                     pending = :pending,
                     name = :name,
                     updated_at = NOW()
                 WHERE plaid_transaction_id = :plaid_tx_id
             ');
             $updateStmt->execute([
-                'amount' => $tx['amount'],
+                'amount' => $cadAmount,
+                'iso_ccy' => $isoCurrency,
+                'orig_amount' => $originalAmount,
+                'fx_rate' => $fxRate,
                 'pending' => $tx['pending'] ? 1 : 0,
                 'name' => $tx['name'],
                 'plaid_tx_id' => $tx['transaction_id'],

@@ -16,7 +16,11 @@ export interface Transaction {
   date: string;
   name: string;
   merchant_name?: string;
-  amount: number; // Positive = expense, Negative = income
+  amount: number; // CAD. Positive = expense, Negative = income
+  iso_currency_code?: string | null;
+  original_amount?: number | null;
+  fx_rate?: number | null;
+  amount_overridden?: boolean | number;
   category_id?: string;
   pending: boolean;
   excluded: boolean;
