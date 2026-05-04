@@ -135,6 +135,20 @@ export function TransactionActions({
                   </>
                 )}
               </Button>
+              {onEditAmount && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="min-h-[44px] w-full justify-start"
+                  onClick={() => {
+                    onEditAmount(transaction);
+                    setMobileOpen(false);
+                  }}
+                >
+                  <Pencil className="mr-2 h-4 w-4" />
+                  {t('transactions.editAmount')}
+                </Button>
+              )}
             </div>
           </DrawerContent>
         </Drawer>
@@ -186,6 +200,11 @@ export function TransactionActions({
             </>
           )}
         </DropdownMenuItem>
+        {onEditAmount && (
+          <DropdownMenuItem onSelect={() => onEditAmount(transaction)}>
+            <Pencil className="mr-2 h-4 w-4" /> {t('transactions.editAmount')}
+          </DropdownMenuItem>
+        )}
       </DropdownMenuContent>
     </DropdownMenu>
   );
