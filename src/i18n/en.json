@@ -391,7 +391,19 @@
     "cancel": "Cancel",
     "delete": "Delete",
     "edit": "Edit",
-    "auto": "Auto"
+    "auto": "Auto",
+    "error": "An error occurred"
+  },
+  "currency": {
+    "backfillTitle": "Backfill foreign-currency transactions",
+    "backfillDescription": "Convert past transactions from non-CAD accounts to CAD using historical Bank of Canada rates.",
+    "preview": "Preview",
+    "backfillPreviewTitle": "Backfill preview",
+    "backfillPreviewSummary": "{{count}} transactions will be converted ({{skipped}} skipped due to missing FX rates).",
+    "applyBackfill": "Apply conversion",
+    "backfillApplied": "Converted {{count}} transactions",
+    "noCandidates": "No transactions need conversion.",
+    "original": "Original"
   },
   "twoFactor": {
     "title": "Two-Factor Authentication",
