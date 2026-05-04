@@ -380,6 +380,12 @@ export function TransactionList() {
         onOpenChange={setSplitOpen}
         transaction={splitTransaction}
       />
+
+      <EditAmountDialog
+        open={editAmountOpen}
+        onOpenChange={setEditAmountOpen}
+        transaction={editAmountTx}
+      />
     </div>
   );
 }
