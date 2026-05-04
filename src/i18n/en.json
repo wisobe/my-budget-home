@@ -99,7 +99,15 @@
     "lockCategory": "Lock Category",
     "unlockCategory": "Unlock Category",
     "categoryLocked": "Category locked",
-    "categoryUnlocked": "Category unlocked"
+    "categoryUnlocked": "Category unlocked",
+    "editAmount": "Edit amount",
+    "editAmountDescription": "Manually adjust the CAD amount of this transaction.",
+    "editAmountForeignDescription": "Original: {{original}}. Adjust the CAD amount to match what your bank actually charged you (after FX fees).",
+    "amountInCad": "Amount (CAD)",
+    "resetToFx": "Reset to converted rate",
+    "amountUpdated": "Amount updated",
+    "amountReset": "Amount reset",
+    "manual": "manual"
   },
   "sync": {
     "sync": "Sync",
