@@ -319,3 +319,23 @@ CREATE TABLE IF NOT EXISTS subscription_dismissals (
 --     INDEX idx_environment (plaid_environment),
 --     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 -- ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ============================================================
+-- MIGRATION: Multi-currency support (transactions in USD/EUR/etc.)
+-- ============================================================
+-- ALTER TABLE transactions
+--   ADD COLUMN iso_currency_code VARCHAR(3) DEFAULT NULL AFTER amount,
+--   ADD COLUMN original_amount DECIMAL(15, 2) DEFAULT NULL AFTER iso_currency_code,
+--   ADD COLUMN fx_rate DECIMAL(18, 8) DEFAULT NULL AFTER original_amount,
+--   ADD COLUMN amount_overridden BOOLEAN DEFAULT FALSE AFTER fx_rate;
+
+-- FX Rates cache (Bank of Canada Valet API → CAD)
+CREATE TABLE IF NOT EXISTS fx_rates (
+    currency_code VARCHAR(3) NOT NULL,
+    rate_date DATE NOT NULL,
+    rate DECIMAL(18, 8) NOT NULL,
+    fetched_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (currency_code, rate_date),
+    INDEX idx_currency (currency_code),
+    INDEX idx_date (rate_date)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
