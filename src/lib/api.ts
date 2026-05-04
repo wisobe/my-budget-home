@@ -224,6 +224,30 @@ export const transactionsApi = {
       method: 'DELETE',
       body: JSON.stringify({ transaction_id }),
     }),
+
+  updateAmount: (transaction_id: string, amount: number) =>
+    request<ApiResponse<Transaction>>('/transactions/update-amount.php', {
+      method: 'POST',
+      body: JSON.stringify({ transaction_id, amount }),
+    }),
+
+  resetAmount: (transaction_id: string) =>
+    request<ApiResponse<Transaction>>('/transactions/update-amount.php', {
+      method: 'POST',
+      body: JSON.stringify({ transaction_id, reset: true }),
+    }),
+
+  backfillCurrency: (dry_run: boolean) =>
+    request<ApiResponse<{
+      dry_run: boolean;
+      converted: number;
+      skipped: number;
+      total_candidates: number;
+      preview: Array<{ id: string; name: string; date: string; currency: string; original_amount: number; cad_amount: number; rate: number }>;
+    }>>('/transactions/backfill-currency.php', {
+      method: 'POST',
+      body: JSON.stringify({ dry_run }),
+    }),
 };
 
 // ============ Categories API ============
