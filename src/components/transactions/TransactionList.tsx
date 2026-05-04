@@ -319,6 +319,7 @@ export function TransactionList() {
                         onSplit={handleSplit}
                         onToggleExclude={handleExclude}
                         onToggleLock={handleLock}
+                        onEditAmount={(tx) => { setEditAmountTx(tx); setEditAmountOpen(true); }}
                       />
                     </TableCell>
                   </TableRow>
