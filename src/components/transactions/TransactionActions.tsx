@@ -25,6 +25,7 @@ interface TransactionActionsProps {
   onSplit: (transaction: Transaction) => void;
   onToggleExclude: (transaction: Transaction) => void;
   onToggleLock: (transaction: Transaction) => void;
+  onEditAmount?: (transaction: Transaction) => void;
 }
 
 export function TransactionActions({
@@ -34,6 +35,7 @@ export function TransactionActions({
   onSplit,
   onToggleExclude,
   onToggleLock,
+  onEditAmount,
 }: TransactionActionsProps) {
   const { t } = useTranslation();
   const isMobile = useIsMobile();
