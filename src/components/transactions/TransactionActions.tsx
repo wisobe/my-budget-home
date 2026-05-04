@@ -1,6 +1,6 @@
 import { useState, type MouseEvent, type PointerEvent } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Eye, EyeOff, Lock, LockOpen, MoreHorizontal, Split } from 'lucide-react';
+import { Eye, EyeOff, Lock, LockOpen, MoreHorizontal, Split, Pencil } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Button } from '@/components/ui/button';
 import {
