@@ -25,11 +25,12 @@ import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
 import {
   Search, ChevronLeft, ChevronRight, ArrowUpRight, ArrowDownRight,
-  CalendarIcon, X, Lock,
+  CalendarIcon, X, Lock, Pencil,
 } from 'lucide-react';
 import { SplitTransactionDialog } from './SplitTransactionDialog';
 import { CategoryPicker } from './CategoryPicker';
 import { TransactionActions } from './TransactionActions';
+import { EditAmountDialog } from './EditAmountDialog';
 import { usePreferences } from '@/contexts/PreferencesContext';
 import type { Transaction } from '@/types';
 
@@ -50,6 +51,8 @@ export function TransactionList() {
   const [endDate, setEndDate] = useState<Date | undefined>(initialEndDate ? new Date(initialEndDate + 'T00:00:00') : undefined);
   const [splitTransaction, setSplitTransaction] = useState<Transaction | null>(null);
   const [splitOpen, setSplitOpen] = useState(false);
+  const [editAmountTx, setEditAmountTx] = useState<Transaction | null>(null);
+  const [editAmountOpen, setEditAmountOpen] = useState(false);
 
   const { data: transactionsData, isLoading } = useTransactions({
     page,
@@ -273,11 +276,38 @@ export function TransactionList() {
                         const displayAmount = hasSplits && transaction.included_split_amount != null
                           ? transaction.included_split_amount
                           : transaction.amount;
-                        const displayIsIncome = displayAmount < 0;
+                        const displayIsIncome = Number(displayAmount) < 0;
+                        const isForeign = transaction.iso_currency_code && transaction.iso_currency_code !== 'CAD' && transaction.original_amount != null;
+                        const isOverridden = !!transaction.amount_overridden;
                         return (
-                          <span className={cn("font-semibold", displayIsIncome ? "text-income" : "text-expense")}>
-                            {displayIsIncome ? '+' : '-'}${Math.abs(displayAmount).toFixed(2)}
-                          </span>
+                          <div className="flex flex-col items-end">
+                            <div className="flex items-center gap-1">
+                              <span className={cn("font-semibold", displayIsIncome ? "text-income" : "text-expense")}>
+                                {displayIsIncome ? '+' : '-'}${Math.abs(Number(displayAmount)).toLocaleString('en-CA', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                              </span>
+                              {(isForeign || isOverridden) && !hasSplits && (
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-6 w-6 text-muted-foreground hover:text-foreground"
+                                  title={t('transactions.editAmount')}
+                                  onClick={() => { setEditAmountTx(transaction); setEditAmountOpen(true); }}
+                                >
+                                  <Pencil className="h-3 w-3" />
+                                </Button>
+                              )}
+                            </div>
+                            {isForeign && (
+                              <span className="text-xs text-muted-foreground">
+                                {Number(transaction.original_amount).toLocaleString('en-CA', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} {transaction.iso_currency_code}
+                                {isOverridden ? ` • ${t('transactions.manual')}` : ''}
+                              </span>
+                            )}
+                            {!isForeign && isOverridden && (
+                              <span className="text-xs text-muted-foreground">{t('transactions.manual')}</span>
+                            )}
+                          </div>
                         );
                       })()}
                     </TableCell>
