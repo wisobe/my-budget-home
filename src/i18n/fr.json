@@ -391,7 +391,19 @@
     "cancel": "Annuler",
     "delete": "Supprimer",
     "edit": "Modifier",
-    "auto": "Auto"
+    "auto": "Auto",
+    "error": "Une erreur est survenue"
+  },
+  "currency": {
+    "backfillTitle": "Recalculer les transactions en devise étrangère",
+    "backfillDescription": "Convertir les anciennes transactions des comptes non-CAD en CAD en utilisant les taux historiques de la Banque du Canada.",
+    "preview": "Aperçu",
+    "backfillPreviewTitle": "Aperçu de la conversion",
+    "backfillPreviewSummary": "{{count}} transactions seront converties ({{skipped}} ignorées en raison de taux de change manquants).",
+    "applyBackfill": "Appliquer la conversion",
+    "backfillApplied": "{{count}} transactions converties",
+    "noCandidates": "Aucune transaction à convertir.",
+    "original": "Original"
   },
   "twoFactor": {
     "title": "Authentification à deux facteurs",
