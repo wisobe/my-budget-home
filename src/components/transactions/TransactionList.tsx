@@ -213,6 +213,8 @@ export function TransactionList() {
                 const isIncome = transaction.amount < 0;
                 const isExcluded = !!transaction.excluded;
                 const hasSplits = (transaction.split_count ?? 0) > 0;
+                const isForeign = !!(transaction.iso_currency_code && transaction.iso_currency_code !== 'CAD' && transaction.original_amount != null);
+                const isOverridden = !!transaction.amount_overridden;
 
                 return (
                   <TableRow key={transaction.id} className={cn(isExcluded && "opacity-50")}>
