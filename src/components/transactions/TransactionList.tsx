@@ -277,8 +277,6 @@ export function TransactionList() {
                           ? transaction.included_split_amount
                           : transaction.amount;
                         const displayIsIncome = Number(displayAmount) < 0;
-                        const isForeign = transaction.iso_currency_code && transaction.iso_currency_code !== 'CAD' && transaction.original_amount != null;
-                        const isOverridden = !!transaction.amount_overridden;
                         return (
                           <div className="flex flex-col items-end">
                             <div className="flex items-center gap-1">
