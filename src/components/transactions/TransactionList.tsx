@@ -213,6 +213,8 @@ export function TransactionList() {
                 const isIncome = transaction.amount < 0;
                 const isExcluded = !!transaction.excluded;
                 const hasSplits = (transaction.split_count ?? 0) > 0;
+                const isForeign = !!(transaction.iso_currency_code && transaction.iso_currency_code !== 'CAD' && transaction.original_amount != null);
+                const isOverridden = !!transaction.amount_overridden;
 
                 return (
                   <TableRow key={transaction.id} className={cn(isExcluded && "opacity-50")}>
@@ -277,8 +279,6 @@ export function TransactionList() {
                           ? transaction.included_split_amount
                           : transaction.amount;
                         const displayIsIncome = Number(displayAmount) < 0;
-                        const isForeign = transaction.iso_currency_code && transaction.iso_currency_code !== 'CAD' && transaction.original_amount != null;
-                        const isOverridden = !!transaction.amount_overridden;
                         return (
                           <div className="flex flex-col items-end">
                             <div className="flex items-center gap-1">
@@ -319,7 +319,7 @@ export function TransactionList() {
                         onSplit={handleSplit}
                         onToggleExclude={handleExclude}
                         onToggleLock={handleLock}
-                        onEditAmount={(tx) => { setEditAmountTx(tx); setEditAmountOpen(true); }}
+                        onEditAmount={(isForeign || isOverridden) ? (tx) => { setEditAmountTx(tx); setEditAmountOpen(true); } : undefined}
                       />
                     </TableCell>
                   </TableRow>
