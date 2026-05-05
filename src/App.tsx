@@ -27,6 +27,7 @@ import AdminUsers from "./pages/AdminUsers";
 import AdminPlaid from "./pages/AdminPlaid";
 import AdminBackend from "./pages/AdminBackend";
 import AdminAuditLog from "./pages/AdminAuditLog";
+import AdminSubscriptionTuning from "./pages/AdminSubscriptionTuning";
 import NotFound from "./pages/NotFound";
 import Login from "./pages/Login";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
@@ -129,6 +130,7 @@ const App = () => (
                           <Route path="/admin/plaid" element={<AdminPlaid />} />
                           <Route path="/admin/backend" element={<AdminBackend />} />
                           <Route path="/admin/audit" element={<AdminAuditLog />} />
+                          <Route path="/admin/subscription-tuning" element={<AdminSubscriptionTuning />} />
                           <Route path="*" element={<NotFound />} />
                         </Routes>
                       </PreferencesProvider>
