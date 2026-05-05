@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/../includes/bootstrap.php';
+require_once __DIR__ . '/../includes/SubscriptionTuning.php';
 
 $userId = getCurrentUserId();
 $pdo = Database::getConnection();
@@ -16,7 +17,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         Response::error('merchant_key is required', 400);
     }
 
-    // Create table if not exists
     $pdo->exec("CREATE TABLE IF NOT EXISTS subscription_dismissals (
         id INT AUTO_INCREMENT PRIMARY KEY,
         user_id VARCHAR(50) NOT NULL,
@@ -43,252 +43,250 @@ if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
     Response::error('Method not allowed', 405);
 }
 
-// Load dismissed merchants
-try {
-    $dStmt = $pdo->prepare("SELECT merchant_key FROM subscription_dismissals WHERE user_id = :user_id AND plaid_environment = :env");
-    $dStmt->execute([':user_id' => $userId, ':env' => $plaidEnv]);
-    $dismissedKeys = array_column($dStmt->fetchAll(PDO::FETCH_ASSOC), 'merchant_key');
-} catch (Exception $e) {
-    $dismissedKeys = [];
+// Optional: live override of tuning params via ?overrides=<json> (admin can pass during testing).
+$tuning = SubscriptionTuning::load($pdo);
+if (!empty($_GET['overrides'])) {
+    $ov = json_decode($_GET['overrides'], true);
+    if (is_array($ov)) $tuning = SubscriptionTuning::withOverrides($tuning, $ov);
 }
 
-// Fetch non-excluded, non-pending transactions from the last 18 months
-// Exclude income categories (is_income = 1)
-// No GROUP BY — each transaction row is unique by t.id
-$sql = "SELECT t.id, t.name, t.merchant_name, t.amount, t.date, t.category_id,
-               cat.name as category_name, cat.color as category_color
-        FROM transactions t
-        JOIN accounts a ON t.account_id = a.id
-        LEFT JOIN plaid_connections c ON a.plaid_connection_id = c.id
-        LEFT JOIN categories cat ON t.category_id = cat.id
-        WHERE a.user_id = :user_id
-          AND a.excluded = 0
-          AND t.excluded = 0
-          AND t.pending = 0
-          AND t.amount != 0
-          AND t.date >= DATE_SUB(CURDATE(), INTERVAL 18 MONTH)
-          AND (c.plaid_environment = :plaid_env OR a.plaid_connection_id IS NULL)
-          AND (cat.is_income = 0 OR cat.is_income IS NULL)
-        ORDER BY t.date DESC";
+$result = detectSubscriptions($pdo, $userId, $plaidEnv, $tuning);
 
-$stmt = $pdo->prepare($sql);
-$stmt->execute([':user_id' => $userId, ':plaid_env' => $plaidEnv]);
-$transactions = $stmt->fetchAll(PDO::FETCH_ASSOC);
+Response::success($result + ['tuning' => $tuning]);
 
-// Aggressive merchant name normalization
+
+// ============================================================================
+// Detection function — pure, parameterized by $tuning
+// ============================================================================
 function normalizeMerchantKey($name) {
     $key = strtolower(trim($name));
-    // Remove everything after asterisk (credit card descriptors like "NETFLIX *MEMBER")
     $key = preg_replace('/\s*\*\s*.*$/', '', $key);
-    // Remove common prefixes
     $key = preg_replace('/^(www\.|http[s]?:\/\/)/', '', $key);
-    // Remove common suffixes/noise
     $key = preg_replace('/\s+(inc\.?|llc\.?|ltd\.?|co\.?|corp\.?|\.com|com|ca|org|net)$/i', '', $key);
-    // Remove trailing .com, .ca, etc. even without space
     $key = preg_replace('/\.(com|ca|org|net|io)$/i', '', $key);
-    // Remove trailing numbers (order IDs, reference numbers)
     $key = preg_replace('/\s+#?\d+$/', '', $key);
-    // Remove all special characters except spaces and alphanumeric
     $key = preg_replace('/[^a-z0-9\s]/', '', $key);
-    // Collapse whitespace
     $key = preg_replace('/\s+/', ' ', trim($key));
     return $key;
 }
 
-// Group by normalized merchant key, using absolute amounts
-$merchants = [];
-$seenTxnIds = [];
-foreach ($transactions as $t) {
-    // Skip duplicate transaction IDs (safety net for JOINs)
-    if (isset($seenTxnIds[$t['id']])) continue;
-    $seenTxnIds[$t['id']] = true;
+function detectSubscriptions(PDO $pdo, string $userId, string $plaidEnv, array $T): array {
+    // Dismissed merchants
+    try {
+        $dStmt = $pdo->prepare("SELECT merchant_key FROM subscription_dismissals WHERE user_id = :user_id AND plaid_environment = :env");
+        $dStmt->execute([':user_id' => $userId, ':env' => $plaidEnv]);
+        $dismissedKeys = array_column($dStmt->fetchAll(PDO::FETCH_ASSOC), 'merchant_key');
+    } catch (Exception $e) {
+        $dismissedKeys = [];
+    }
 
-    $rawName = $t['merchant_name'] ?: $t['name'];
-    $key = normalizeMerchantKey($rawName);
-    if (strlen($key) < 2) continue;
+    $lookback = max(1, (int)$T['lookback_months']);
 
-    if (!isset($merchants[$key])) {
-        $merchants[$key] = [
-            'name' => $rawName,
-            'category_name' => $t['category_name'],
-            'category_color' => $t['category_color'],
-            'transactions' => [],
-            '_seen' => [],
+    $sql = "SELECT t.id, t.name, t.merchant_name, t.amount, t.date, t.category_id,
+                   cat.name as category_name, cat.color as category_color
+            FROM transactions t
+            JOIN accounts a ON t.account_id = a.id
+            LEFT JOIN plaid_connections c ON a.plaid_connection_id = c.id
+            LEFT JOIN categories cat ON t.category_id = cat.id
+            WHERE a.user_id = :user_id
+              AND a.excluded = 0
+              AND t.excluded = 0
+              AND t.pending = 0
+              AND t.amount != 0
+              AND t.date >= DATE_SUB(CURDATE(), INTERVAL {$lookback} MONTH)
+              AND (c.plaid_environment = :plaid_env OR a.plaid_connection_id IS NULL)
+              AND (cat.is_income = 0 OR cat.is_income IS NULL)
+            ORDER BY t.date DESC";
+
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute([':user_id' => $userId, ':plaid_env' => $plaidEnv]);
+    $transactions = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    // Group by normalized merchant key
+    $merchants = [];
+    $seenTxnIds = [];
+    $minKeyLen = max(1, (int)$T['min_key_length']);
+    foreach ($transactions as $t) {
+        if (isset($seenTxnIds[$t['id']])) continue;
+        $seenTxnIds[$t['id']] = true;
+
+        $rawName = $t['merchant_name'] ?: $t['name'];
+        $key = normalizeMerchantKey($rawName);
+        if (strlen($key) < $minKeyLen) continue;
+
+        if (!isset($merchants[$key])) {
+            $merchants[$key] = [
+                'name' => $rawName,
+                'category_name' => $t['category_name'],
+                'category_color' => $t['category_color'],
+                'transactions' => [],
+                '_seen' => [],
+            ];
+        }
+        $dedupeKey = $t['date'] . '|' . abs((float)$t['amount']);
+        if (in_array($dedupeKey, $merchants[$key]['_seen'])) continue;
+        $merchants[$key]['_seen'][] = $dedupeKey;
+
+        $merchants[$key]['transactions'][] = [
+            'amount' => abs((float)$t['amount']),
+            'date' => $t['date'],
         ];
     }
-    // Deduplicate: skip if same date + same amount already seen for this merchant
-    $dedupeKey = $t['date'] . '|' . abs((float)$t['amount']);
-    if (in_array($dedupeKey, $merchants[$key]['_seen'])) continue;
-    $merchants[$key]['_seen'][] = $dedupeKey;
 
-    $merchants[$key]['transactions'][] = [
-        'amount' => abs((float)$t['amount']),
-        'date' => $t['date'],
-    ];
-}
-
-// Fuzzy prefix merging: merge smaller groups into larger ones sharing the same prefix
-$keys = array_keys($merchants);
-sort($keys);
-$mergedInto = []; // maps old key -> new key
-
-for ($i = 0; $i < count($keys); $i++) {
-    if (isset($mergedInto[$keys[$i]])) continue;
-    for ($j = $i + 1; $j < count($keys); $j++) {
-        if (isset($mergedInto[$keys[$j]])) continue;
-        $a = $keys[$i];
-        $b = $keys[$j];
-        // Check if one is a prefix of the other (min 4 chars to avoid false matches)
-        $shorter = strlen($a) <= strlen($b) ? $a : $b;
-        $longer = strlen($a) <= strlen($b) ? $b : $a;
-        if (strlen($shorter) >= 4 && strpos($longer, $shorter) === 0) {
-            // Merge into whichever has more transactions
-            $target = count($merchants[$a]['transactions']) >= count($merchants[$b]['transactions']) ? $a : $b;
-            $source = $target === $a ? $b : $a;
-            foreach ($merchants[$source]['transactions'] as $txn) {
-                $dedupeKey = $txn['date'] . '|' . $txn['amount'];
-                if (!in_array($dedupeKey, $merchants[$target]['_seen'])) {
-                    $merchants[$target]['_seen'][] = $dedupeKey;
-                    $merchants[$target]['transactions'][] = $txn;
+    // Fuzzy prefix merging
+    $keys = array_keys($merchants);
+    sort($keys);
+    $minPrefix = max(1, (int)$T['fuzzy_min_prefix']);
+    for ($i = 0; $i < count($keys); $i++) {
+        if (!isset($merchants[$keys[$i]])) continue;
+        for ($j = $i + 1; $j < count($keys); $j++) {
+            if (!isset($merchants[$keys[$j]])) continue;
+            $a = $keys[$i]; $b = $keys[$j];
+            $shorter = strlen($a) <= strlen($b) ? $a : $b;
+            $longer = strlen($a) <= strlen($b) ? $b : $a;
+            if (strlen($shorter) >= $minPrefix && strpos($longer, $shorter) === 0) {
+                $target = count($merchants[$a]['transactions']) >= count($merchants[$b]['transactions']) ? $a : $b;
+                $source = $target === $a ? $b : $a;
+                foreach ($merchants[$source]['transactions'] as $txn) {
+                    $dk = $txn['date'] . '|' . $txn['amount'];
+                    if (!in_array($dk, $merchants[$target]['_seen'])) {
+                        $merchants[$target]['_seen'][] = $dk;
+                        $merchants[$target]['transactions'][] = $txn;
+                    }
                 }
+                unset($merchants[$source]);
             }
-            $mergedInto[$source] = $target;
-            unset($merchants[$source]);
         }
     }
-}
 
-$buckets = [
-    ['label' => 'weekly', 'days' => 7, 'min' => 4, 'max' => 11],
-    ['label' => 'biweekly', 'days' => 14, 'min' => 11, 'max' => 21],
-    ['label' => 'monthly', 'days' => 30, 'min' => 21, 'max' => 38],
-    ['label' => 'quarterly', 'days' => 91, 'min' => 80, 'max' => 105],
-    ['label' => 'annual', 'days' => 365, 'min' => 340, 'max' => 400],
-];
+    $buckets = [
+        ['label' => 'weekly',    'days' => (int)$T['weekly_days'],    'min' => (int)$T['weekly_min'],    'max' => (int)$T['weekly_max']],
+        ['label' => 'biweekly',  'days' => (int)$T['biweekly_days'],  'min' => (int)$T['biweekly_min'],  'max' => (int)$T['biweekly_max']],
+        ['label' => 'monthly',   'days' => (int)$T['monthly_days'],   'min' => (int)$T['monthly_min'],   'max' => (int)$T['monthly_max']],
+        ['label' => 'quarterly', 'days' => (int)$T['quarterly_days'], 'min' => (int)$T['quarterly_min'], 'max' => (int)$T['quarterly_max']],
+        ['label' => 'annual',    'days' => (int)$T['annual_days'],    'min' => (int)$T['annual_min'],    'max' => (int)$T['annual_max']],
+    ];
 
-$subscriptions = [];
+    $minOccurrences   = max(2, (int)$T['min_occurrences']);
+    $intervalVarPct   = (float)$T['interval_variance_pct'] / 100.0;
+    $intervalVarMin   = (int)$T['interval_variance_min_count'];
+    $amountVarPct     = (float)$T['amount_variance_pct'] / 100.0;
+    $amountVarMin     = (int)$T['amount_variance_min_count'];
+    $dueSoonMul       = (float)$T['due_soon_multiplier'];
+    $missedMul        = (float)$T['missed_multiplier'];
+    $priceChangePct   = (float)$T['price_change_threshold'] / 100.0;
 
-foreach ($merchants as $key => $merchant) {
-    $txns = $merchant['transactions'];
-    if (count($txns) < 2) continue;
+    $subscriptions = [];
 
-    usort($txns, fn($a, $b) => strcmp($a['date'], $b['date']));
+    foreach ($merchants as $key => $merchant) {
+        $txns = $merchant['transactions'];
+        if (count($txns) < $minOccurrences) continue;
 
-    $intervals = [];
-    for ($i = 1; $i < count($txns); $i++) {
-        $d1 = new DateTime($txns[$i - 1]['date']);
-        $d2 = new DateTime($txns[$i]['date']);
-        $intervals[] = (int)$d1->diff($d2)->days;
-    }
-    if (empty($intervals)) continue;
+        usort($txns, fn($a, $b) => strcmp($a['date'], $b['date']));
 
-    // Use median interval for resilience to billing date shifts
-    $sorted = $intervals;
-    sort($sorted);
-    $mid = floor(count($sorted) / 2);
-    $medianInterval = count($sorted) % 2 === 0
-        ? ($sorted[$mid - 1] + $sorted[$mid]) / 2
-        : $sorted[$mid];
-
-    $matchedBucket = null;
-    foreach ($buckets as $bucket) {
-        if ($medianInterval >= $bucket['min'] && $medianInterval <= $bucket['max']) {
-            $matchedBucket = $bucket;
-            break;
+        $intervals = [];
+        for ($i = 1; $i < count($txns); $i++) {
+            $d1 = new DateTime($txns[$i - 1]['date']);
+            $d2 = new DateTime($txns[$i]['date']);
+            $intervals[] = (int)$d1->diff($d2)->days;
         }
-    }
-    if (!$matchedBucket) continue;
+        if (empty($intervals)) continue;
 
-    // Interval variance check — max 20% deviation from expected interval
-    // Skip for merchants with ≤3 transactions (not enough data for reliable variance)
-    if (count($intervals) > 2) {
-        $variance = 0;
-        foreach ($intervals as $iv) {
-            $variance += pow($iv - $matchedBucket['days'], 2);
+        $sorted = $intervals; sort($sorted);
+        $mid = floor(count($sorted) / 2);
+        $medianInterval = count($sorted) % 2 === 0
+            ? ($sorted[$mid - 1] + $sorted[$mid]) / 2
+            : $sorted[$mid];
+
+        $matchedBucket = null;
+        foreach ($buckets as $bucket) {
+            if ($medianInterval >= $bucket['min'] && $medianInterval <= $bucket['max']) {
+                $matchedBucket = $bucket;
+                break;
+            }
         }
-        $stdDev = sqrt($variance / count($intervals));
-        $varianceThreshold = 0.20;
-        if ($stdDev > $matchedBucket['days'] * $varianceThreshold) continue;
-    }
+        if (!$matchedBucket) continue;
 
-    // Amount consistency check — reject if amount std dev > 10% of mean
-    $amounts = array_column($txns, 'amount');
-    $avgAmount = array_sum($amounts) / count($amounts);
-    if ($avgAmount > 0 && count($amounts) > 2) {
-        $amountVariance = 0;
-        foreach ($amounts as $amt) {
-            $amountVariance += pow($amt - $avgAmount, 2);
+        if (count($intervals) > $intervalVarMin) {
+            $variance = 0;
+            foreach ($intervals as $iv) $variance += pow($iv - $matchedBucket['days'], 2);
+            $stdDev = sqrt($variance / count($intervals));
+            if ($stdDev > $matchedBucket['days'] * $intervalVarPct) continue;
         }
-        $amountStdDev = sqrt($amountVariance / count($amounts));
-        if ($amountStdDev > $avgAmount * 0.10) continue;
-    }
 
-    $currentAmount = end($amounts);
-    $previousAmount = count($amounts) >= 2 ? $amounts[count($amounts) - 2] : $currentAmount;
+        $amounts = array_column($txns, 'amount');
+        $avgAmount = array_sum($amounts) / count($amounts);
+        if ($avgAmount > 0 && count($amounts) > $amountVarMin) {
+            $av = 0;
+            foreach ($amounts as $amt) $av += pow($amt - $avgAmount, 2);
+            $amountStdDev = sqrt($av / count($amounts));
+            if ($amountStdDev > $avgAmount * $amountVarPct) continue;
+        }
 
-    $priceChange = null;
-    if ($previousAmount > 0 && abs($currentAmount - $previousAmount) / $previousAmount > 0.05) {
-        $priceChange = [
-            'previous' => round($previousAmount, 2),
-            'current' => round($currentAmount, 2),
-            'change_percent' => round(($currentAmount - $previousAmount) / $previousAmount * 100, 1),
-            'direction' => $currentAmount > $previousAmount ? 'increase' : 'decrease',
+        $currentAmount = end($amounts);
+        $previousAmount = count($amounts) >= 2 ? $amounts[count($amounts) - 2] : $currentAmount;
+
+        $priceChange = null;
+        if ($previousAmount > 0 && abs($currentAmount - $previousAmount) / $previousAmount > $priceChangePct) {
+            $priceChange = [
+                'previous' => round($previousAmount, 2),
+                'current' => round($currentAmount, 2),
+                'change_percent' => round(($currentAmount - $previousAmount) / $previousAmount * 100, 1),
+                'direction' => $currentAmount > $previousAmount ? 'increase' : 'decrease',
+            ];
+        }
+
+        $lastDate = new DateTime(end($txns)['date']);
+        $today = new DateTime();
+        $daysSinceLast = (int)$lastDate->diff($today)->days;
+        $expectedInterval = $matchedBucket['days'];
+
+        $status = 'active';
+        if ($daysSinceLast > $expectedInterval * $missedMul) $status = 'missed';
+        elseif ($daysSinceLast > $expectedInterval * $dueSoonMul) $status = 'due_soon';
+
+        $nextDate = clone $lastDate;
+        $nextDate->modify("+{$expectedInterval} days");
+
+        $subscriptions[] = [
+            'merchant' => $merchant['name'],
+            'merchant_key' => $key,
+            'frequency' => $matchedBucket['label'],
+            'amount' => round($currentAmount, 2),
+            'avg_amount' => round($avgAmount, 2),
+            'occurrence_count' => count($txns),
+            'last_date' => end($txns)['date'],
+            'next_expected_date' => $nextDate->format('Y-m-d'),
+            'status' => $status,
+            'price_change' => $priceChange,
+            'category_name' => $merchant['category_name'],
+            'category_color' => $merchant['category_color'],
+            'monthly_cost' => round($currentAmount * (30 / $expectedInterval), 2),
+            'annual_cost' => round($currentAmount * (365 / $expectedInterval), 2),
+            'dismissed' => in_array($key, $dismissedKeys),
         ];
     }
 
-    $lastDate = new DateTime(end($txns)['date']);
-    $today = new DateTime();
-    $daysSinceLast = (int)$lastDate->diff($today)->days;
-    $expectedInterval = $matchedBucket['days'];
+    usort($subscriptions, function ($a, $b) {
+        if ($a['dismissed'] !== $b['dismissed']) return $a['dismissed'] ? 1 : -1;
+        $order = ['missed' => 0, 'due_soon' => 1, 'active' => 2];
+        $diff = ($order[$a['status']] ?? 3) - ($order[$b['status']] ?? 3);
+        if ($diff !== 0) return $diff;
+        return $b['amount'] - $a['amount'];
+    });
 
-    $status = 'active';
-    if ($daysSinceLast > $expectedInterval * 1.5) {
-        $status = 'missed';
-    } elseif ($daysSinceLast > $expectedInterval * 0.8) {
-        $status = 'due_soon';
-    }
+    $activeOnly = array_filter($subscriptions, fn($s) => !$s['dismissed']);
+    $totalMonthly = array_sum(array_column($activeOnly, 'monthly_cost'));
+    $totalAnnual = array_sum(array_column($activeOnly, 'annual_cost'));
 
-    $nextDate = clone $lastDate;
-    $nextDate->modify("+{$expectedInterval} days");
-
-    $subscriptions[] = [
-        'merchant' => $merchant['name'],
-        'merchant_key' => $key,
-        'frequency' => $matchedBucket['label'],
-        'amount' => round($currentAmount, 2),
-        'avg_amount' => round($avgAmount, 2),
-        'occurrence_count' => count($txns),
-        'last_date' => end($txns)['date'],
-        'next_expected_date' => $nextDate->format('Y-m-d'),
-        'status' => $status,
-        'price_change' => $priceChange,
-        'category_name' => $merchant['category_name'],
-        'category_color' => $merchant['category_color'],
-        'monthly_cost' => round($currentAmount * (30 / $expectedInterval), 2),
-        'annual_cost' => round($currentAmount * (365 / $expectedInterval), 2),
-        'dismissed' => in_array($key, $dismissedKeys),
+    return [
+        'subscriptions' => array_values($subscriptions),
+        'summary' => [
+            'total_count' => count($activeOnly),
+            'total_monthly' => round($totalMonthly, 2),
+            'total_annual' => round($totalAnnual, 2),
+            'missed_count' => count(array_filter($activeOnly, fn($s) => $s['status'] === 'missed')),
+            'price_changes' => count(array_filter($activeOnly, fn($s) => $s['price_change'] !== null)),
+        ],
     ];
 }
-
-usort($subscriptions, function ($a, $b) {
-    if ($a['dismissed'] !== $b['dismissed']) return $a['dismissed'] ? 1 : -1;
-    $order = ['missed' => 0, 'due_soon' => 1, 'active' => 2];
-    $diff = ($order[$a['status']] ?? 3) - ($order[$b['status']] ?? 3);
-    if ($diff !== 0) return $diff;
-    return $b['amount'] - $a['amount'];
-});
-
-$activeOnly = array_filter($subscriptions, fn($s) => !$s['dismissed']);
-$totalMonthly = array_sum(array_column($activeOnly, 'monthly_cost'));
-$totalAnnual = array_sum(array_column($activeOnly, 'annual_cost'));
-
-Response::success([
-    'subscriptions' => array_values($subscriptions),
-    'summary' => [
-        'total_count' => count($activeOnly),
-        'total_monthly' => round($totalMonthly, 2),
-        'total_annual' => round($totalAnnual, 2),
-        'missed_count' => count(array_filter($activeOnly, fn($s) => $s['status'] === 'missed')),
-        'price_changes' => count(array_filter($activeOnly, fn($s) => $s['price_change'] !== null)),
-    ],
-]);
