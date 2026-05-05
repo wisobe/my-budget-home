@@ -52,7 +52,13 @@ try {
     }
     
     if ($categoryId === 'uncategorized') {
-        $where[] = 't.category_id IS NULL';
+        // Exclude transactions that have splits where every non-excluded split is categorized
+        $where[] = 't.category_id IS NULL AND NOT EXISTS (
+            SELECT 1 FROM transaction_splits ts_all
+            WHERE ts_all.transaction_id = t.id
+            HAVING COUNT(*) > 0
+               AND SUM(CASE WHEN ts_all.is_excluded = 0 AND ts_all.category_id IS NULL THEN 1 ELSE 0 END) = 0
+        )';
     } elseif ($categoryId) {
         // Include the selected category AND any child categories (subcategories)
         $where[] = '(t.category_id = :category_id OR t.category_id IN (SELECT id FROM categories WHERE parent_id = :category_id_parent))';
