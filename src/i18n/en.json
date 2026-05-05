@@ -16,6 +16,7 @@
     "plaidConfig": "Plaid Configuration",
     "dbConnection": "Database Connection",
     "auditLog": "Audit Log",
+    "subscriptionTuning": "Subscription Tuning",
     "logout": "Logout",
     "subscriptions": "Subscriptions",
     "insights": "Insights",
