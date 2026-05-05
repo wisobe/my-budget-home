@@ -527,13 +527,52 @@ export const auditApi = {
 // ============ Subscriptions API ============
 
 export const subscriptionsApi = {
-  list: (plaid_environment?: string) =>
-    request<ApiResponse<any>>(`/subscriptions/${plaid_environment ? `?plaid_environment=${plaid_environment}` : ''}`),
+  list: (plaid_environment?: string, overrides?: Record<string, number>) => {
+    const sp = new URLSearchParams();
+    if (plaid_environment) sp.set('plaid_environment', plaid_environment);
+    if (overrides && Object.keys(overrides).length) sp.set('overrides', JSON.stringify(overrides));
+    return request<ApiResponse<any>>(`/subscriptions/?${sp}`);
+  },
   dismiss: (merchant_key: string, dismiss: boolean, plaid_environment?: string) =>
     request<ApiResponse<any>>(`/subscriptions/${plaid_environment ? `?plaid_environment=${plaid_environment}` : ''}`, {
       method: 'POST',
       body: JSON.stringify({ merchant_key, dismiss }),
     }),
+  getTuning: () =>
+    request<ApiResponse<{ params: Record<string, number>; defaults: Record<string, number> }>>('/subscriptions/tuning.php'),
+  saveTuning: (params: Record<string, number>) =>
+    request<ApiResponse<{ saved: boolean; params: Record<string, number> }>>('/subscriptions/tuning.php', {
+      method: 'POST',
+      body: JSON.stringify({ params }),
+    }),
+  resetTuning: () =>
+    request<ApiResponse<{ reset: boolean; params: Record<string, number> }>>('/subscriptions/tuning.php', {
+      method: 'POST',
+      body: JSON.stringify({ reset: true }),
+    }),
+  debug: (search: string, plaid_environment?: string, overrides?: Record<string, number>) => {
+    const sp = new URLSearchParams({ search });
+    if (plaid_environment) sp.set('plaid_environment', plaid_environment);
+    if (overrides && Object.keys(overrides).length) sp.set('overrides', JSON.stringify(overrides));
+    return request<ApiResponse<{
+      search: string;
+      plaid_environment: string;
+      tuning_used: Record<string, number>;
+      total_found: number;
+      eligible_count: number;
+      transactions: Array<{
+        txn_id: string; name: string; merchant_name: string | null;
+        amount: number; date: string; pending: number; excluded: number;
+        category_name: string | null; filter_reasons: string[];
+      }>;
+      normalized_keys: Record<string, string>;
+      interval_stats: { intervals: number[]; median: number; min: number; max: number } | null;
+      amount_stats: { mean: number; std_dev: number; cv_percent: number } | null;
+      matched_bucket: { label: string; days: number; min: number; max: number } | null;
+      checks: Array<{ name: string; pass: boolean; detail: string }>;
+      would_detect: boolean;
+    }>>(`/subscriptions/debug.php?${sp}`);
+  },
 };
 
 // ============ Insights API ============
