@@ -80,6 +80,7 @@ const adminNavigationKeys: NavItem[] = [
   { key: 'nav.plaidConfig', href: '/admin/plaid', icon: Link2 },
   { key: 'nav.dbConnection', href: '/admin/backend', icon: Database },
   { key: 'nav.auditLog', href: '/admin/audit', icon: ClipboardList },
+  { key: 'nav.subscriptionTuning', href: '/admin/subscription-tuning', icon: RefreshCw },
 ];
 
 function SortableNavItem({
