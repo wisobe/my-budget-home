@@ -208,9 +208,16 @@ function detectSubscriptions(PDO $pdo, string $userId, string $plaidEnv, array $
         if (!$matchedBucket) continue;
 
         if (count($intervals) > $intervalVarMin) {
+            $checkIntervals = $intervals;
+            $trim = max(0, (int)($T['interval_outlier_trim'] ?? 0));
+            if ($trim > 0 && count($checkIntervals) - $trim >= 2) {
+                // drop the $trim values with greatest deviation from expected
+                usort($checkIntervals, fn($a, $b) => abs($a - $matchedBucket['days']) <=> abs($b - $matchedBucket['days']));
+                $checkIntervals = array_slice($checkIntervals, 0, count($checkIntervals) - $trim);
+            }
             $variance = 0;
-            foreach ($intervals as $iv) $variance += pow($iv - $matchedBucket['days'], 2);
-            $stdDev = sqrt($variance / count($intervals));
+            foreach ($checkIntervals as $iv) $variance += pow($iv - $matchedBucket['days'], 2);
+            $stdDev = sqrt($variance / count($checkIntervals));
             if ($stdDev > $matchedBucket['days'] * $intervalVarPct) continue;
         }
 
