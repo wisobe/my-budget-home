@@ -139,14 +139,23 @@ if (count($datesAsc) >= 2) {
     $intervalVarMin = (int)$tuning['interval_variance_min_count'];
     $intervalVarPct = (float)$tuning['interval_variance_pct'] / 100.0;
     if ($matchedBucket && count($intervals) > $intervalVarMin) {
+        $checkIntervals = $intervals;
+        $trim = max(0, (int)($tuning['interval_outlier_trim'] ?? 0));
+        $trimmedNote = '';
+        if ($trim > 0 && count($checkIntervals) - $trim >= 2) {
+            usort($checkIntervals, fn($a, $b) => abs($a - $matchedBucket['days']) <=> abs($b - $matchedBucket['days']));
+            $dropped = array_slice($checkIntervals, count($checkIntervals) - $trim);
+            $checkIntervals = array_slice($checkIntervals, 0, count($checkIntervals) - $trim);
+            $trimmedNote = ' (trimmed ' . $trim . ' outlier' . ($trim > 1 ? 's' : '') . ': ' . implode(',', $dropped) . 'd)';
+        }
         $v = 0;
-        foreach ($intervals as $iv) $v += pow($iv - $matchedBucket['days'], 2);
-        $std = sqrt($v / count($intervals));
+        foreach ($checkIntervals as $iv) $v += pow($iv - $matchedBucket['days'], 2);
+        $std = sqrt($v / count($checkIntervals));
         $threshold = $matchedBucket['days'] * $intervalVarPct;
         $checks[] = [
             'name' => 'Interval variance',
             'pass' => $std <= $threshold,
-            'detail' => 'std=' . round($std, 2) . 'd, threshold=' . round($threshold, 2) . 'd',
+            'detail' => 'std=' . round($std, 2) . 'd, threshold=' . round($threshold, 2) . 'd' . $trimmedNote,
         ];
     } else if ($matchedBucket) {
         $checks[] = [
