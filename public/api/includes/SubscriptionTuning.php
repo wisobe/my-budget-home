@@ -21,6 +21,7 @@ class SubscriptionTuning {
             // variance checks
             'interval_variance_pct'        => 20,   // % deviation allowed from expected interval
             'interval_variance_min_count'  => 3,    // skip check if intervals count <= this
+            'interval_outlier_trim'        => 1,    // drop N worst intervals before variance check (0=off)
             'amount_variance_pct'          => 10,   // % std-dev / mean allowed
             'amount_variance_min_count'    => 3,    // skip check if txn count <= this
             // status
