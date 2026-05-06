@@ -92,7 +92,7 @@ function detectSubscriptions(PDO $pdo, string $userId, string $plaidEnv, array $
               AND a.excluded = 0
               AND t.excluded = 0
               AND t.pending = 0
-              AND t.amount != 0
+              AND t.amount > 0
               AND t.date >= DATE_SUB(CURDATE(), INTERVAL {$lookback} MONTH)
               AND (c.plaid_environment = :plaid_env OR a.plaid_connection_id IS NULL)
               AND (cat.is_income = 0 OR cat.is_income IS NULL)
