@@ -58,7 +58,7 @@ foreach ($transactions as &$t) {
     if ($t['excluded']) $t['filter_reasons'][] = 'transaction excluded';
     if ($t['account_excluded']) $t['filter_reasons'][] = 'account excluded';
     if ($t['is_income']) $t['filter_reasons'][] = 'income category';
-    if ((float)$t['amount'] == 0) $t['filter_reasons'][] = 'zero amount';
+    if ((float)$t['amount'] <= 0) $t['filter_reasons'][] = 'income/refund (amount <= 0)';
     if ($t['plaid_environment'] && $t['plaid_environment'] !== $plaidEnv) {
         $t['filter_reasons'][] = "wrong environment (txn={$t['plaid_environment']}, filter={$plaidEnv})";
     }
