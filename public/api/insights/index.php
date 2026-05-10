@@ -21,7 +21,7 @@ $sql = "SELECT t.merchant_name, t.name, t.amount, t.date, COUNT(*) as visit_coun
         FROM transactions t
         JOIN accounts a ON t.account_id = a.id
         {$envJoin}
-        WHERE a.user_id = :user_id AND t.excluded = 0 AND t.amount > 0
+        WHERE a.user_id = :user_id AND t.excluded = 0 AND t.pending = 0 AND t.amount > 0
           AND t.date >= DATE_SUB(CURDATE(), INTERVAL 90 DAY)
           AND {$envWhere}
           AND (t.merchant_name IS NOT NULL AND t.merchant_name != '')
@@ -36,7 +36,7 @@ foreach ($unusual as $u) {
     $checkSql = "SELECT COUNT(*) as cnt FROM transactions t
                  JOIN accounts a ON t.account_id = a.id
                  {$envJoin}
-                 WHERE a.user_id = :uid AND t.excluded = 0
+                 WHERE a.user_id = :uid AND t.excluded = 0 AND t.pending = 0
                    AND t.date < DATE_SUB(CURDATE(), INTERVAL 90 DAY)
                    AND {$envWhere}
                    AND (t.merchant_name = :m1 OR t.name = :m2)";
@@ -61,7 +61,7 @@ $sql2 = "SELECT t.name, t.merchant_name, t.amount, t.date
          JOIN accounts a ON t.account_id = a.id
          {$envJoin}
          LEFT JOIN categories cat ON t.category_id = cat.id
-         WHERE a.user_id = :user_id2 AND t.excluded = 0 AND t.amount < 0
+         WHERE a.user_id = :user_id2 AND t.excluded = 0 AND t.pending = 0 AND t.amount < 0
            AND (cat.is_income = 1 OR t.amount < -500)
            AND t.date >= DATE_SUB(CURDATE(), INTERVAL 12 MONTH)
            AND (pc.plaid_environment = :plaid_env2 OR a.plaid_connection_id IS NULL)
@@ -104,7 +104,7 @@ $sql3 = "SELECT cat.name as category_name, cat.color as category_color,
          JOIN accounts a ON t.account_id = a.id
          {$envJoin}
          JOIN categories cat ON t.category_id = cat.id
-         WHERE a.user_id = :user_id3 AND t.excluded = 0 AND t.amount > 0
+         WHERE a.user_id = :user_id3 AND t.excluded = 0 AND t.pending = 0 AND t.amount > 0
            AND t.date >= DATE_SUB(CURDATE(), INTERVAL 120 DAY)
            AND cat.is_income = 0
            AND (pc.plaid_environment = :plaid_env3 OR a.plaid_connection_id IS NULL)
@@ -129,7 +129,7 @@ $sql4 = "SELECT t.name, t.merchant_name, t.amount, t.date, COUNT(*) as dup_count
          FROM transactions t
          JOIN accounts a ON t.account_id = a.id
          {$envJoin}
-         WHERE a.user_id = :user_id4 AND t.excluded = 0 AND t.amount > 0
+         WHERE a.user_id = :user_id4 AND t.excluded = 0 AND t.pending = 0 AND t.amount > 0
            AND t.date >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)
            AND (pc.plaid_environment = :plaid_env4 OR a.plaid_connection_id IS NULL)
          GROUP BY COALESCE(t.merchant_name, t.name), t.amount, t.date HAVING dup_count > 1";
@@ -153,7 +153,7 @@ $sql5 = "SELECT t.name, t.merchant_name, t.amount, t.date
          FROM transactions t
          JOIN accounts a ON t.account_id = a.id
          {$envJoin}
-         WHERE a.user_id = :user_id5 AND t.excluded = 0 AND t.amount > 0
+         WHERE a.user_id = :user_id5 AND t.excluded = 0 AND t.pending = 0 AND t.amount > 0
            AND t.date >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)
            AND (pc.plaid_environment = :plaid_env5 OR a.plaid_connection_id IS NULL)
          ORDER BY t.amount DESC LIMIT 3";
