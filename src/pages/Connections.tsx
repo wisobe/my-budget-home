@@ -50,7 +50,7 @@ const Connections = () => {
     try {
       const result = await syncMutation.mutateAsync(connectionId);
       toast.success(t('connections.syncedTransactions', { count: result.data.added }));
-      setTimeout(() => window.location.reload(), 600);
+      setTimeout(() => window.location.reload(), 3500);
     } catch (error: any) {
       const plaidErr = error.plaidError;
       if (plaidErr) {

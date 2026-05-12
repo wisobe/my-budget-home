@@ -22,7 +22,7 @@ export function SyncButton() {
       } else {
         toast.success(t('sync.synced', { added: result.added, modified: result.modified, removed: result.removed }));
       }
-      setTimeout(() => window.location.reload(), 600);
+      setTimeout(() => window.location.reload(), 3500);
     } catch (error: any) {
       toast.error(error.message || t('sync.failedSync'));
     }
