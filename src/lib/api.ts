@@ -478,6 +478,21 @@ export const preferencesApi = {
     }),
 };
 
+// ============ App Config API (admin-managed, app-wide) ============
+
+export interface AppConfig {
+  reload_after_sync: boolean;
+}
+
+export const appConfigApi = {
+  get: () => request<ApiResponse<AppConfig>>('/settings/app-config.php'),
+  save: (config: Partial<AppConfig>) =>
+    request<ApiResponse<AppConfig>>('/settings/app-config.php', {
+      method: 'POST',
+      body: JSON.stringify(config),
+    }),
+};
+
 // ============ Audit Log API ============
 
 export const auditApi = {
