@@ -14,7 +14,7 @@
     "admin": "Admin",
     "users": "Utilisateurs",
     "plaidConfig": "Configuration Plaid",
-    "dbConnection": "Connexion à la base de données",
+    "dbConnection": "Paramètres système",
     "auditLog": "Journal d'audit",
     "subscriptionTuning": "Réglage abonnements",
     "logout": "Déconnexion",
