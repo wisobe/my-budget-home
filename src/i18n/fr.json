@@ -379,7 +379,13 @@
   },
   "adminBackend": {
     "title": "Connexion à la base de données",
-    "dbDesc": "Testez la connexion à votre base de données MariaDB pour vous assurer que le backend est correctement configuré."
+    "dbDesc": "Testez la connexion à votre base de données MariaDB pour vous assurer que le backend est correctement configuré.",
+    "syncBehaviorTitle": "Comportement de synchronisation",
+    "syncBehaviorDesc": "Contrôlez le comportement de l'application après la synchronisation des transactions.",
+    "reloadAfterSyncLabel": "Recharger la page après synchronisation",
+    "reloadAfterSyncHelp": "Lorsqu'activée, la page actuelle se recharge automatiquement 3,5 secondes après une synchronisation réussie pour afficher les données les plus récentes.",
+    "saved": "Enregistré",
+    "saveFailed": "Échec de l'enregistrement"
   },
   "notFound": {
     "title": "404",
