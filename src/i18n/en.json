@@ -14,7 +14,7 @@
     "admin": "Admin",
     "users": "Users",
     "plaidConfig": "Plaid Configuration",
-    "dbConnection": "Database Connection",
+    "dbConnection": "System Settings",
     "auditLog": "Audit Log",
     "subscriptionTuning": "Subscription Tuning",
     "logout": "Logout",
