@@ -14,7 +14,7 @@
     "admin": "Admin",
     "users": "Users",
     "plaidConfig": "Plaid Configuration",
-    "dbConnection": "Database Connection",
+    "dbConnection": "System Settings",
     "auditLog": "Audit Log",
     "subscriptionTuning": "Subscription Tuning",
     "logout": "Logout",
@@ -378,7 +378,7 @@
     "title": "Plaid Configuration"
   },
   "adminBackend": {
-    "title": "Database Connection",
+    "title": "System Settings",
     "dbDesc": "Test the connection to your MariaDB database to ensure the backend is properly configured.",
     "syncBehaviorTitle": "Sync Behavior",
     "syncBehaviorDesc": "Control how the app behaves after transactions are synced.",

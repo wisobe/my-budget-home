@@ -43,22 +43,33 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     requireAdmin();
-    $body = getJsonBody();
-    $stmt = $pdo->prepare("
-        INSERT INTO app_settings (setting_key, setting_value)
-        VALUES (:key, :value)
-        ON DUPLICATE KEY UPDATE setting_value = :value2
-    ");
-    foreach ($body as $key => $value) {
-        if (!array_key_exists($key, $defaults)) continue;
-        $stored = is_bool($defaults[$key]) ? ($value ? '1' : '0') : (string)$value;
-        $stmt->execute([
-            'key' => 'app_cfg_' . $key,
-            'value' => $stored,
-            'value2' => $stored,
-        ]);
+    try {
+        // Ensure table exists (in case schema is older than this feature)
+        $pdo->exec("CREATE TABLE IF NOT EXISTS app_settings (
+            setting_key VARCHAR(100) PRIMARY KEY,
+            setting_value TEXT,
+            updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+
+        $body = getJsonBody();
+        $stmt = $pdo->prepare("
+            INSERT INTO app_settings (setting_key, setting_value)
+            VALUES (:key, :value)
+            ON DUPLICATE KEY UPDATE setting_value = :value2
+        ");
+        foreach ($body as $key => $value) {
+            if (!array_key_exists($key, $defaults)) continue;
+            $stored = is_bool($defaults[$key]) ? ($value ? '1' : '0') : (string)$value;
+            $stmt->execute([
+                'key' => 'app_cfg_' . $key,
+                'value' => $stored,
+                'value2' => $stored,
+            ]);
+        }
+        Response::success(loadAppConfig($pdo, $defaults));
+    } catch (Exception $e) {
+        Response::error('Save failed: ' . $e->getMessage(), 500);
     }
-    Response::success(loadAppConfig($pdo, $defaults));
 }
 
 Response::error('Method not allowed', 405);

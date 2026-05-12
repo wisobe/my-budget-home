@@ -14,7 +14,7 @@
     "admin": "Admin",
     "users": "Utilisateurs",
     "plaidConfig": "Configuration Plaid",
-    "dbConnection": "Connexion à la base de données",
+    "dbConnection": "Paramètres système",
     "auditLog": "Journal d'audit",
     "subscriptionTuning": "Réglage abonnements",
     "logout": "Déconnexion",
@@ -378,7 +378,7 @@
     "title": "Configuration Plaid"
   },
   "adminBackend": {
-    "title": "Connexion à la base de données",
+    "title": "Paramètres système",
     "dbDesc": "Testez la connexion à votre base de données MariaDB pour vous assurer que le backend est correctement configuré.",
     "syncBehaviorTitle": "Comportement de synchronisation",
     "syncBehaviorDesc": "Contrôlez le comportement de l'application après la synchronisation des transactions.",
