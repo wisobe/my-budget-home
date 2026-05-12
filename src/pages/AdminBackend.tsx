@@ -3,8 +3,12 @@ import { useTranslation } from 'react-i18next';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
 import { Loader2, CheckCircle2, XCircle } from 'lucide-react';
 import { API_BASE_URL } from '@/lib/config';
+import { useAppConfig, useUpdateAppConfig } from '@/hooks/use-app-config';
+import { toast } from '@/components/ui/sonner';
 
 const AdminBackend = () => {
   const { t } = useTranslation();
