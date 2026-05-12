@@ -379,7 +379,13 @@
   },
   "adminBackend": {
     "title": "Database Connection",
-    "dbDesc": "Test the connection to your MariaDB database to ensure the backend is properly configured."
+    "dbDesc": "Test the connection to your MariaDB database to ensure the backend is properly configured.",
+    "syncBehaviorTitle": "Sync Behavior",
+    "syncBehaviorDesc": "Control how the app behaves after transactions are synced.",
+    "reloadAfterSyncLabel": "Auto-reload page after sync",
+    "reloadAfterSyncHelp": "When enabled, the current page automatically reloads 3.5 seconds after a successful sync to show the latest data.",
+    "saved": "Saved",
+    "saveFailed": "Failed to save"
   },
   "notFound": {
     "title": "404",
