@@ -52,7 +52,10 @@ async function request<T>(
   const parseErrorMessage = async (fallback: string) => {
     try {
       const contentType = response.headers.get('content-type') ?? '';
-      if (!contentType.includes('application/json')) return fallback;
+      if (!contentType.includes('application/json')) {
+        const text = await response.text();
+        return text.trim() || fallback;
+      }
       const error = await response.json();
       return typeof error?.message === 'string' ? error.message : fallback;
     } catch {
