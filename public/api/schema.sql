@@ -208,6 +208,9 @@ CREATE TABLE IF NOT EXISTS app_settings (
     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+INSERT IGNORE INTO app_settings (setting_key, setting_value)
+VALUES ('app_cfg_reload_after_sync', '1');
+
 -- Consent Audit Log (tracks all consent changes for compliance)
 CREATE TABLE IF NOT EXISTS consent_audit_log (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,

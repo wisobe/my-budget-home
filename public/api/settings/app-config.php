@@ -16,6 +16,18 @@ $defaults = [
     'reload_after_sync' => true,
 ];
 
+function ensureAppSettingsTable(PDO $pdo): void {
+    try {
+        $pdo->exec("CREATE TABLE IF NOT EXISTS app_settings (
+            setting_key VARCHAR(100) PRIMARY KEY,
+            setting_value TEXT,
+            updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+    } catch (Exception $e) {
+        throw new Exception('The app_settings table is missing and could not be created automatically. Please run public/api/schema.sql or create the app_settings table manually. Database error: ' . $e->getMessage());
+    }
+}
+
 function loadAppConfig(PDO $pdo, array $defaults): array {
     $out = $defaults;
     try {
@@ -44,26 +56,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     requireAdmin();
     try {
-        // Ensure table exists (in case schema is older than this feature)
-        $pdo->exec("CREATE TABLE IF NOT EXISTS app_settings (
-            setting_key VARCHAR(100) PRIMARY KEY,
-            setting_value TEXT,
-            updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+        // Ensure table exists (in case schema is older than this feature).
+        ensureAppSettingsTable($pdo);
 
         $body = getJsonBody();
-        $stmt = $pdo->prepare("
-            INSERT INTO app_settings (setting_key, setting_value)
-            VALUES (:key, :value)
-            ON DUPLICATE KEY UPDATE setting_value = :value2
-        ");
+        $existsStmt = $pdo->prepare("SELECT COUNT(*) FROM app_settings WHERE setting_key = :setting_key");
+        $insertStmt = $pdo->prepare("INSERT INTO app_settings (setting_key, setting_value) VALUES (:setting_key, :setting_value)");
+        $updateStmt = $pdo->prepare("UPDATE app_settings SET setting_value = :setting_value WHERE setting_key = :setting_key");
+
         foreach ($body as $key => $value) {
             if (!array_key_exists($key, $defaults)) continue;
             $stored = is_bool($defaults[$key]) ? ($value ? '1' : '0') : (string)$value;
+            $settingKey = 'app_cfg_' . $key;
+
+            $existsStmt->execute(['setting_key' => $settingKey]);
+            $stmt = ((int)$existsStmt->fetchColumn() > 0) ? $updateStmt : $insertStmt;
             $stmt->execute([
-                'key' => 'app_cfg_' . $key,
-                'value' => $stored,
-                'value2' => $stored,
+                'setting_key' => $settingKey,
+                'setting_value' => $stored,
             ]);
         }
         Response::success(loadAppConfig($pdo, $defaults));
