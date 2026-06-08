@@ -171,7 +171,8 @@ try {
         UPDATE plaid_connections SET
             sync_cursor = :cursor,
             last_synced = NOW(),
-            status = :status
+            status = :status,
+            error_message = NULL
         WHERE id = :id AND user_id = :user_id
     ');
     $updateConnStmt->execute([
