@@ -242,30 +242,43 @@ const Connections = () => {
               </div>
             ) : (
               connections.map(connection => {
-                const isError = connection.status === 'error';
+                // Parse structured error payload written by sync.php; fall back to plain text.
+                let parsedError: { code?: string | null; type?: string | null; message?: string; transient?: boolean; needs_reauth?: boolean; at?: string } | null = null;
+                if (connection.error_message) {
+                  try {
+                    const p = JSON.parse(connection.error_message);
+                    if (p && typeof p === 'object') parsedError = p;
+                  } catch {
+                    parsedError = { message: connection.error_message };
+                  }
+                }
+                const needsReauth = !!parsedError?.needs_reauth || connection.status === 'error';
+                const hasTransientWarning = !needsReauth && !!parsedError && (parsedError.transient || !!parsedError.code);
+                const showAsError = needsReauth;
                 const isRelinking = relinkingId === connection.id && isConnecting;
 
                 return (
                   <div key={connection.id} className={cn(
                     "flex flex-col gap-3 p-4 rounded-lg border",
-                    isError && "border-destructive/50 bg-destructive/5"
+                    showAsError && "border-destructive/50 bg-destructive/5",
+                    !showAsError && hasTransientWarning && "border-amber-500/50 bg-amber-500/5"
                   )}>
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-4">
                         <div className={cn(
                           "h-12 w-12 rounded-lg flex items-center justify-center",
-                          isError ? "bg-destructive/10" : "bg-primary/10"
+                          showAsError ? "bg-destructive/10" : "bg-primary/10"
                         )}>
                           <span className={cn(
                             "text-lg font-bold",
-                            isError ? "text-destructive" : "text-primary"
+                            showAsError ? "text-destructive" : "text-primary"
                           )}>{connection.institution_name.charAt(0)}</span>
                         </div>
                         <div>
                           <div className="flex items-center gap-2">
                             <p className="font-semibold">{connection.institution_name}</p>
-                            <Badge variant={isError ? 'destructive' : 'default'} className={cn(!isError && "bg-income")}>
-                              {isError ? (
+                            <Badge variant={showAsError ? 'destructive' : 'default'} className={cn(!showAsError && "bg-income")}>
+                              {showAsError ? (
                                 <><AlertCircle className="h-3 w-3 mr-1" /> {t('connections.error')}</>
                               ) : (
                                 <><CheckCircle2 className="h-3 w-3 mr-1" /> {t('connections.active')}</>
@@ -280,24 +293,56 @@ const Connections = () => {
                         </div>
                       </div>
                       <div className="flex gap-2">
-                        <Button variant={isError ? "default" : "outline"} size="sm" onClick={() => handleRelink(connection.id)} disabled={isRelinking || syncMutation.isPending}>
-                          {isRelinking ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Link2 className="h-4 w-4 mr-2" />}
-                          {t('connections.relink')}
-                        </Button>
+                        {/* Only surface the Re-link button when Plaid actually requires it. */}
+                        {needsReauth && (
+                          <Button variant="default" size="sm" onClick={() => handleRelink(connection.id)} disabled={isRelinking || syncMutation.isPending}>
+                            {isRelinking ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Link2 className="h-4 w-4 mr-2" />}
+                            {t('connections.relink')}
+                          </Button>
+                        )}
                         <Button variant="outline" size="sm" onClick={() => handleSync(connection.id)} disabled={syncMutation.isPending || isRelinking}>
                           {syncMutation.isPending ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <RefreshCw className="h-4 w-4 mr-2" />}
                           {t('sync.sync')}
                         </Button>
+                        {/* Re-link is still available on healthy connections via the overflow trigger below. */}
+                        {!needsReauth && (
+                          <Button variant="ghost" size="sm" onClick={() => handleRelink(connection.id)} disabled={isRelinking || syncMutation.isPending} title={t('connections.relink')}>
+                            <Link2 className="h-4 w-4" />
+                          </Button>
+                        )}
                         <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive" onClick={() => handleRemove(connection.id)} disabled={removeMutation.isPending}>
                           <Trash2 className="h-4 w-4" />
                         </Button>
                       </div>
                     </div>
 
-                    {isError && connection.error_message && (
+                    {showAsError && (
                       <div className="flex items-start gap-2 px-3 py-2 rounded-md bg-destructive/10 text-sm text-destructive">
                         <AlertCircle className="h-4 w-4 mt-0.5 shrink-0" />
-                        <p>{connection.error_message}</p>
+                        <div>
+                          <p className="font-medium">
+                            {parsedError?.code === 'PENDING_EXPIRATION'
+                              ? 'Bank consent is about to expire — please reconnect.'
+                              : 'Your bank requires you to log in again.'}
+                          </p>
+                          {parsedError?.code && (
+                            <p className="text-xs opacity-80 mt-0.5">Plaid: {parsedError.code}</p>
+                          )}
+                        </div>
+                      </div>
+                    )}
+
+                    {!showAsError && hasTransientWarning && (
+                      <div className="flex items-start gap-2 px-3 py-2 rounded-md bg-amber-500/10 text-sm text-amber-700 dark:text-amber-400">
+                        <AlertCircle className="h-4 w-4 mt-0.5 shrink-0" />
+                        <div>
+                          <p className="font-medium">
+                            Last sync hit a temporary bank issue — we'll retry automatically on the next sync. No re-login needed.
+                          </p>
+                          <p className="text-xs opacity-80 mt-0.5">
+                            {parsedError?.code ? `Plaid: ${parsedError.code}` : (parsedError?.message ?? '')}
+                          </p>
+                        </div>
                       </div>
                     )}
                   </div>

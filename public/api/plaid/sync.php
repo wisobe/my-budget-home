@@ -171,7 +171,8 @@ try {
         UPDATE plaid_connections SET
             sync_cursor = :cursor,
             last_synced = NOW(),
-            status = :status
+            status = :status,
+            error_message = NULL
         WHERE id = :id AND user_id = :user_id
     ');
     $updateConnStmt->execute([
@@ -253,17 +254,65 @@ try {
     if (isset($body['connection_id'])) {
         try {
             $pdo = Database::getConnection();
+
+            // Classify the error so we only force a re-login when Plaid actually
+            // requires it. Transient bank-side issues keep the connection "active"
+            // and will simply be retried on the next sync — this avoids prompting
+            // the user to re-link for things like INSTITUTION_DOWN.
+            $reauthCodes = [
+                'ITEM_LOGIN_REQUIRED',
+                'PENDING_EXPIRATION',
+                'PENDING_DISCONNECT',
+                'USER_PERMISSION_REVOKED',
+                'ACCESS_NOT_GRANTED',
+                'NEW_CONSENT_REQUIRED',
+                'ITEM_LOCKED',
+            ];
+            $transientCodes = [
+                'INSTITUTION_DOWN',
+                'INSTITUTION_NOT_RESPONDING',
+                'INSTITUTION_NOT_AVAILABLE',
+                'INSTITUTION_NO_LONGER_SUPPORTED',
+                'RATE_LIMIT_EXCEEDED',
+                'INTERNAL_SERVER_ERROR',
+                'PLANNED_MAINTENANCE',
+                'API_ERROR',
+                'NO_ACCOUNTS',
+            ];
+
+            $errorCode = null;
+            $errorType = null;
+            $errorText = $e->getMessage();
+            if ($e instanceof PlaidApiException) {
+                $errorCode = $e->errorCode;
+                $errorType = $e->errorType;
+            }
+
+            $needsReauth = $errorCode && in_array($errorCode, $reauthCodes, true);
+            $isTransient = !$needsReauth; // anything not explicitly reauth = treat as transient
+            // Only flip to 'error' (and prompt user to re-link) when Plaid explicitly says so.
+            $status = $needsReauth ? 'error' : 'active';
+
+            $payload = json_encode([
+                'code' => $errorCode,
+                'type' => $errorType,
+                'message' => $errorText,
+                'transient' => $isTransient,
+                'needs_reauth' => $needsReauth,
+                'at' => date('c'),
+            ]);
+
             $errorStmt = $pdo->prepare('
                 UPDATE plaid_connections SET status = :status, error_message = :error WHERE id = :id
             ');
             $errorStmt->execute([
-                'status' => 'error',
-                'error' => $e->getMessage(),
+                'status' => $status,
+                'error' => $payload,
                 'id' => $body['connection_id'],
             ]);
         } catch (Exception $innerEx) {}
     }
-    
+
     if ($e instanceof PlaidApiException) {
         Response::error('Failed to sync transactions: ' . $e->getMessage(), 500, $e->toArray());
     } else {
