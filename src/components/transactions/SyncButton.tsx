@@ -4,13 +4,11 @@ import { RefreshCw, Loader2 } from 'lucide-react';
 import { useSyncAllConnections } from '@/hooks/use-plaid';
 import { toast } from '@/components/ui/sonner';
 import { usePreferences } from '@/contexts/PreferencesContext';
-import { useAppConfig } from '@/hooks/use-app-config';
 
 export function SyncButton() {
   const { t } = useTranslation();
   const syncAll = useSyncAllConnections();
   const { consentDataCollection } = usePreferences();
-  const { data: appConfig } = useAppConfig();
 
   const handleSync = async () => {
     if (!consentDataCollection) {
@@ -23,9 +21,6 @@ export function SyncButton() {
         toast.info(t('sync.upToDate'));
       } else {
         toast.success(t('sync.synced', { added: result.added, modified: result.modified, removed: result.removed }));
-      }
-      if (appConfig?.reload_after_sync !== false) {
-        setTimeout(() => window.location.reload(), 3500);
       }
     } catch (error: any) {
       toast.error(error.message || t('sync.failedSync'));

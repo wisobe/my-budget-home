@@ -52,10 +52,7 @@ async function request<T>(
   const parseErrorMessage = async (fallback: string) => {
     try {
       const contentType = response.headers.get('content-type') ?? '';
-      if (!contentType.includes('application/json')) {
-        const text = await response.text();
-        return text.trim() || fallback;
-      }
+      if (!contentType.includes('application/json')) return fallback;
       const error = await response.json();
       return typeof error?.message === 'string' ? error.message : fallback;
     } catch {
@@ -478,21 +475,6 @@ export const preferencesApi = {
     request<ApiResponse<{ saved: boolean }>>('/settings/user-preferences.php', {
       method: 'POST',
       body: JSON.stringify(prefs),
-    }),
-};
-
-// ============ App Config API (admin-managed, app-wide) ============
-
-export interface AppConfig {
-  reload_after_sync: boolean;
-}
-
-export const appConfigApi = {
-  get: () => request<ApiResponse<AppConfig>>('/settings/app-config.php'),
-  save: (config: Partial<AppConfig>) =>
-    request<ApiResponse<AppConfig>>('/settings/app-config.php', {
-      method: 'POST',
-      body: JSON.stringify(config),
     }),
 };
 

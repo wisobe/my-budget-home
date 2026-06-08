@@ -11,7 +11,6 @@ import { toast } from '@/components/ui/sonner';
 import { useCallback, useEffect, useState } from 'react';
 import { usePlaidLink } from 'react-plaid-link';
 import { usePreferences } from '@/contexts/PreferencesContext';
-import { useAppConfig } from '@/hooks/use-app-config';
 import { ConsentGate } from '@/components/consent/ConsentGate';
 
 function PlaidLinkButton({ linkToken, onSuccess, onExit }: {
@@ -40,7 +39,6 @@ const Connections = () => {
   const syncMutation = useSyncPlaidConnection();
   const removeMutation = useRemovePlaidConnection();
   const { plaidEnvironment } = usePlaidEnvironment();
-  const { data: appConfig } = useAppConfig();
 
   const [linkToken, setLinkToken] = useState<string | null>(null);
   const [isConnecting, setIsConnecting] = useState(false);
@@ -52,9 +50,6 @@ const Connections = () => {
     try {
       const result = await syncMutation.mutateAsync(connectionId);
       toast.success(t('connections.syncedTransactions', { count: result.data.added }));
-      if (appConfig?.reload_after_sync !== false) {
-        setTimeout(() => window.location.reload(), 3500);
-      }
     } catch (error: any) {
       const plaidErr = error.plaidError;
       if (plaidErr) {

@@ -14,7 +14,7 @@
     "admin": "Admin",
     "users": "Users",
     "plaidConfig": "Plaid Configuration",
-    "dbConnection": "System Settings",
+    "dbConnection": "Database Connection",
     "auditLog": "Audit Log",
     "subscriptionTuning": "Subscription Tuning",
     "logout": "Logout",
@@ -378,14 +378,8 @@
     "title": "Plaid Configuration"
   },
   "adminBackend": {
-    "title": "System Settings",
-    "dbDesc": "Test the connection to your MariaDB database to ensure the backend is properly configured.",
-    "syncBehaviorTitle": "Sync Behavior",
-    "syncBehaviorDesc": "Control how the app behaves after transactions are synced.",
-    "reloadAfterSyncLabel": "Auto-reload page after sync",
-    "reloadAfterSyncHelp": "When enabled, the current page automatically reloads 3.5 seconds after a successful sync to show the latest data.",
-    "saved": "Saved",
-    "saveFailed": "Failed to save"
+    "title": "Database Connection",
+    "dbDesc": "Test the connection to your MariaDB database to ensure the backend is properly configured."
   },
   "notFound": {
     "title": "404",
