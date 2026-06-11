@@ -269,7 +269,7 @@ export function TransactionList() {
                       )}
                     </TableCell>
                     <TableCell className="text-muted-foreground">
-                      {new Date(transaction.date).toLocaleDateString('en-CA', {
+                      {new Date(transaction.date + 'T12:00:00').toLocaleDateString('en-CA', {
                         month: 'short', day: 'numeric', year: 'numeric',
                       })}
                     </TableCell>
