@@ -8,9 +8,10 @@ import {
 interface SavingsRateChartProps {
   startDate: string;
   endDate: string;
+  height?: number;
 }
 
-export function SavingsRateChart({ startDate, endDate }: SavingsRateChartProps) {
+export function SavingsRateChart({ startDate, endDate, height = 300 }: SavingsRateChartProps) {
   const { t } = useTranslation();
   const { data: overviewData, isLoading } = useMonthlyOverviewByRange(startDate, endDate);
 
@@ -18,7 +19,7 @@ export function SavingsRateChart({ startDate, endDate }: SavingsRateChartProps) 
     return (
       <Card>
         <CardHeader><CardTitle>{t('reports.savingsRateTrend')}</CardTitle></CardHeader>
-        <CardContent className="h-[300px] flex items-center justify-center">
+        <CardContent className="flex items-center justify-center" style={{ height }}>
           <div className="animate-pulse w-full h-full bg-muted rounded" />
         </CardContent>
       </Card>
@@ -36,7 +37,7 @@ export function SavingsRateChart({ startDate, endDate }: SavingsRateChartProps) 
     <Card>
       <CardHeader><CardTitle>{t('reports.savingsRateTrend')}</CardTitle></CardHeader>
       <CardContent>
-        <ResponsiveContainer width="100%" height={300}>
+        <ResponsiveContainer width="100%" height={height}>
           <LineChart data={chartData}>
             <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
             <XAxis dataKey="month" className="text-xs fill-muted-foreground" />
