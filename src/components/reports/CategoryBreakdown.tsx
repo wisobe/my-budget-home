@@ -140,13 +140,13 @@ export function CategoryBreakdown({ startDate, endDate }: CategoryBreakdownProps
             {parentRows.map(row => {
               const percentage = (row.total / maxParentAmount) * 100;
               const pctOfTotal = grandTotal > 0 ? ((row.total / grandTotal) * 100).toFixed(1) : '0';
-              const hasChildren = row.children.length > 1 || (row.children.length === 1 && categories.find(c => c.id === row.children[0].category_id)?.parent_id);
+              const hasChildren = row.children.length > 1 || (row.children.length === 1 && !!categories.find(c => c.id === row.children[0].category_id)?.parent_id);
 
               return (
                 <div
                   key={row.parentId}
-                  className={cn("space-y-2", hasChildren && "cursor-pointer group")}
-                  onClick={() => handleParentClick(row.parentId, !!hasChildren)}
+                  className="space-y-2 cursor-pointer group"
+                  onClick={() => handleParentClick(row.parentId, hasChildren)}
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
