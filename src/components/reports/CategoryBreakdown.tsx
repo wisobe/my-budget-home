@@ -105,7 +105,15 @@ export function CategoryBreakdown({ startDate, endDate }: CategoryBreakdownProps
     setDrillLevel('transactions');
   };
 
+  const isLeafDrill = !!selectedChildId && selectedChildId === expandedParentId;
+
   const handleBackToChildren = () => {
+    if (isLeafDrill) {
+      setExpandedParentId(null);
+      setSelectedChildId(null);
+      setDrillLevel('parents');
+      return;
+    }
     setSelectedChildId(null);
     setDrillLevel('children');
   };
