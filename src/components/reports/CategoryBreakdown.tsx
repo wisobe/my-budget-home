@@ -89,9 +89,15 @@ export function CategoryBreakdown({ startDate, endDate }: CategoryBreakdownProps
   const selectedChildCat = selectedChildId ? categories.find(c => c.id === selectedChildId) : null;
 
   const handleParentClick = (parentId: string, hasChildren: boolean) => {
-    if (!hasChildren) return;
+    if (hasChildren) {
+      setExpandedParentId(parentId);
+      setDrillLevel('children');
+      return;
+    }
+    // Leaf category (no subcategories): drill straight to transactions
     setExpandedParentId(parentId);
-    setDrillLevel('children');
+    setSelectedChildId(parentId);
+    setDrillLevel('transactions');
   };
 
   const handleChildClick = (childId: string) => {
