@@ -238,7 +238,7 @@ export function CategoryBreakdown({ startDate, endDate }: CategoryBreakdownProps
                   className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
                 >
                   <ArrowLeft className="h-4 w-4" />
-                  {t('reports.backToSubcategories')}
+                  {isLeafDrill ? t('reports.backToCategories') : t('reports.backToSubcategories')}
                 </button>
                 <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/30">
                   <div className="h-5 w-5 rounded-full" style={{ backgroundColor: selectedChildCat?.color || '#6b7280' }} />
