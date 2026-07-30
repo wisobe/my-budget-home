@@ -89,9 +89,15 @@ export function CategoryBreakdown({ startDate, endDate }: CategoryBreakdownProps
   const selectedChildCat = selectedChildId ? categories.find(c => c.id === selectedChildId) : null;
 
   const handleParentClick = (parentId: string, hasChildren: boolean) => {
-    if (!hasChildren) return;
+    if (hasChildren) {
+      setExpandedParentId(parentId);
+      setDrillLevel('children');
+      return;
+    }
+    // Leaf category (no subcategories): drill straight to transactions
     setExpandedParentId(parentId);
-    setDrillLevel('children');
+    setSelectedChildId(parentId);
+    setDrillLevel('transactions');
   };
 
   const handleChildClick = (childId: string) => {
@@ -99,7 +105,15 @@ export function CategoryBreakdown({ startDate, endDate }: CategoryBreakdownProps
     setDrillLevel('transactions');
   };
 
+  const isLeafDrill = !!selectedChildId && selectedChildId === expandedParentId;
+
   const handleBackToChildren = () => {
+    if (isLeafDrill) {
+      setExpandedParentId(null);
+      setSelectedChildId(null);
+      setDrillLevel('parents');
+      return;
+    }
     setSelectedChildId(null);
     setDrillLevel('children');
   };
@@ -126,19 +140,19 @@ export function CategoryBreakdown({ startDate, endDate }: CategoryBreakdownProps
             {parentRows.map(row => {
               const percentage = (row.total / maxParentAmount) * 100;
               const pctOfTotal = grandTotal > 0 ? ((row.total / grandTotal) * 100).toFixed(1) : '0';
-              const hasChildren = row.children.length > 1 || (row.children.length === 1 && categories.find(c => c.id === row.children[0].category_id)?.parent_id);
+              const hasChildren = row.children.length > 1 || (row.children.length === 1 && !!categories.find(c => c.id === row.children[0].category_id)?.parent_id);
 
               return (
                 <div
                   key={row.parentId}
-                  className={cn("space-y-2", hasChildren && "cursor-pointer group")}
-                  onClick={() => handleParentClick(row.parentId, !!hasChildren)}
+                  className="space-y-2 cursor-pointer group"
+                  onClick={() => handleParentClick(row.parentId, hasChildren)}
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <div className="h-3 w-3 rounded-full" style={{ backgroundColor: row.parentColor }} />
                       <span className="font-medium">{row.parentName}</span>
-                      {hasChildren && <ChevronRight className="h-3 w-3 text-muted-foreground group-hover:text-foreground transition-colors" />}
+                      <ChevronRight className="h-3 w-3 text-muted-foreground group-hover:text-foreground transition-colors" />
                     </div>
                     <div className="flex items-center gap-2">
                       <span className="font-semibold">
@@ -224,7 +238,7 @@ export function CategoryBreakdown({ startDate, endDate }: CategoryBreakdownProps
                   className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
                 >
                   <ArrowLeft className="h-4 w-4" />
-                  {t('reports.backToSubcategories')}
+                  {isLeafDrill ? t('reports.backToCategories') : t('reports.backToSubcategories')}
                 </button>
                 <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/30">
                   <div className="h-5 w-5 rounded-full" style={{ backgroundColor: selectedChildCat?.color || '#6b7280' }} />
