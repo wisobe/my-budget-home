@@ -153,6 +153,7 @@
     "expenses": "Expenses",
     "savingsRateTrend": "Savings Rate Trend",
     "savingsRate": "Savings Rate",
+    "cumulativeSavings": "Cumulative Savings",
     "netSavingsByMonth": "Net Savings by Month",
     "categoryBreakdown": "Category Breakdown",
     "transactions_count": "{{count}} transactions",

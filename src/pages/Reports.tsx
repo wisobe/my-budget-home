@@ -6,6 +6,7 @@ import { AppLayout } from '@/components/layout/AppLayout';
 import { IncomeExpenseChart } from '@/components/reports/IncomeExpenseChart';
 import { SavingsRateChart } from '@/components/reports/SavingsRateChart';
 import { NetSavingsChart } from '@/components/reports/NetSavingsChart';
+import { CumulativeSavingsChart } from '@/components/reports/CumulativeSavingsChart';
 import { CategoryBreakdown } from '@/components/reports/CategoryBreakdown';
 import { StatCard } from '@/components/dashboard/StatCard';
 import { useMonthlyOverviewByRange } from '@/hooks/use-reports';
@@ -141,7 +142,7 @@ const Reports = () => {
 
         {tabs.map(tab => (
           <TabsContent key={tab.value} value={tab.value}>
-            <ReportTab startDate={tab.startDate} endDate={tab.endDate} label={tab.label} />
+            <ReportTab startDate={tab.startDate} endDate={tab.endDate} label={tab.label} wide={tab.value === 'rolling' || tab.value === 'ytd'} />
           </TabsContent>
         ))}
 

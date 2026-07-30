@@ -153,6 +153,7 @@
     "expenses": "Dépenses",
     "savingsRateTrend": "Tendance du taux d'épargne",
     "savingsRate": "Taux d'épargne",
+    "cumulativeSavings": "Épargne cumulée",
     "netSavingsByMonth": "Épargne nette par mois",
     "categoryBreakdown": "Répartition par catégorie",
     "transactions_count": "{{count}} transactions",
