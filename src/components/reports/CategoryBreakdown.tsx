@@ -152,7 +152,7 @@ export function CategoryBreakdown({ startDate, endDate }: CategoryBreakdownProps
                     <div className="flex items-center gap-2">
                       <div className="h-3 w-3 rounded-full" style={{ backgroundColor: row.parentColor }} />
                       <span className="font-medium">{row.parentName}</span>
-                      {hasChildren && <ChevronRight className="h-3 w-3 text-muted-foreground group-hover:text-foreground transition-colors" />}
+                      <ChevronRight className="h-3 w-3 text-muted-foreground group-hover:text-foreground transition-colors" />
                     </div>
                     <div className="flex items-center gap-2">
                       <span className="font-semibold">
