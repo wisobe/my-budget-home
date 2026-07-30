@@ -34,9 +34,22 @@ function ReportStats({ monthlyData }: { monthlyData: { total_income: number; tot
   );
 }
 
-function ReportTab({ startDate, endDate, label }: { startDate: string; endDate: string; label: string }) {
+function ReportTab({ startDate, endDate, label, wide = false }: { startDate: string; endDate: string; label: string; wide?: boolean }) {
   const { data } = useMonthlyOverviewByRange(startDate, endDate);
   const monthlyData = data?.data || [];
+
+  if (wide) {
+    return (
+      <div className="space-y-6">
+        <ReportStats monthlyData={monthlyData} />
+        <IncomeExpenseChart startDate={startDate} endDate={endDate} label={label} height={350} />
+        <SavingsRateChart startDate={startDate} endDate={endDate} height={350} />
+        <NetSavingsChart startDate={startDate} endDate={endDate} height={350} />
+        <CumulativeSavingsChart startDate={startDate} endDate={endDate} height={350} />
+        <CategoryBreakdown startDate={startDate} endDate={endDate} />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -44,12 +57,14 @@ function ReportTab({ startDate, endDate, label }: { startDate: string; endDate: 
       <div className="grid gap-6 lg:grid-cols-2">
         <IncomeExpenseChart startDate={startDate} endDate={endDate} label={label} />
         <SavingsRateChart startDate={startDate} endDate={endDate} />
+        <NetSavingsChart startDate={startDate} endDate={endDate} height={300} />
+        <CumulativeSavingsChart startDate={startDate} endDate={endDate} />
       </div>
-      <NetSavingsChart startDate={startDate} endDate={endDate} />
       <CategoryBreakdown startDate={startDate} endDate={endDate} />
     </div>
   );
 }
+
 
 const Reports = () => {
   const { t, i18n } = useTranslation();
