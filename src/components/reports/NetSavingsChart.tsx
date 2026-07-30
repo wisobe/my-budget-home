@@ -8,9 +8,10 @@ import {
 interface NetSavingsChartProps {
   startDate: string;
   endDate: string;
+  height?: number;
 }
 
-export function NetSavingsChart({ startDate, endDate }: NetSavingsChartProps) {
+export function NetSavingsChart({ startDate, endDate, height = 350 }: NetSavingsChartProps) {
   const { t } = useTranslation();
   const { data: overviewData, isLoading } = useMonthlyOverviewByRange(startDate, endDate);
 
@@ -18,7 +19,7 @@ export function NetSavingsChart({ startDate, endDate }: NetSavingsChartProps) {
     return (
       <Card>
         <CardHeader><CardTitle>{t('reports.netSavingsByMonth')}</CardTitle></CardHeader>
-        <CardContent className="h-[350px] flex items-center justify-center">
+        <CardContent className="flex items-center justify-center" style={{ height }}>
           <div className="animate-pulse w-full h-full bg-muted rounded" />
         </CardContent>
       </Card>
@@ -35,7 +36,7 @@ export function NetSavingsChart({ startDate, endDate }: NetSavingsChartProps) {
     <Card>
       <CardHeader><CardTitle>{t('reports.netSavingsByMonth')}</CardTitle></CardHeader>
       <CardContent>
-        <ResponsiveContainer width="100%" height={350}>
+        <ResponsiveContainer width="100%" height={height}>
           <BarChart data={chartData}>
             <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
             <XAxis dataKey="month" className="text-xs fill-muted-foreground" />

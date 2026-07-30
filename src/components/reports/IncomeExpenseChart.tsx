@@ -9,9 +9,10 @@ interface IncomeExpenseChartProps {
   startDate: string;
   endDate: string;
   label: string;
+  height?: number;
 }
 
-export function IncomeExpenseChart({ startDate, endDate, label }: IncomeExpenseChartProps) {
+export function IncomeExpenseChart({ startDate, endDate, label, height = 350 }: IncomeExpenseChartProps) {
   const { t } = useTranslation();
   const { data: overviewData, isLoading } = useMonthlyOverviewByRange(startDate, endDate);
 
@@ -19,7 +20,7 @@ export function IncomeExpenseChart({ startDate, endDate, label }: IncomeExpenseC
     return (
       <Card>
         <CardHeader><CardTitle>{t('reports.incomeVsExpenses')}</CardTitle></CardHeader>
-        <CardContent className="h-[350px] flex items-center justify-center">
+        <CardContent className="flex items-center justify-center" style={{ height }}>
           <div className="animate-pulse w-full h-full bg-muted rounded" />
         </CardContent>
       </Card>
@@ -40,7 +41,7 @@ export function IncomeExpenseChart({ startDate, endDate, label }: IncomeExpenseC
         <CardTitle>{t('reports.incomeVsExpenses')} ({label})</CardTitle>
       </CardHeader>
       <CardContent>
-        <ResponsiveContainer width="100%" height={350}>
+        <ResponsiveContainer width="100%" height={height}>
           <BarChart data={chartData}>
             <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
             <XAxis dataKey="month" className="text-xs fill-muted-foreground" />
