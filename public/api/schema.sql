@@ -121,6 +121,7 @@ CREATE TABLE IF NOT EXISTS transactions (
     excluded BOOLEAN DEFAULT FALSE,
     auto_categorize_locked BOOLEAN DEFAULT FALSE,
     notes TEXT,
+    source VARCHAR(20) DEFAULT 'plaid',
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     UNIQUE KEY uk_plaid_transaction (plaid_transaction_id),
@@ -328,6 +329,11 @@ CREATE TABLE IF NOT EXISTS subscription_dismissals (
 --   ADD COLUMN original_amount DECIMAL(15, 2) DEFAULT NULL AFTER iso_currency_code,
 --   ADD COLUMN fx_rate DECIMAL(18, 8) DEFAULT NULL AFTER original_amount,
 --   ADD COLUMN amount_overridden BOOLEAN DEFAULT FALSE AFTER fx_rate;
+
+-- ============================================================
+-- MIGRATION: CSV import support (transaction origin tracking)
+-- ============================================================
+-- ALTER TABLE transactions ADD COLUMN source VARCHAR(20) DEFAULT 'plaid' AFTER notes;
 
 -- FX Rates cache (Bank of Canada Valet API → CAD)
 CREATE TABLE IF NOT EXISTS fx_rates (
