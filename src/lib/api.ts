@@ -435,6 +435,18 @@ export const accountsApi = {
       method: 'PUT',
       body: JSON.stringify(data),
     }),
+
+  createManual: (data: {
+    name: string;
+    type: string;
+    currency?: string;
+    institution_name?: string;
+    current_balance?: number;
+  }) =>
+    request<ApiResponse<Account>>('/accounts/create.php', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
 };
 
 // ============ Plaid Integration API ============
