@@ -1,4 +1,6 @@
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { AddManualAccountDialog } from '@/components/accounts/AddManualAccountDialog';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -226,6 +228,7 @@ function SortableGroupCard({
   );
 }
 
+  const [manualAccountOpen, setManualAccountOpen] = useState(false);
 const Accounts = () => {
   const { t } = useTranslation();
   const { data: accountsData, isLoading } = useAccounts();
