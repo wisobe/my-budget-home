@@ -1,4 +1,6 @@
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { AddManualAccountDialog } from '@/components/accounts/AddManualAccountDialog';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -227,6 +229,7 @@ function SortableGroupCard({
 }
 
 const Accounts = () => {
+  const [manualAccountOpen, setManualAccountOpen] = useState(false);
   const { t } = useTranslation();
   const { data: accountsData, isLoading } = useAccounts();
   const totalBalance = useAllAccountsBalance();
@@ -308,10 +311,11 @@ const Accounts = () => {
       actions={
         <div className="flex gap-2">
           <SyncButton />
-          <Button size="sm">
+          <Button size="sm" onClick={() => setManualAccountOpen(true)}>
             <Plus className="h-4 w-4 mr-2" />
             {t('accounts.addAccount')}
           </Button>
+          <AddManualAccountDialog open={manualAccountOpen} onOpenChange={setManualAccountOpen} />
         </div>
       }
     >

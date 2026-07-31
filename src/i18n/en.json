@@ -108,7 +108,60 @@
     "resetToFx": "Reset to converted rate",
     "amountUpdated": "Amount updated",
     "amountReset": "Amount reset",
-    "manual": "manual"
+    "manual": "manual",
+    "import": {
+      "button": "Import CSV",
+      "title": "Import transactions from CSV",
+      "description": "Upload a bank export, map the columns, then review before importing.",
+      "chooseFile": "Choose a CSV file",
+      "fileHint": "CSV or text file, up to 5 MB and 2000 rows",
+      "fileTooLarge": "File is too large (max 5 MB)",
+      "emptyFile": "This file appears to be empty",
+      "column": "Column",
+      "rowsDetected": "{{count}} rows",
+      "account": "Import into account",
+      "selectAccount": "Select an account",
+      "dateFormat": "Date format",
+      "autoDetect": "Auto-detect",
+      "hasHeader": "First row contains column names",
+      "mapColumns": "Map your columns",
+      "notMapped": "Not mapped",
+      "amountHint": "Map a single Amount column, or separate Debit and Credit columns.",
+      "signConvention": "Amount sign convention",
+      "signPositiveIncome": "Negative = expense, positive = income",
+      "signPositiveExpense": "Positive = expense, negative = income",
+      "allowDuplicates": "Import rows that look like duplicates",
+      "continue": "Preview import",
+      "previewFailed": "Preview failed",
+      "importFailed": "Import failed",
+      "noRows": "No data rows found",
+      "willImport": "To import",
+      "duplicatesSkipped": "Duplicates",
+      "invalidRows": "Invalid rows",
+      "previewTitle": "Preview",
+      "nothingToImport": "Nothing new to import.",
+      "rowLabel": "Row {{row}}",
+      "confirm": "Import {{count}} transactions",
+      "success": "Import complete",
+      "successDetail": "{{imported}} imported, {{skipped}} duplicates skipped",
+      "fields": {
+        "date": "Date",
+        "name": "Description",
+        "amount": "Amount",
+        "debit": "Debit (money out)",
+        "credit": "Credit (money in)",
+        "merchant_name": "Merchant",
+        "notes": "Notes",
+        "currency": "Currency"
+      },
+      "reasons": {
+        "invalid_date": "Unreadable date",
+        "missing_description": "Missing description",
+        "invalid_amount": "Unreadable amount",
+        "zero_amount": "Amount is zero",
+        "invalid_row": "Malformed row"
+      }
+    }
   },
   "sync": {
     "sync": "Sync",
@@ -173,7 +226,29 @@
     "excludedLabel": "Excluded from reports",
     "accountExcluded": "Account excluded from reports",
     "accountIncluded": "Account included in reports",
-    "failedUpdate": "Failed to update account"
+    "failedUpdate": "Failed to update account",
+    "manual": {
+      "title": "Add a manual account",
+      "description": "Track an account that can't be connected to your bank. You can import its transactions from a CSV file.",
+      "name": "Account name",
+      "namePlaceholder": "e.g. Cash wallet",
+      "type": "Type",
+      "currency": "Currency",
+      "institution": "Institution",
+      "institutionPlaceholder": "e.g. Manual",
+      "balance": "Current balance",
+      "nameRequired": "Account name is required",
+      "created": "Account created",
+      "createFailed": "Could not create account"
+    },
+    "types": {
+      "checking": "Checking",
+      "savings": "Savings",
+      "credit": "Credit",
+      "investment": "Investment",
+      "loan": "Loan",
+      "other": "Other"
+    }
   },
   "connections": {
     "title": "Bank Connections",
@@ -394,7 +469,9 @@
     "delete": "Delete",
     "edit": "Edit",
     "auto": "Auto",
-    "error": "An error occurred"
+    "error": "An error occurred",
+    "back": "Back",
+    "create": "Create"
   },
   "currency": {
     "backfillTitle": "Backfill foreign-currency transactions",

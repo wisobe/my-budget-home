@@ -29,6 +29,23 @@ export function useUpdateAccount() {
   });
 }
 
+export function useCreateManualAccount() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (data: {
+      name: string;
+      type: string;
+      currency?: string;
+      institution_name?: string;
+      current_balance?: number;
+    }) => accountsApi.createManual(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['accounts'] });
+    },
+  });
+}
+
+
 const LIABILITY_TYPES = ['credit', 'loan'];
 
 function accountBalanceContribution(account: { type: string; current_balance: number | string | null }) {
