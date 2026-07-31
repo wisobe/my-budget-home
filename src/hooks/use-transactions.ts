@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { transactionsApi, categoriesApi, exclusionRulesApi } from '@/lib/api';
+import { transactionsApi, categoriesApi, exclusionRulesApi, type CsvImportRequest } from '@/lib/api';
 import { usePlaidEnvironment } from '@/contexts/PlaidEnvironmentContext';
 
 interface UseTransactionsParams {
@@ -246,6 +246,24 @@ export function useDeleteExclusionRule() {
     mutationFn: (id: string) => exclusionRulesApi.delete(id, plaidEnvironment),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['exclusion-rules'] });
+    },
+  });
+}
+
+export function useImportPreview() {
+  return useMutation({
+    mutationFn: (data: CsvImportRequest) => transactionsApi.importPreview(data),
+  });
+}
+
+export function useImportCsv() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (data: CsvImportRequest) => transactionsApi.import(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['transactions'] });
+      queryClient.invalidateQueries({ queryKey: ['accounts'] });
+      queryClient.invalidateQueries({ queryKey: ['reporting'] });
     },
   });
 }
