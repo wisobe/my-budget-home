@@ -228,8 +228,8 @@ function SortableGroupCard({
   );
 }
 
-  const [manualAccountOpen, setManualAccountOpen] = useState(false);
 const Accounts = () => {
+  const [manualAccountOpen, setManualAccountOpen] = useState(false);
   const { t } = useTranslation();
   const { data: accountsData, isLoading } = useAccounts();
   const totalBalance = useAllAccountsBalance();
