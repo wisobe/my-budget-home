@@ -308,10 +308,11 @@ const Accounts = () => {
       actions={
         <div className="flex gap-2">
           <SyncButton />
-          <Button size="sm">
+          <Button size="sm" onClick={() => setManualAccountOpen(true)}>
             <Plus className="h-4 w-4 mr-2" />
             {t('accounts.addAccount')}
           </Button>
+          <AddManualAccountDialog open={manualAccountOpen} onOpenChange={setManualAccountOpen} />
         </div>
       }
     >
