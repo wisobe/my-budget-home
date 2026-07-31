@@ -248,7 +248,68 @@ export const transactionsApi = {
       method: 'POST',
       body: JSON.stringify({ dry_run }),
     }),
+
+  importPreview: (data: CsvImportRequest) =>
+    request<ApiResponse<CsvImportPreview>>('/transactions/import-preview.php', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+
+  import: (data: CsvImportRequest) =>
+    request<ApiResponse<CsvImportResult>>('/transactions/import.php', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
 };
+
+export interface CsvImportRow {
+  date?: string;
+  name?: string;
+  amount?: string;
+  debit?: string;
+  credit?: string;
+  merchant_name?: string;
+  notes?: string;
+  currency?: string;
+}
+
+export interface CsvImportRequest {
+  account_id: string;
+  rows: CsvImportRow[];
+  mapping: { date_format: string; sign_convention: 'positive_expense' | 'positive_income' };
+  allow_duplicates?: boolean;
+  plaid_environment?: string;
+}
+
+export interface CsvImportPreviewRow {
+  row: number;
+  date: string;
+  name: string;
+  merchant_name: string | null;
+  amount: number;
+  notes: string | null;
+  currency: string | null;
+}
+
+export interface CsvImportPreview {
+  account_id: string;
+  total_rows: number;
+  to_import: number;
+  duplicates: number;
+  invalid: number;
+  preview: CsvImportPreviewRow[];
+  duplicate_preview: CsvImportPreviewRow[];
+  invalid_rows: Array<{ row: number; reason: string }>;
+}
+
+export interface CsvImportResult {
+  imported: number;
+  skipped_duplicates: number;
+  invalid: number;
+  auto_categorized: number;
+  auto_excluded: number;
+}
+
 
 // ============ Categories API ============
 
