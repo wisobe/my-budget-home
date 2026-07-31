@@ -108,7 +108,60 @@
     "resetToFx": "Rétablir le taux converti",
     "amountUpdated": "Montant mis à jour",
     "amountReset": "Montant réinitialisé",
-    "manual": "manuel"
+    "manual": "manuel",
+    "import": {
+      "button": "Importer CSV",
+      "title": "Importer des transactions depuis un CSV",
+      "description": "Téléversez un relevé, associez les colonnes, puis vérifiez avant d'importer.",
+      "chooseFile": "Choisir un fichier CSV",
+      "fileHint": "Fichier CSV ou texte, jusqu'à 5 Mo et 2000 lignes",
+      "fileTooLarge": "Fichier trop volumineux (max 5 Mo)",
+      "emptyFile": "Ce fichier semble vide",
+      "column": "Colonne",
+      "rowsDetected": "{{count}} lignes",
+      "account": "Importer dans le compte",
+      "selectAccount": "Sélectionner un compte",
+      "dateFormat": "Format de date",
+      "autoDetect": "Détection auto",
+      "hasHeader": "La première ligne contient les noms de colonnes",
+      "mapColumns": "Associer vos colonnes",
+      "notMapped": "Non associé",
+      "amountHint": "Associez une seule colonne Montant, ou des colonnes Débit et Crédit distinctes.",
+      "signConvention": "Convention de signe",
+      "signPositiveIncome": "Négatif = dépense, positif = revenu",
+      "signPositiveExpense": "Positif = dépense, négatif = revenu",
+      "allowDuplicates": "Importer les lignes qui semblent être des doublons",
+      "continue": "Aperçu de l'import",
+      "previewFailed": "Échec de l'aperçu",
+      "importFailed": "Échec de l'import",
+      "noRows": "Aucune ligne de données trouvée",
+      "willImport": "À importer",
+      "duplicatesSkipped": "Doublons",
+      "invalidRows": "Lignes invalides",
+      "previewTitle": "Aperçu",
+      "nothingToImport": "Rien de nouveau à importer.",
+      "rowLabel": "Ligne {{row}}",
+      "confirm": "Importer {{count}} transactions",
+      "success": "Import terminé",
+      "successDetail": "{{imported}} importées, {{skipped}} doublons ignorés",
+      "fields": {
+        "date": "Date",
+        "name": "Description",
+        "amount": "Montant",
+        "debit": "Débit (sortie)",
+        "credit": "Crédit (entrée)",
+        "merchant_name": "Commerçant",
+        "notes": "Notes",
+        "currency": "Devise"
+      },
+      "reasons": {
+        "invalid_date": "Date illisible",
+        "missing_description": "Description manquante",
+        "invalid_amount": "Montant illisible",
+        "zero_amount": "Montant nul",
+        "invalid_row": "Ligne mal formée"
+      }
+    }
   },
   "sync": {
     "sync": "Synchroniser",
@@ -173,7 +226,29 @@
     "excludedLabel": "Exclu des rapports",
     "accountExcluded": "Compte exclu des rapports",
     "accountIncluded": "Compte inclus dans les rapports",
-    "failedUpdate": "Échec de la mise à jour du compte"
+    "failedUpdate": "Échec de la mise à jour du compte",
+    "manual": {
+      "title": "Ajouter un compte manuel",
+      "description": "Suivez un compte qui ne peut pas être connecté à votre banque. Vous pourrez importer ses transactions via un fichier CSV.",
+      "name": "Nom du compte",
+      "namePlaceholder": "ex. Portefeuille",
+      "type": "Type",
+      "currency": "Devise",
+      "institution": "Institution",
+      "institutionPlaceholder": "ex. Manuel",
+      "balance": "Solde actuel",
+      "nameRequired": "Le nom du compte est requis",
+      "created": "Compte créé",
+      "createFailed": "Impossible de créer le compte"
+    },
+    "types": {
+      "checking": "Chèques",
+      "savings": "Épargne",
+      "credit": "Crédit",
+      "investment": "Placement",
+      "loan": "Prêt",
+      "other": "Autre"
+    }
   },
   "connections": {
     "title": "Connexions bancaires",
@@ -394,7 +469,9 @@
     "delete": "Supprimer",
     "edit": "Modifier",
     "auto": "Auto",
-    "error": "Une erreur est survenue"
+    "error": "Une erreur est survenue",
+    "back": "Retour",
+    "create": "Créer"
   },
   "currency": {
     "backfillTitle": "Recalculer les transactions en devise étrangère",
