@@ -124,8 +124,8 @@ function detectSubscriptions(PDO $pdo, string $userId, string $plaidEnv, array $
             ];
         }
         $dedupeKey = $t['date'] . '|' . abs((float)$t['amount']);
-        if (in_array($dedupeKey, $merchants[$key]['_seen'])) continue;
-        $merchants[$key]['_seen'][] = $dedupeKey;
+        if (isset($merchants[$key]['_seen'][$dedupeKey])) continue;
+        $merchants[$key]['_seen'][$dedupeKey] = true;
 
         $merchants[$key]['transactions'][] = [
             'amount' => abs((float)$t['amount']),
@@ -137,25 +137,30 @@ function detectSubscriptions(PDO $pdo, string $userId, string $plaidEnv, array $
     $keys = array_keys($merchants);
     sort($keys);
     $minPrefix = max(1, (int)$T['fuzzy_min_prefix']);
-    for ($i = 0; $i < count($keys); $i++) {
-        if (!isset($merchants[$keys[$i]])) continue;
-        for ($j = $i + 1; $j < count($keys); $j++) {
-            if (!isset($merchants[$keys[$j]])) continue;
-            $a = $keys[$i]; $b = $keys[$j];
+    $keyCount = count($keys);
+    for ($i = 0; $i < $keyCount; $i++) {
+        $a = $keys[$i];
+        if (!isset($merchants[$a])) continue;
+        for ($j = $i + 1; $j < $keyCount; $j++) {
+            $b = $keys[$j];
+            if (!isset($merchants[$b])) continue;
             $shorter = strlen($a) <= strlen($b) ? $a : $b;
-            $longer = strlen($a) <= strlen($b) ? $b : $a;
+            $longer  = strlen($a) <= strlen($b) ? $b : $a;
             if (strlen($shorter) >= $minPrefix && strpos($longer, $shorter) === 0) {
                 $target = count($merchants[$a]['transactions']) >= count($merchants[$b]['transactions']) ? $a : $b;
                 $source = $target === $a ? $b : $a;
                 foreach ($merchants[$source]['transactions'] as $txn) {
                     $dk = $txn['date'] . '|' . $txn['amount'];
-                    if (!in_array($dk, $merchants[$target]['_seen'])) {
-                        $merchants[$target]['_seen'][] = $dk;
+                    if (!isset($merchants[$target]['_seen'][$dk])) {
+                        $merchants[$target]['_seen'][$dk] = true;
                         $merchants[$target]['transactions'][] = $txn;
                     }
                 }
                 unset($merchants[$source]);
+                // If the current outer key was absorbed, stop comparing against it.
+                if ($source === $a) break;
             }
+
         }
     }
 
