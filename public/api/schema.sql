@@ -333,6 +333,13 @@ CREATE TABLE IF NOT EXISTS subscription_dismissals (
 --   ADD COLUMN amount_overridden BOOLEAN DEFAULT FALSE AFTER fx_rate;
 
 -- ============================================================
+-- MIGRATION: Manual transaction date override
+-- ============================================================
+-- ALTER TABLE transactions
+--   ADD COLUMN original_date DATE DEFAULT NULL AFTER date,
+--   ADD COLUMN date_overridden BOOLEAN DEFAULT FALSE AFTER original_date;
+
+-- ============================================================
 -- MIGRATION: CSV import support (transaction origin tracking)
 -- ============================================================
 -- ALTER TABLE transactions ADD COLUMN source VARCHAR(20) DEFAULT 'plaid' AFTER notes;
