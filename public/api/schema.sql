@@ -109,6 +109,8 @@ CREATE TABLE IF NOT EXISTS transactions (
     plaid_transaction_id VARCHAR(100),
     account_id VARCHAR(50) NOT NULL,
     date DATE NOT NULL,
+    original_date DATE DEFAULT NULL,
+    date_overridden BOOLEAN DEFAULT FALSE,
     name VARCHAR(255) NOT NULL,
     merchant_name VARCHAR(255),
     amount DECIMAL(15, 2) NOT NULL,
