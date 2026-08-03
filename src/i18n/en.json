@@ -161,7 +161,16 @@
         "zero_amount": "Amount is zero",
         "invalid_row": "Malformed row"
       }
-    }
+    },
+    "editDate": "Edit date",
+    "editDateDescription": "Change the date used for this transaction everywhere in the app (reports, budgets, subscriptions).",
+    "editDateOverriddenDescription": "Bank date: {{original}}. This transaction uses a manually set date everywhere in the app.",
+    "resetToBankDate": "Reset to bank date",
+    "dateUpdated": "Date updated",
+    "dateReset": "Date reset",
+    "invalidDate": "Invalid date",
+    "bankDate": "Bank: {{date}}",
+    "dateEdited": "Date edited"
   },
   "sync": {
     "sync": "Sync",

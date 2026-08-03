@@ -161,7 +161,16 @@
         "zero_amount": "Montant nul",
         "invalid_row": "Ligne mal formée"
       }
-    }
+    },
+    "editDate": "Modifier la date",
+    "editDateDescription": "Changez la date utilisée pour cette transaction partout dans l'application (rapports, budgets, abonnements).",
+    "editDateOverriddenDescription": "Date bancaire : {{original}}. Cette transaction utilise une date définie manuellement partout dans l'application.",
+    "resetToBankDate": "Rétablir la date bancaire",
+    "dateUpdated": "Date mise à jour",
+    "dateReset": "Date réinitialisée",
+    "invalidDate": "Date invalide",
+    "bankDate": "Banque : {{date}}",
+    "dateEdited": "Date modifiée"
   },
   "sync": {
     "sync": "Synchroniser",

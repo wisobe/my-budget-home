@@ -109,6 +109,8 @@ CREATE TABLE IF NOT EXISTS transactions (
     plaid_transaction_id VARCHAR(100),
     account_id VARCHAR(50) NOT NULL,
     date DATE NOT NULL,
+    original_date DATE DEFAULT NULL,
+    date_overridden BOOLEAN DEFAULT FALSE,
     name VARCHAR(255) NOT NULL,
     merchant_name VARCHAR(255),
     amount DECIMAL(15, 2) NOT NULL,
@@ -329,6 +331,13 @@ CREATE TABLE IF NOT EXISTS subscription_dismissals (
 --   ADD COLUMN original_amount DECIMAL(15, 2) DEFAULT NULL AFTER iso_currency_code,
 --   ADD COLUMN fx_rate DECIMAL(18, 8) DEFAULT NULL AFTER original_amount,
 --   ADD COLUMN amount_overridden BOOLEAN DEFAULT FALSE AFTER fx_rate;
+
+-- ============================================================
+-- MIGRATION: Manual transaction date override
+-- ============================================================
+-- ALTER TABLE transactions
+--   ADD COLUMN original_date DATE DEFAULT NULL AFTER date,
+--   ADD COLUMN date_overridden BOOLEAN DEFAULT FALSE AFTER original_date;
 
 -- ============================================================
 -- MIGRATION: CSV import support (transaction origin tracking)

@@ -31,6 +31,7 @@ import { SplitTransactionDialog } from './SplitTransactionDialog';
 import { CategoryPicker } from './CategoryPicker';
 import { TransactionActions } from './TransactionActions';
 import { EditAmountDialog } from './EditAmountDialog';
+import { EditDateDialog } from './EditDateDialog';
 import { usePreferences } from '@/contexts/PreferencesContext';
 import type { Transaction } from '@/types';
 
@@ -53,6 +54,8 @@ export function TransactionList() {
   const [splitOpen, setSplitOpen] = useState(false);
   const [editAmountTx, setEditAmountTx] = useState<Transaction | null>(null);
   const [editAmountOpen, setEditAmountOpen] = useState(false);
+  const [editDateTx, setEditDateTx] = useState<Transaction | null>(null);
+  const [editDateOpen, setEditDateOpen] = useState(false);
 
   const { data: transactionsData, isLoading } = useTransactions({
     page,
@@ -269,9 +272,24 @@ export function TransactionList() {
                       )}
                     </TableCell>
                     <TableCell className="text-muted-foreground">
-                      {new Date(transaction.date + 'T12:00:00').toLocaleDateString('en-CA', {
-                        month: 'short', day: 'numeric', year: 'numeric',
-                      })}
+                      <div className="flex flex-col">
+                        <span>
+                          {new Date(transaction.date + 'T12:00:00').toLocaleDateString('en-CA', {
+                            month: 'short', day: 'numeric', year: 'numeric',
+                          })}
+                        </span>
+                        {!!transaction.date_overridden && (
+                          <span className="text-xs text-muted-foreground/70">
+                            {transaction.original_date
+                              ? t('transactions.bankDate', {
+                                  date: new Date(transaction.original_date + 'T12:00:00').toLocaleDateString('en-CA', {
+                                    month: 'short', day: 'numeric', year: 'numeric',
+                                  }),
+                                })
+                              : t('transactions.dateEdited')}
+                          </span>
+                        )}
+                      </div>
                     </TableCell>
                     <TableCell className="text-right">
                       {(() => {
@@ -320,6 +338,7 @@ export function TransactionList() {
                         onToggleExclude={handleExclude}
                         onToggleLock={handleLock}
                         onEditAmount={(isForeign || isOverridden) ? (tx) => { setEditAmountTx(tx); setEditAmountOpen(true); } : undefined}
+                        onEditDate={(tx) => { setEditDateTx(tx); setEditDateOpen(true); }}
                       />
                     </TableCell>
                   </TableRow>
@@ -386,6 +405,12 @@ export function TransactionList() {
         open={editAmountOpen}
         onOpenChange={setEditAmountOpen}
         transaction={editAmountTx}
+      />
+
+      <EditDateDialog
+        open={editDateOpen}
+        onOpenChange={setEditDateOpen}
+        transaction={editDateTx}
       />
     </div>
   );

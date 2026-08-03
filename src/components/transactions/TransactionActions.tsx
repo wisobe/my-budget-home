@@ -1,6 +1,6 @@
 import { useState, type MouseEvent, type PointerEvent } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Eye, EyeOff, Lock, LockOpen, MoreHorizontal, Split, Pencil } from 'lucide-react';
+import { Eye, EyeOff, Lock, LockOpen, MoreHorizontal, Split, Pencil, Calendar as CalendarIcon } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Button } from '@/components/ui/button';
 import {
@@ -26,6 +26,7 @@ interface TransactionActionsProps {
   onToggleExclude: (transaction: Transaction) => void;
   onToggleLock: (transaction: Transaction) => void;
   onEditAmount?: (transaction: Transaction) => void;
+  onEditDate?: (transaction: Transaction) => void;
 }
 
 export function TransactionActions({
@@ -36,6 +37,7 @@ export function TransactionActions({
   onToggleExclude,
   onToggleLock,
   onEditAmount,
+  onEditDate,
 }: TransactionActionsProps) {
   const { t } = useTranslation();
   const isMobile = useIsMobile();
@@ -149,6 +151,20 @@ export function TransactionActions({
                   {t('transactions.editAmount')}
                 </Button>
               )}
+              {onEditDate && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="min-h-[44px] w-full justify-start"
+                  onClick={() => {
+                    onEditDate(transaction);
+                    setMobileOpen(false);
+                  }}
+                >
+                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  {t('transactions.editDate')}
+                </Button>
+              )}
             </div>
           </DrawerContent>
         </Drawer>
@@ -203,6 +219,11 @@ export function TransactionActions({
         {onEditAmount && (
           <DropdownMenuItem onSelect={() => onEditAmount(transaction)}>
             <Pencil className="mr-2 h-4 w-4" /> {t('transactions.editAmount')}
+          </DropdownMenuItem>
+        )}
+        {onEditDate && (
+          <DropdownMenuItem onSelect={() => onEditDate(transaction)}>
+            <CalendarIcon className="mr-2 h-4 w-4" /> {t('transactions.editDate')}
           </DropdownMenuItem>
         )}
       </DropdownMenuContent>
