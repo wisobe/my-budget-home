@@ -14,6 +14,8 @@ export interface Transaction {
   plaid_transaction_id?: string;
   account_id: string;
   date: string;
+  original_date?: string | null;
+  date_overridden?: boolean | number;
   name: string;
   merchant_name?: string;
   amount: number; // CAD. Positive = expense, Negative = income

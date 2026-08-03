@@ -237,6 +237,18 @@ export const transactionsApi = {
       body: JSON.stringify({ transaction_id, reset: true }),
     }),
 
+  updateDate: (transaction_id: string, date: string) =>
+    request<ApiResponse<Transaction>>('/transactions/update-date.php', {
+      method: 'POST',
+      body: JSON.stringify({ transaction_id, date }),
+    }),
+
+  resetDate: (transaction_id: string) =>
+    request<ApiResponse<Transaction>>('/transactions/update-date.php', {
+      method: 'POST',
+      body: JSON.stringify({ transaction_id, reset: true }),
+    }),
+
   backfillCurrency: (dry_run: boolean) =>
     request<ApiResponse<{
       dry_run: boolean;

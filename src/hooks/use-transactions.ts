@@ -120,6 +120,25 @@ export function useUpdateTransactionAmount() {
   });
 }
 
+export function useUpdateTransactionDate() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, date, reset }: { id: string; date?: string; reset?: boolean }) =>
+      reset
+        ? transactionsApi.resetDate(id)
+        : transactionsApi.updateDate(id, date as string),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['transactions'] });
+      queryClient.invalidateQueries({ queryKey: ['reporting'] });
+      queryClient.invalidateQueries({ queryKey: ['reports'] });
+      queryClient.invalidateQueries({ queryKey: ['budgets'] });
+      queryClient.invalidateQueries({ queryKey: ['subscriptions'] });
+      queryClient.invalidateQueries({ queryKey: ['insights'] });
+      queryClient.invalidateQueries({ queryKey: ['health-score'] });
+    },
+  });
+}
+
 export function useBackfillCurrency() {
   const queryClient = useQueryClient();
   return useMutation({
