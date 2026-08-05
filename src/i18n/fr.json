@@ -895,7 +895,8 @@
     "tip_debt": "Concentrez-vous sur la réduction des dettes à taux d'intérêt élevé pour améliorer votre santé financière.",
     "tip_categorize": "Catégorisez vos transactions pour de meilleures analyses de dépenses.",
     "tip_positive_savings": "Bravo ! Votre taux d'épargne est supérieur à 20 %.",
-    "tip_positive_budgets": "Vous respectez tous vos budgets ce mois-ci !"
+    "tip_positive_budgets": "Vous respectez tous vos budgets ce mois-ci !",
+    "detail_income_downside": "Médiane {{median}} $/mois sur {{months}} mois, manque à gagner moyen de {{shortfall}} %"
   },
   "simulator": {
     "title": "Simulateur financier",
