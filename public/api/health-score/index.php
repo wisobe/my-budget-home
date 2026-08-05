@@ -90,6 +90,9 @@ if (count($monthlyExpenses) >= 3) {
 }
 
 // ---- INCOME CONSISTENCY (15 points) ----
+// Robust method: we only penalise income DROPS below the typical (median) month.
+// Bonuses, raises and other upside spikes must never reduce the score, and the
+// single worst month is ignored as an outlier (missed deposit, timing shift...).
 $sql4 = "SELECT DATE_FORMAT(t.date, '%Y-%m') as month, SUM(ABS(t.amount)) as total
          FROM transactions t
          JOIN accounts a ON t.account_id = a.id
@@ -97,7 +100,8 @@ $sql4 = "SELECT DATE_FORMAT(t.date, '%Y-%m') as month, SUM(ABS(t.amount)) as tot
          JOIN categories cat ON t.category_id = cat.id
          WHERE a.user_id = :user_id AND a.excluded = 0 AND t.excluded = 0 AND t.pending = 0
            AND cat.is_income = 1
-           AND t.date >= DATE_SUB(CURDATE(), INTERVAL 6 MONTH)
+           AND t.date >= DATE_SUB(CURDATE(), INTERVAL 12 MONTH)
+           AND t.date < DATE_FORMAT(CURDATE(), '%Y-%m-01')
            AND {$envWhere}
          GROUP BY DATE_FORMAT(t.date, '%Y-%m')
          ORDER BY month";
@@ -107,19 +111,50 @@ $rows4 = $stmt4->fetchAll(PDO::FETCH_ASSOC);
 $monthlyIncome = array_map(fn($r) => (float)$r['total'], $rows4);
 
 $incomeScore = 15;
+$incomeDetail = 'not_enough_data';
+$incomeDetailData = [];
+
 if (count($monthlyIncome) >= 3) {
-    $avg = array_sum($monthlyIncome) / count($monthlyIncome);
-    if ($avg > 0) {
-        $variance = 0;
+    $sorted = $monthlyIncome;
+    sort($sorted);
+    $n = count($sorted);
+    $median = $n % 2 === 1
+        ? $sorted[intdiv($n, 2)]
+        : ($sorted[$n / 2 - 1] + $sorted[$n / 2]) / 2;
+
+    if ($median > 0) {
+        // Relative shortfall of each month vs the median (upside = 0 shortfall)
+        $shortfalls = [];
         foreach ($monthlyIncome as $m) {
-            $variance += pow($m - $avg, 2);
+            $shortfalls[] = max(0.0, ($median - $m) / $median);
         }
-        $cv = sqrt($variance / count($monthlyIncome)) / $avg;
-        $incomeScore = max(0, min(15, round((1 - ($cv - 0.1) / 0.3) * 15)));
+        rsort($shortfalls);
+        // Ignore the single worst month as an outlier when we have enough data
+        if (count($shortfalls) >= 4) {
+            array_shift($shortfalls);
+        }
+        $avgShortfall = array_sum($shortfalls) / count($shortfalls);
+
+        // 0-5% average shortfall => full marks, 30%+ => 0
+        if ($avgShortfall <= 0.05) {
+            $incomeScore = 15;
+        } else {
+            $incomeScore = (int) max(0, min(15, round((1 - ($avgShortfall - 0.05) / 0.25) * 15)));
+        }
+
+        $incomeDetail = 'income_downside';
+        $incomeDetailData = [
+            'months' => count($monthlyIncome),
+            'median' => number_format($median, 2),
+            'shortfall' => round($avgShortfall * 100, 1),
+        ];
+    } else {
+        $incomeScore = 0;
     }
 } elseif (count($monthlyIncome) === 0) {
     $incomeScore = 0;
 }
+
 
 // ---- DEBT RATIO (15 points) ----
 $sql5 = "SELECT
@@ -180,7 +215,7 @@ Response::success([
         ['name' => 'savings_rate', 'score' => $savingsScore, 'max' => 25, 'detail' => 'savings_rate', 'detail_data' => ['value' => round($savingsRate * 100, 1)]],
         ['name' => 'budget_adherence', 'score' => $budgetScore, 'max' => 20, 'detail' => $totalBudgets > 0 ? 'budget_within' : 'budget_none', 'detail_data' => ['within' => $withinBudget, 'total' => $totalBudgets]],
         ['name' => 'expense_stability', 'score' => $stabilityScore, 'max' => 15, 'detail' => count($monthlyExpenses) >= 3 ? 'based_on_trend' : 'not_enough_data', 'detail_data' => []],
-        ['name' => 'income_consistency', 'score' => $incomeScore, 'max' => 15, 'detail' => count($monthlyIncome) >= 3 ? 'based_on_trend' : 'not_enough_data', 'detail_data' => []],
+        ['name' => 'income_consistency', 'score' => $incomeScore, 'max' => 15, 'detail' => $incomeDetail, 'detail_data' => $incomeDetailData],
         ['name' => 'debt_ratio', 'score' => $debtScore, 'max' => 15, 'detail' => 'debt_ratio', 'detail_data' => ['value' => round($debtRatio * 100, 1)]],
         ['name' => 'spending_diversity', 'score' => $diversityScore, 'max' => 10, 'detail' => 'categories_used', 'detail_data' => ['count' => $catCount]],
     ],
