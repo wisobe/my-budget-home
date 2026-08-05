@@ -896,7 +896,8 @@
     "tip_categorize": "Categorize your transactions for better spending insights.",
     "tip_positive_savings": "Great job! Your savings rate is above 20%.",
     "tip_positive_budgets": "You're within all your budgets this month!",
-    "detail_income_downside": "Median ${{median}}/mo over {{months}} months, {{shortfall}}% average shortfall"
+    "detail_income_downside": "Median ${{median}}/mo over {{months}} months, {{shortfall}}% average shortfall",
+    "detail_expense_overspend": "Median ${{median}}/mo over {{months}} months, {{overspend}}% average overspend"
   },
   "simulator": {
     "title": "Financial Simulator",

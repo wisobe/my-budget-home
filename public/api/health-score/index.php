@@ -60,6 +60,9 @@ $withinBudget = (int)($budgetData['within_budget'] ?? 0);
 $budgetScore = $totalBudgets > 0 ? round(($withinBudget / $totalBudgets) * 20) : 10;
 
 // ---- EXPENSE STABILITY (15 points) ----
+// Robust method: median baseline over the last 12 complete months (the current
+// partial month is excluded), we only penalise OVERSPENDING above the typical
+// month, and the single worst month is ignored as a one-off outlier.
 $sql3 = "SELECT DATE_FORMAT(t.date, '%Y-%m') as month, SUM(t.amount) as total
          FROM transactions t
          JOIN accounts a ON t.account_id = a.id
@@ -67,7 +70,8 @@ $sql3 = "SELECT DATE_FORMAT(t.date, '%Y-%m') as month, SUM(t.amount) as total
          LEFT JOIN categories cat ON t.category_id = cat.id
          WHERE a.user_id = :user_id AND a.excluded = 0 AND t.excluded = 0 AND t.pending = 0
            AND (cat.is_income = 0 OR cat.is_income IS NULL)
-           AND t.date >= DATE_SUB(CURDATE(), INTERVAL 6 MONTH)
+           AND t.date >= DATE_SUB(DATE_FORMAT(CURDATE(), '%Y-%m-01'), INTERVAL 12 MONTH)
+           AND t.date < DATE_FORMAT(CURDATE(), '%Y-%m-01')
            AND {$envWhere}
          GROUP BY DATE_FORMAT(t.date, '%Y-%m')
          ORDER BY month";
@@ -77,17 +81,46 @@ $rows3 = $stmt3->fetchAll(PDO::FETCH_ASSOC);
 $monthlyExpenses = array_map(fn($r) => (float)$r['total'], $rows3);
 
 $stabilityScore = 15;
+$stabilityDetail = 'not_enough_data';
+$stabilityDetailData = [];
+
 if (count($monthlyExpenses) >= 3) {
-    $avg = array_sum($monthlyExpenses) / count($monthlyExpenses);
-    if ($avg > 0) {
-        $variance = 0;
+    $sortedExp = $monthlyExpenses;
+    sort($sortedExp);
+    $ne = count($sortedExp);
+    $medianExp = $ne % 2 === 1
+        ? $sortedExp[intdiv($ne, 2)]
+        : ($sortedExp[$ne / 2 - 1] + $sortedExp[$ne / 2]) / 2;
+
+    if ($medianExp > 0) {
+        // Relative overspend of each month vs the median (frugal months = 0)
+        $overspends = [];
         foreach ($monthlyExpenses as $m) {
-            $variance += pow($m - $avg, 2);
+            $overspends[] = max(0.0, ($m - $medianExp) / $medianExp);
         }
-        $cv = sqrt($variance / count($monthlyExpenses)) / $avg;
-        $stabilityScore = max(0, min(15, round((1 - ($cv - 0.15) / 0.35) * 15)));
+        rsort($overspends);
+        // Ignore the single worst month as an outlier when we have enough data
+        if (count($overspends) >= 4) {
+            array_shift($overspends);
+        }
+        $avgOverspend = array_sum($overspends) / count($overspends);
+
+        // 0-20% average overspend => full marks, 60%+ => 0
+        if ($avgOverspend <= 0.20) {
+            $stabilityScore = 15;
+        } else {
+            $stabilityScore = (int) max(0, min(15, round((1 - ($avgOverspend - 0.20) / 0.40) * 15)));
+        }
+
+        $stabilityDetail = 'expense_overspend';
+        $stabilityDetailData = [
+            'months' => count($monthlyExpenses),
+            'median' => number_format($medianExp, 2),
+            'overspend' => round($avgOverspend * 100, 1),
+        ];
     }
 }
+
 
 // ---- INCOME CONSISTENCY (15 points) ----
 // Robust method: we only penalise income DROPS below the typical (median) month.
@@ -214,7 +247,7 @@ Response::success([
     'breakdown' => [
         ['name' => 'savings_rate', 'score' => $savingsScore, 'max' => 25, 'detail' => 'savings_rate', 'detail_data' => ['value' => round($savingsRate * 100, 1)]],
         ['name' => 'budget_adherence', 'score' => $budgetScore, 'max' => 20, 'detail' => $totalBudgets > 0 ? 'budget_within' : 'budget_none', 'detail_data' => ['within' => $withinBudget, 'total' => $totalBudgets]],
-        ['name' => 'expense_stability', 'score' => $stabilityScore, 'max' => 15, 'detail' => count($monthlyExpenses) >= 3 ? 'based_on_trend' : 'not_enough_data', 'detail_data' => []],
+        ['name' => 'expense_stability', 'score' => $stabilityScore, 'max' => 15, 'detail' => $stabilityDetail, 'detail_data' => $stabilityDetailData],
         ['name' => 'income_consistency', 'score' => $incomeScore, 'max' => 15, 'detail' => $incomeDetail, 'detail_data' => $incomeDetailData],
         ['name' => 'debt_ratio', 'score' => $debtScore, 'max' => 15, 'detail' => 'debt_ratio', 'detail_data' => ['value' => round($debtRatio * 100, 1)]],
         ['name' => 'spending_diversity', 'score' => $diversityScore, 'max' => 10, 'detail' => 'categories_used', 'detail_data' => ['count' => $catCount]],
