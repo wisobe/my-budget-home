@@ -43,13 +43,24 @@ const Landing = () => {
   ] as const;
 
   const showcases = [
+    { img: reportsOverviewImg.url, key: 'reportsOverview' },
     { img: budgetImg.url, key: 'budgets' },
     { img: categoryImg.url, key: 'reports' },
+    { img: subscriptionsImg.url, key: 'subscriptions' },
     { img: insightsImg.url, key: 'insights' },
     { img: healthImg.url, key: 'health' },
+    { img: scoreBreakdownImg.url, key: 'scoreBreakdown' },
     { img: simulatorImg.url, key: 'simulator' },
     { img: accountsImg.url, key: 'accounts' },
+    { img: settingsImg.url, key: 'settings' },
   ];
+
+  const gallery = [
+    { img: netSavingsImg.url, key: 'netSavings' },
+    { img: savingsRateImg.url, key: 'savingsRate' },
+    { img: spendingCategoryImg.url, key: 'spending' },
+  ];
+
 
   return (
     <div className="min-h-screen bg-background text-foreground">
