@@ -13,6 +13,13 @@ import savingsImg from '@/assets/budgetwise_cumulative_savings.png.asset.json';
 import categoryImg from '@/assets/budgetwise_category_breakdown.png.asset.json';
 import accountsImg from '@/assets/budgetwise_accounts.png.asset.json';
 import simulatorImg from '@/assets/budgetwise_financial_simulator.png.asset.json';
+import reportsOverviewImg from '@/assets/budgetwise_reports_insights.png.asset.json';
+import subscriptionsImg from '@/assets/budgetwise_subscriptions.png.asset.json';
+import scoreBreakdownImg from '@/assets/budgetwise_score_breakdown.png.asset.json';
+import settingsImg from '@/assets/budgetwise_settings.png.asset.json';
+import netSavingsImg from '@/assets/budgetwise_net_savings_by_month.png.asset.json';
+import savingsRateImg from '@/assets/budgetwise_savings_rate_trend.png.asset.json';
+import spendingCategoryImg from '@/assets/budgetwise_spending_by_category.png.asset.json';
 
 const Landing = () => {
   const { t, i18n } = useTranslation();
