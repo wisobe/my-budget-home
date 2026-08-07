@@ -924,5 +924,111 @@
     "3yr": "3 yr",
     "5yr": "5 yr",
     "10yr": "10 yr"
+  },
+  "landing": {
+    "tagline": "Personal Finance",
+    "signIn": "Sign in",
+    "hero": {
+      "badge": "Bilingual · Bank-connected · Private by design",
+      "title": "All your money, finally in one clear picture",
+      "subtitle": "BudgetWise connects your bank accounts, categorizes every transaction, tracks your budgets and shows you exactly where your money goes — month after month.",
+      "cta": "Sign in to BudgetWise",
+      "secondary": "Explore the features"
+    },
+    "features": {
+      "title": "Everything you need to take control",
+      "subtitle": "A complete personal finance workspace built for real life, not spreadsheets.",
+      "items": {
+        "connect": {
+          "title": "Bank connections",
+          "description": "Securely link your banks through Plaid and sync balances and transactions automatically."
+        },
+        "budgets": {
+          "title": "Smart budgets",
+          "description": "Set monthly limits per category and follow your progress with 12-month history charts."
+        },
+        "subscriptions": {
+          "title": "Subscription detection",
+          "description": "Recurring charges are detected automatically so you never pay for a service you forgot."
+        },
+        "insights": {
+          "title": "Automatic insights",
+          "description": "Spending spikes, unusual merchants and large transactions are flagged as they happen."
+        },
+        "health": {
+          "title": "Financial health score",
+          "description": "A single score built from your savings rate, income stability, expense stability and debt ratio."
+        },
+        "simulator": {
+          "title": "Financial simulator",
+          "description": "Test decisions before you make them and project your net worth up to 10 years ahead."
+        },
+        "currency": {
+          "title": "Multi-currency",
+          "description": "Foreign transactions are converted with official Bank of Canada rates, with manual overrides."
+        },
+        "import": {
+          "title": "CSV import",
+          "description": "Bring in history from any bank with a guided mapping wizard and duplicate detection."
+        },
+        "security": {
+          "title": "Security first",
+          "description": "Two-factor authentication, audit logs, session control and granular privacy consent."
+        }
+      }
+    },
+    "showcase": {
+      "dashboard": {
+        "alt": "BudgetWise dashboard showing balances, income, expenses and recent transactions"
+      },
+      "budgets": {
+        "eyebrow": "Budgets",
+        "title": "Know your limits at a glance",
+        "description": "Track every category against its monthly limit, see what's left to spend, and click any bar in the 12-month history to drill straight into the transactions behind it.",
+        "alt": "Monthly budget with a 12-month spending history chart"
+      },
+      "reports": {
+        "eyebrow": "Reports",
+        "title": "See where the money really goes",
+        "description": "Category breakdowns, income vs. expenses, net savings and cumulative savings — with drill-down from any category all the way to individual transactions.",
+        "alt": "Category breakdown report with amounts and transaction counts"
+      },
+      "insights": {
+        "eyebrow": "Insights",
+        "title": "Your money, watched for you",
+        "description": "BudgetWise reviews your recent activity and surfaces what matters: spending spikes, first-time merchants and unusually large transactions.",
+        "alt": "Insights list with spending spikes and unusual merchants"
+      },
+      "health": {
+        "eyebrow": "Health score",
+        "title": "One number that tells the truth",
+        "description": "A fair, median-based score that rewards saving and ignores one-off bonuses or unusual months, so a good year never looks like a bad one.",
+        "alt": "Financial health score gauge with key metrics"
+      },
+      "simulator": {
+        "eyebrow": "Simulator",
+        "title": "Try the decision before you live it",
+        "description": "Cancel a subscription, change your savings rate, and watch your projected net worth react instantly over the next 10 years.",
+        "alt": "Financial simulator projecting net worth over ten years"
+      },
+      "accounts": {
+        "eyebrow": "Accounts",
+        "title": "Every account, connected or manual",
+        "description": "Checking, savings, credit, investments — plus manual accounts for anything your bank can't share. Exclude any account from your reports in one click.",
+        "alt": "Accounts page listing connected bank accounts and balances"
+      },
+      "savings": {
+        "alt": "Cumulative savings chart trending upward"
+      }
+    },
+    "cta": {
+      "title": "Start building better financial habits",
+      "subtitle": "Sign in to your BudgetWise workspace and get a clear view of your finances in minutes.",
+      "button": "Go to sign in"
+    },
+    "footer": {
+      "privacy": "Privacy policy",
+      "security": "Security policy"
+    }
   }
 }

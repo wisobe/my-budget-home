@@ -924,5 +924,111 @@
     "3yr": "3 ans",
     "5yr": "5 ans",
     "10yr": "10 ans"
+  },
+  "landing": {
+    "tagline": "Finances personnelles",
+    "signIn": "Se connecter",
+    "hero": {
+      "badge": "Bilingue · Connecté à vos banques · Confidentiel par conception",
+      "title": "Tout votre argent, enfin dans une vue claire",
+      "subtitle": "BudgetWise connecte vos comptes bancaires, catégorise chaque transaction, suit vos budgets et vous montre exactement où va votre argent, mois après mois.",
+      "cta": "Se connecter à BudgetWise",
+      "secondary": "Découvrir les fonctionnalités"
+    },
+    "features": {
+      "title": "Tout ce qu'il faut pour reprendre le contrôle",
+      "subtitle": "Un véritable espace de finances personnelles, conçu pour la vraie vie — pas pour des tableurs.",
+      "items": {
+        "connect": {
+          "title": "Connexions bancaires",
+          "description": "Reliez vos banques en toute sécurité via Plaid et synchronisez soldes et transactions automatiquement."
+        },
+        "budgets": {
+          "title": "Budgets intelligents",
+          "description": "Fixez des limites mensuelles par catégorie et suivez votre progression sur 12 mois d'historique."
+        },
+        "subscriptions": {
+          "title": "Détection des abonnements",
+          "description": "Les paiements récurrents sont détectés automatiquement : plus jamais de service oublié."
+        },
+        "insights": {
+          "title": "Analyses automatiques",
+          "description": "Hausses de dépenses, commerçants inhabituels et grosses transactions sont signalés en temps réel."
+        },
+        "health": {
+          "title": "Score de santé financière",
+          "description": "Un score unique basé sur votre taux d'épargne, la stabilité de vos revenus et dépenses et votre ratio d'endettement."
+        },
+        "simulator": {
+          "title": "Simulateur financier",
+          "description": "Testez vos décisions avant de les prendre et projetez votre valeur nette jusqu'à 10 ans."
+        },
+        "currency": {
+          "title": "Multidevise",
+          "description": "Les transactions étrangères sont converties avec les taux officiels de la Banque du Canada, avec ajustement manuel."
+        },
+        "import": {
+          "title": "Importation CSV",
+          "description": "Importez l'historique de n'importe quelle banque grâce à un assistant de correspondance et à la détection des doublons."
+        },
+        "security": {
+          "title": "La sécurité d'abord",
+          "description": "Authentification à deux facteurs, journaux d'audit, contrôle des sessions et consentement détaillé."
+        }
+      }
+    },
+    "showcase": {
+      "dashboard": {
+        "alt": "Tableau de bord BudgetWise avec soldes, revenus, dépenses et transactions récentes"
+      },
+      "budgets": {
+        "eyebrow": "Budgets",
+        "title": "Vos limites d'un coup d'œil",
+        "description": "Suivez chaque catégorie par rapport à sa limite mensuelle, voyez ce qu'il vous reste, et cliquez sur une barre de l'historique de 12 mois pour accéder directement aux transactions.",
+        "alt": "Budget mensuel avec graphique d'historique sur 12 mois"
+      },
+      "reports": {
+        "eyebrow": "Rapports",
+        "title": "Voyez où va vraiment votre argent",
+        "description": "Répartition par catégorie, revenus contre dépenses, épargne nette et épargne cumulative — avec exploration jusqu'à chaque transaction.",
+        "alt": "Rapport de répartition par catégorie avec montants et nombre de transactions"
+      },
+      "insights": {
+        "eyebrow": "Analyses",
+        "title": "Vos finances, surveillées pour vous",
+        "description": "BudgetWise analyse votre activité récente et met en évidence l'essentiel : hausses de dépenses, nouveaux commerçants et transactions inhabituelles.",
+        "alt": "Liste d'analyses avec hausses de dépenses et commerçants inhabituels"
+      },
+      "health": {
+        "eyebrow": "Santé financière",
+        "title": "Un chiffre qui dit vrai",
+        "description": "Un score équitable basé sur la médiane, qui récompense l'épargne et ignore les primes ponctuelles ou les mois atypiques.",
+        "alt": "Jauge du score de santé financière avec indicateurs clés"
+      },
+      "simulator": {
+        "eyebrow": "Simulateur",
+        "title": "Essayez la décision avant de la vivre",
+        "description": "Annulez un abonnement, changez votre taux d'épargne et observez la réaction immédiate de votre valeur nette sur 10 ans.",
+        "alt": "Simulateur financier projetant la valeur nette sur dix ans"
+      },
+      "accounts": {
+        "eyebrow": "Comptes",
+        "title": "Tous vos comptes, connectés ou manuels",
+        "description": "Chèques, épargne, crédit, placements — plus des comptes manuels pour tout ce que votre banque ne partage pas. Excluez un compte de vos rapports en un clic.",
+        "alt": "Page des comptes listant les comptes bancaires connectés et leurs soldes"
+      },
+      "savings": {
+        "alt": "Graphique d'épargne cumulative en progression"
+      }
+    },
+    "cta": {
+      "title": "Adoptez de meilleures habitudes financières",
+      "subtitle": "Connectez-vous à votre espace BudgetWise et obtenez une vision claire de vos finances en quelques minutes.",
+      "button": "Aller à la connexion"
+    },
+    "footer": {
+      "privacy": "Politique de confidentialité",
+      "security": "Politique de sécurité"
+    }
   }
 }
