@@ -1019,6 +1019,30 @@
       },
       "savings": {
         "alt": "Cumulative savings chart trending upward"
+      },
+      "reportsOverview": {
+        "eyebrow": "Reports",
+        "title": "Twelve months of clarity, one click away",
+        "description": "Switch between rolling 12 months, year to date or any single month. Income, expenses, net savings and your average savings rate update instantly.",
+        "alt": "Reports and insights page with rolling 12-month income vs expenses chart"
+      },
+      "subscriptions": {
+        "eyebrow": "Subscriptions",
+        "title": "Every recurring charge, surfaced",
+        "description": "BudgetWise learns your recurring payments, predicts the next charge date, flags price increases and warns you when an expected payment is missed.",
+        "alt": "Detected subscriptions list with monthly and annual cost totals"
+      },
+      "scoreBreakdown": {
+        "eyebrow": "Health score",
+        "title": "A score you can actually act on",
+        "description": "Savings rate, budget adherence, expense stability, income consistency, debt ratio and spending diversity — each explained with the numbers behind it.",
+        "alt": "Financial health score breakdown with per-metric scores"
+      },
+      "settings": {
+        "eyebrow": "Control",
+        "title": "Rules that work while you sleep",
+        "description": "Auto-categorization and exclusion rules, category management, privacy consent, data export and Plaid environment switching — all in one settings hub.",
+        "alt": "Settings page with categorization and exclusion rules"
       }
     },
     "cta": {
@@ -1029,6 +1053,21 @@
     "footer": {
       "privacy": "Privacy policy",
       "security": "Security policy"
+    },
+    "gallery": {
+      "title": "Charts that tell the whole story",
+      "subtitle": "Every view is interactive, exportable and available in English or French.",
+      "items": {
+        "netSavings": {
+          "alt": "Net savings by month bar chart"
+        },
+        "savingsRate": {
+          "alt": "Savings rate trend line chart"
+        },
+        "spending": {
+          "alt": "Spending by category donut chart"
+        }
+      }
     }
   }
 }

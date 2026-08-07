@@ -13,6 +13,13 @@ import savingsImg from '@/assets/budgetwise_cumulative_savings.png.asset.json';
 import categoryImg from '@/assets/budgetwise_category_breakdown.png.asset.json';
 import accountsImg from '@/assets/budgetwise_accounts.png.asset.json';
 import simulatorImg from '@/assets/budgetwise_financial_simulator.png.asset.json';
+import reportsOverviewImg from '@/assets/budgetwise_reports_insights.png.asset.json';
+import subscriptionsImg from '@/assets/budgetwise_subscriptions.png.asset.json';
+import scoreBreakdownImg from '@/assets/budgetwise_score_breakdown.png.asset.json';
+import settingsImg from '@/assets/budgetwise_settings.png.asset.json';
+import netSavingsImg from '@/assets/budgetwise_net_savings_by_month.png.asset.json';
+import savingsRateImg from '@/assets/budgetwise_savings_rate_trend.png.asset.json';
+import spendingCategoryImg from '@/assets/budgetwise_spending_by_category.png.asset.json';
 
 const Landing = () => {
   const { t, i18n } = useTranslation();
@@ -36,13 +43,24 @@ const Landing = () => {
   ] as const;
 
   const showcases = [
+    { img: reportsOverviewImg.url, key: 'reportsOverview' },
     { img: budgetImg.url, key: 'budgets' },
     { img: categoryImg.url, key: 'reports' },
+    { img: subscriptionsImg.url, key: 'subscriptions' },
     { img: insightsImg.url, key: 'insights' },
     { img: healthImg.url, key: 'health' },
+    { img: scoreBreakdownImg.url, key: 'scoreBreakdown' },
     { img: simulatorImg.url, key: 'simulator' },
     { img: accountsImg.url, key: 'accounts' },
+    { img: settingsImg.url, key: 'settings' },
   ];
+
+  const gallery = [
+    { img: netSavingsImg.url, key: 'netSavings' },
+    { img: savingsRateImg.url, key: 'savingsRate' },
+    { img: spendingCategoryImg.url, key: 'spending' },
+  ];
+
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -157,6 +175,27 @@ const Landing = () => {
           ))}
         </div>
       </section>
+
+      {/* Gallery */}
+      <section className="mx-auto max-w-6xl px-6 py-20">
+        <div className="mx-auto max-w-2xl text-center">
+          <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">{t('landing.gallery.title')}</h2>
+          <p className="mt-4 text-muted-foreground">{t('landing.gallery.subtitle')}</p>
+        </div>
+        <div className="mt-12 grid gap-6 lg:grid-cols-3">
+          {gallery.map((item) => (
+            <div key={item.key} className="overflow-hidden rounded-2xl border bg-card shadow-sm">
+              <img
+                src={item.img}
+                alt={t(`landing.gallery.items.${item.key}.alt`)}
+                className="h-full w-full object-cover"
+                loading="lazy"
+              />
+            </div>
+          ))}
+        </div>
+      </section>
+
 
       {/* Savings CTA */}
       <section className="mx-auto max-w-6xl px-6 py-20">
