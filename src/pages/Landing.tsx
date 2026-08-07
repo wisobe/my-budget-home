@@ -176,6 +176,27 @@ const Landing = () => {
         </div>
       </section>
 
+      {/* Gallery */}
+      <section className="mx-auto max-w-6xl px-6 py-20">
+        <div className="mx-auto max-w-2xl text-center">
+          <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">{t('landing.gallery.title')}</h2>
+          <p className="mt-4 text-muted-foreground">{t('landing.gallery.subtitle')}</p>
+        </div>
+        <div className="mt-12 grid gap-6 lg:grid-cols-3">
+          {gallery.map((item) => (
+            <div key={item.key} className="overflow-hidden rounded-2xl border bg-card shadow-sm">
+              <img
+                src={item.img}
+                alt={t(`landing.gallery.items.${item.key}.alt`)}
+                className="h-full w-full object-cover"
+                loading="lazy"
+              />
+            </div>
+          ))}
+        </div>
+      </section>
+
+
       {/* Savings CTA */}
       <section className="mx-auto max-w-6xl px-6 py-20">
         <div className="overflow-hidden rounded-3xl border bg-card">
