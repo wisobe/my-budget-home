@@ -1019,6 +1019,30 @@
       },
       "savings": {
         "alt": "Graphique d'épargne cumulative en progression"
+      },
+      "reportsOverview": {
+        "eyebrow": "Rapports",
+        "title": "Douze mois de clarté, en un clic",
+        "description": "Basculez entre les 12 derniers mois, le cumul annuel ou un mois précis. Revenus, dépenses, épargne nette et taux d'épargne moyen se mettent à jour instantanément.",
+        "alt": "Page Rapports avec graphique revenus et dépenses sur 12 mois"
+      },
+      "subscriptions": {
+        "eyebrow": "Abonnements",
+        "title": "Chaque paiement récurrent, repéré",
+        "description": "BudgetWise détecte vos paiements récurrents, prévoit la prochaine date de facturation, signale les hausses de prix et vous avertit si un paiement attendu est manquant.",
+        "alt": "Liste des abonnements détectés avec coûts mensuels et annuels"
+      },
+      "scoreBreakdown": {
+        "eyebrow": "Santé financière",
+        "title": "Un score sur lequel vous pouvez agir",
+        "description": "Taux d'épargne, respect du budget, stabilité des dépenses, régularité des revenus, ratio d'endettement et diversité des dépenses — chacun expliqué avec ses chiffres.",
+        "alt": "Détail du score de santé financière par critère"
+      },
+      "settings": {
+        "eyebrow": "Contrôle",
+        "title": "Des règles qui travaillent pour vous",
+        "description": "Règles de catégorisation et d'exclusion, gestion des catégories, consentement, exportation des données et environnement Plaid — tout au même endroit.",
+        "alt": "Page Paramètres avec règles de catégorisation et d'exclusion"
       }
     },
     "cta": {
@@ -1029,6 +1053,21 @@
     "footer": {
       "privacy": "Politique de confidentialité",
       "security": "Politique de sécurité"
+    },
+    "gallery": {
+      "title": "Des graphiques qui racontent tout",
+      "subtitle": "Chaque vue est interactive, exportable et disponible en français ou en anglais.",
+      "items": {
+        "netSavings": {
+          "alt": "Graphique de l'épargne nette par mois"
+        },
+        "savingsRate": {
+          "alt": "Courbe de l'évolution du taux d'épargne"
+        },
+        "spending": {
+          "alt": "Graphique en anneau des dépenses par catégorie"
+        }
+      }
     }
   }
 }
