@@ -3,7 +3,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { BASE_PATH } from "@/lib/config";
 import { PlaidEnvironmentProvider } from "@/contexts/PlaidEnvironmentContext";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
@@ -30,6 +30,7 @@ import AdminAuditLog from "./pages/AdminAuditLog";
 import AdminSubscriptionTuning from "./pages/AdminSubscriptionTuning";
 import NotFound from "./pages/NotFound";
 import Login from "./pages/Login";
+import Landing from "./pages/Landing";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import SecurityPolicy from "./pages/SecurityPolicy";
 import AccessControlPolicy from "./pages/AccessControlPolicy";
@@ -64,6 +65,24 @@ function CookieGate({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
+function LoginRoute() {
+  const { isAuthenticated, isLoading } = useAuth();
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (isAuthenticated) {
+    return <Navigate to="/" replace />;
+  }
+
+  return <Login />;
+}
+
 function AuthGate({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, isLoading, backendError } = useAuth();
 
@@ -88,7 +107,7 @@ function AuthGate({ children }: { children: React.ReactNode }) {
   }
 
   if (!isAuthenticated) {
-    return <Login />;
+    return <Navigate to="/home" replace />;
   }
 
   return <>{children}</>;
@@ -105,6 +124,8 @@ const App = () => (
             <CookieConsentBanner />
             <BrowserRouter basename={BASE_PATH}>
               <Routes>
+                <Route path="/home" element={<Landing />} />
+                <Route path="/login" element={<LoginRoute />} />
                 <Route path="/privacy" element={<PrivacyPolicy />} />
                 <Route path="/security-policy" element={<SecurityPolicy />} />
                 <Route path="/access-control-policy" element={<AccessControlPolicy />} />
