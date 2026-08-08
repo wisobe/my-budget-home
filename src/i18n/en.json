@@ -1043,6 +1043,12 @@
         "title": "Rules that work while you sleep",
         "description": "Auto-categorization and exclusion rules, category management, privacy consent, data export and Plaid environment switching — all in one settings hub.",
         "alt": "Settings page with categorization and exclusion rules"
+      },
+      "transactions": {
+        "eyebrow": "Transactions",
+        "title": "Every transaction, exactly where it belongs",
+        "description": "Search, filter by date or category, import CSV files, split, lock or exclude transactions, and fix foreign-currency amounts in a couple of clicks.",
+        "alt": "Transactions list with search, filters and categories"
       }
     },
     "cta": {
@@ -1066,6 +1072,9 @@
         },
         "spending": {
           "alt": "Spending by category donut chart"
+        },
+        "tips": {
+          "alt": "Tips and recommendations card"
         }
       }
     }
