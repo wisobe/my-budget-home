@@ -107,7 +107,7 @@ const Landing = () => {
 
           <div className="mx-auto mt-14 max-w-5xl overflow-hidden rounded-2xl border bg-card shadow-2xl">
             <img
-              src={dashboardImg.url}
+              src={shot('budgetwise_dashboard.png')}
               alt={t('landing.showcase.dashboard.alt')}
               className="w-full"
               loading="eager"
@@ -203,7 +203,7 @@ const Landing = () => {
               </Button>
             </div>
             <div className="overflow-hidden rounded-2xl border shadow-lg">
-              <img src={savingsImg.url} alt={t('landing.showcase.savings.alt')} className="w-full" loading="lazy" />
+              <img src={shot('budgetwise_cumulative_savings.png')} alt={t('landing.showcase.savings.alt')} className="w-full" loading="lazy" />
             </div>
           </div>
         </div>
