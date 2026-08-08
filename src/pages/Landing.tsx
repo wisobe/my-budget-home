@@ -31,23 +31,26 @@ const Landing = () => {
   ] as const;
 
   const showcases = [
-    { img: reportsOverviewImg.url, key: 'reportsOverview' },
-    { img: budgetImg.url, key: 'budgets' },
-    { img: categoryImg.url, key: 'reports' },
-    { img: subscriptionsImg.url, key: 'subscriptions' },
-    { img: insightsImg.url, key: 'insights' },
-    { img: healthImg.url, key: 'health' },
-    { img: scoreBreakdownImg.url, key: 'scoreBreakdown' },
-    { img: simulatorImg.url, key: 'simulator' },
-    { img: accountsImg.url, key: 'accounts' },
-    { img: settingsImg.url, key: 'settings' },
+    { img: shot('budgetwise_reports_insights.png'), key: 'reportsOverview' },
+    { img: shot('budgetwise_transactions.png'), key: 'transactions' },
+    { img: shot('budgetwise_budget.png'), key: 'budgets' },
+    { img: shot('budgetwise_category_breakdown.png'), key: 'reports' },
+    { img: shot('budgetwise_subscriptions.png'), key: 'subscriptions' },
+    { img: shot('budgetwise_insights.png'), key: 'insights' },
+    { img: shot('budgetwise_financial_health.png'), key: 'health' },
+    { img: shot('budgetwise_score_breakdown.png'), key: 'scoreBreakdown' },
+    { img: shot('budgetwise_financial_simulator.png'), key: 'simulator' },
+    { img: shot('budgetwise_accounts.png'), key: 'accounts' },
+    { img: shot('budgetwise_settings.png'), key: 'settings' },
   ];
 
   const gallery = [
-    { img: netSavingsImg.url, key: 'netSavings' },
-    { img: savingsRateImg.url, key: 'savingsRate' },
-    { img: spendingCategoryImg.url, key: 'spending' },
+    { img: shot('budgetwise_net_savings_by_month.png'), key: 'netSavings' },
+    { img: shot('budgetwise_savings_rate_trend.png'), key: 'savingsRate' },
+    { img: shot('budgetwise_spending_by_category.png'), key: 'spending' },
+    { img: shot('budgetwise_tips_and_recommendations.png'), key: 'tips' },
   ];
+
 
 
   return (
