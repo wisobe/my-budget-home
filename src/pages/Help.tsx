@@ -112,9 +112,9 @@ const Help = () => {
               </CardHeader>
               <CardContent>
                 <Accordion
+                  key={query ? 'search' : 'browse'}
                   type="multiple"
-                  value={openValues}
-                  {...(openValues ? {} : {})}
+                  defaultValue={openValues}
                   className="w-full"
                 >
                   {section.items.map((item, index) => (
