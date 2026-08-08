@@ -1043,6 +1043,12 @@
         "title": "Des règles qui travaillent pour vous",
         "description": "Règles de catégorisation et d'exclusion, gestion des catégories, consentement, exportation des données et environnement Plaid — tout au même endroit.",
         "alt": "Page Paramètres avec règles de catégorisation et d'exclusion"
+      },
+      "transactions": {
+        "eyebrow": "Transactions",
+        "title": "Chaque transaction à sa place",
+        "description": "Recherchez, filtrez par date ou catégorie, importez des fichiers CSV, divisez, verrouillez ou excluez des transactions, et corrigez les montants en devises étrangères en quelques clics.",
+        "alt": "Liste des transactions avec recherche, filtres et catégories"
       }
     },
     "cta": {
@@ -1066,6 +1072,9 @@
         },
         "spending": {
           "alt": "Graphique en anneau des dépenses par catégorie"
+        },
+        "tips": {
+          "alt": "Carte Conseils et recommandations"
         }
       }
     }

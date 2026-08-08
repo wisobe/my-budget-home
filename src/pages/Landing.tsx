@@ -5,21 +5,9 @@ import {
   Wallet, Globe, ArrowRight, Landmark, PieChart, Repeat, Lightbulb,
   HeartPulse, Calculator, ShieldCheck, Languages, FileSpreadsheet, Coins,
 } from 'lucide-react';
-import dashboardImg from '@/assets/budgetwise_dashboard.png.asset.json';
-import budgetImg from '@/assets/budgetwise_budget.png.asset.json';
-import insightsImg from '@/assets/budgetwise_insights.png.asset.json';
-import healthImg from '@/assets/budgetwise_financial_health.png.asset.json';
-import savingsImg from '@/assets/budgetwise_cumulative_savings.png.asset.json';
-import categoryImg from '@/assets/budgetwise_category_breakdown.png.asset.json';
-import accountsImg from '@/assets/budgetwise_accounts.png.asset.json';
-import simulatorImg from '@/assets/budgetwise_financial_simulator.png.asset.json';
-import reportsOverviewImg from '@/assets/budgetwise_reports_insights.png.asset.json';
-import subscriptionsImg from '@/assets/budgetwise_subscriptions.png.asset.json';
-import scoreBreakdownImg from '@/assets/budgetwise_score_breakdown.png.asset.json';
-import settingsImg from '@/assets/budgetwise_settings.png.asset.json';
-import netSavingsImg from '@/assets/budgetwise_net_savings_by_month.png.asset.json';
-import savingsRateImg from '@/assets/budgetwise_savings_rate_trend.png.asset.json';
-import spendingCategoryImg from '@/assets/budgetwise_spending_by_category.png.asset.json';
+// Screenshots live in public/screenshots/ so they can be replaced on the server at any time.
+const shot = (name: string) => `${import.meta.env.BASE_URL}screenshots/${name}`;
+
 
 const Landing = () => {
   const { t, i18n } = useTranslation();
@@ -43,23 +31,26 @@ const Landing = () => {
   ] as const;
 
   const showcases = [
-    { img: reportsOverviewImg.url, key: 'reportsOverview' },
-    { img: budgetImg.url, key: 'budgets' },
-    { img: categoryImg.url, key: 'reports' },
-    { img: subscriptionsImg.url, key: 'subscriptions' },
-    { img: insightsImg.url, key: 'insights' },
-    { img: healthImg.url, key: 'health' },
-    { img: scoreBreakdownImg.url, key: 'scoreBreakdown' },
-    { img: simulatorImg.url, key: 'simulator' },
-    { img: accountsImg.url, key: 'accounts' },
-    { img: settingsImg.url, key: 'settings' },
+    { img: shot('budgetwise_reports_insights.png'), key: 'reportsOverview' },
+    { img: shot('budgetwise_transactions.png'), key: 'transactions' },
+    { img: shot('budgetwise_budget.png'), key: 'budgets' },
+    { img: shot('budgetwise_category_breakdown.png'), key: 'reports' },
+    { img: shot('budgetwise_subscriptions.png'), key: 'subscriptions' },
+    { img: shot('budgetwise_insights.png'), key: 'insights' },
+    { img: shot('budgetwise_financial_health.png'), key: 'health' },
+    { img: shot('budgetwise_score_breakdown.png'), key: 'scoreBreakdown' },
+    { img: shot('budgetwise_financial_simulator.png'), key: 'simulator' },
+    { img: shot('budgetwise_accounts.png'), key: 'accounts' },
+    { img: shot('budgetwise_settings.png'), key: 'settings' },
   ];
 
   const gallery = [
-    { img: netSavingsImg.url, key: 'netSavings' },
-    { img: savingsRateImg.url, key: 'savingsRate' },
-    { img: spendingCategoryImg.url, key: 'spending' },
+    { img: shot('budgetwise_net_savings_by_month.png'), key: 'netSavings' },
+    { img: shot('budgetwise_savings_rate_trend.png'), key: 'savingsRate' },
+    { img: shot('budgetwise_spending_by_category.png'), key: 'spending' },
+    { img: shot('budgetwise_tips_and_recommendations.png'), key: 'tips' },
   ];
+
 
 
   return (
@@ -116,7 +107,7 @@ const Landing = () => {
 
           <div className="mx-auto mt-14 max-w-5xl overflow-hidden rounded-2xl border bg-card shadow-2xl">
             <img
-              src={dashboardImg.url}
+              src={shot('budgetwise_dashboard.png')}
               alt={t('landing.showcase.dashboard.alt')}
               className="w-full"
               loading="eager"
@@ -182,7 +173,7 @@ const Landing = () => {
           <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">{t('landing.gallery.title')}</h2>
           <p className="mt-4 text-muted-foreground">{t('landing.gallery.subtitle')}</p>
         </div>
-        <div className="mt-12 grid gap-6 lg:grid-cols-3">
+        <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
           {gallery.map((item) => (
             <div key={item.key} className="overflow-hidden rounded-2xl border bg-card shadow-sm">
               <img
@@ -212,7 +203,7 @@ const Landing = () => {
               </Button>
             </div>
             <div className="overflow-hidden rounded-2xl border shadow-lg">
-              <img src={savingsImg.url} alt={t('landing.showcase.savings.alt')} className="w-full" loading="lazy" />
+              <img src={shot('budgetwise_cumulative_savings.png')} alt={t('landing.showcase.savings.alt')} className="w-full" loading="lazy" />
             </div>
           </div>
         </div>
