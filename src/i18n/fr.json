@@ -22,7 +22,8 @@
     "insights": "Analyses",
     "healthScore": "Santé financière",
     "simulator": "Simulateur",
-    "reorder": "Réorganiser"
+    "reorder": "Réorganiser",
+    "help": "Aide"
   },
   "auth": {
     "signIn": "Se connecter",
@@ -1078,5 +1079,435 @@
         }
       }
     }
+  },
+  "help": {
+    "title": "Centre d'aide",
+    "subtitle": "Tout ce qu'il faut savoir sur BudgetWise — le rôle de chaque écran, la signification de chaque option et la façon dont les chiffres sont calculés.",
+    "searchPlaceholder": "Rechercher dans le centre d'aide...",
+    "noResults": "Aucun sujet ne correspond à votre recherche.",
+    "clearSearch": "Effacer la recherche",
+    "expandAll": "Tout ouvrir",
+    "collapseAll": "Tout fermer",
+    "footer": "Toujours bloqué ? Contactez votre administrateur : il peut vérifier le journal d'audit et l'état des connexions de votre compte.",
+    "sections": [
+      {
+        "id": "start",
+        "title": "Premiers pas",
+        "desc": "Comment l'application est organisée et par où commencer.",
+        "items": [
+          {
+            "q": "À quoi sert BudgetWise ?",
+            "a": "BudgetWise regroupe tous vos comptes bancaires au même endroit, classe vos transactions par catégorie, puis en tire des budgets, des rapports, un suivi des abonnements et des projections à long terme. Vous connectez une banque (ou importez un fichier CSV) et tout le reste est construit à partir de ces transactions."
+          },
+          {
+            "q": "Par quoi dois-je commencer ?",
+            "a": "1) Connectez une banque dans Connexions bancaires, ou créez un compte manuel et importez un CSV. 2) Attendez la fin de la première synchronisation. 3) Passez vos transactions en revue et attribuez-leur des catégories. 4) Définissez des budgets mensuels pour les catégories importantes. Ensuite, le tableau de bord, les rapports, les analyses et le score de santé se remplissent automatiquement."
+          },
+          {
+            "q": "Comment naviguer dans l'application ?",
+            "a": "Le menu de gauche contient toutes les sections. Vous pouvez le réorganiser : sur ordinateur, glissez un élément avec la poignée qui apparaît au survol ; sur téléphone ou tablette, touchez « Réorganiser » et utilisez les flèches. L'ordre est enregistré dans votre profil et vous suit sur tous vos appareils."
+          },
+          {
+            "q": "Puis-je utiliser l'application en français ?",
+            "a": "Oui. Dans Paramètres > Préférences, choisissez votre langue. Tous les écrans, y compris ce centre d'aide, changent immédiatement. Les montants restent affichés au format canadien (1 234,56 $)."
+          }
+        ]
+      },
+      {
+        "id": "dashboard",
+        "title": "Tableau de bord",
+        "desc": "Votre aperçu du mois.",
+        "items": [
+          {
+            "q": "Que signifient les quatre cartes du haut ?",
+            "a": "Le solde total est la somme des comptes que vous avez choisi d'inclure. Les revenus et les dépenses du mois couvrent uniquement le mois en cours, du 1er à aujourd'hui. L'épargne nette correspond aux revenus moins les dépenses sur cette même période : en vert si vous êtes positif, en rouge sinon."
+          },
+          {
+            "q": "Pourquoi le solde total ne correspond-il pas à ma banque ?",
+            "a": "Deux causes fréquentes : un compte est exclu des totaux (page Comptes), ou vous l'avez décoché dans le sélecteur de la carte Solde total. Les soldes proviennent aussi de la dernière synchronisation : un achat récent peut ne pas encore y figurer."
+          },
+          {
+            "q": "Puis-je choisir les comptes inclus dans le solde ?",
+            "a": "Oui. Utilisez le petit sélecteur sur la carte Solde total pour cocher les comptes à inclure. Ce choix est enregistré dans votre profil et n'affecte que cette carte."
+          },
+          {
+            "q": "Que montre le graphique des dépenses ?",
+            "a": "La répartition des dépenses du mois par catégorie, de la plus grande à la plus petite, pour voir où l'argent est réellement passé. Les rapports offrent un historique plus long."
+          },
+          {
+            "q": "Le tableau de bord actualise-t-il mes données bancaires ?",
+            "a": "Seulement si la synchronisation automatique est activée dans Paramètres > Préférences. Sinon, utilisez le bouton Synchroniser en haut de la page quand vous le souhaitez."
+          }
+        ]
+      },
+      {
+        "id": "transactions",
+        "title": "Transactions",
+        "desc": "Rechercher, catégoriser, diviser, verrouiller et corriger.",
+        "items": [
+          {
+            "q": "Comment retrouver une transaction ?",
+            "a": "Utilisez la barre de recherche en haut : tapez une partie de la description, puis affinez avec la période, le compte ou la catégorie. Les filtres se combinent, ce qui permet par exemple de voir « l'épicerie en mars sur le compte conjoint »."
+          },
+          {
+            "q": "Que veut dire « en attente » ?",
+            "a": "Une transaction en attente a été autorisée par le commerçant mais pas encore finalisée par votre banque : le montant ou la date peuvent encore changer. Vous pouvez les masquer ; dans ce cas elles sont aussi exclues des rapports et des analyses."
+          },
+          {
+            "q": "Comment catégoriser une transaction ?",
+            "a": "Cliquez sur la catégorie dans la ligne et choisissez-en une. Les catégories comportent deux niveaux (par exemple Alimentation > Épicerie), ce qui permet aux rapports de regrouper ou de détailler."
+          },
+          {
+            "q": "Que sont les règles de catégorisation ?",
+            "a": "Dans les Paramètres, vous créez des règles du type « si la description contient ces mots, utilise cette catégorie ». Une règle peut contenir plusieurs mots-clés et il suffit qu'un seul corresponde. Vous pouvez prévisualiser une règle avant de l'appliquer, puis la passer sur tout votre historique. Les transactions verrouillées ne sont jamais modifiées."
+          },
+          {
+            "q": "À quoi sert le verrouillage ?",
+            "a": "Il fige vos modifications manuelles : les synchronisations, la catégorisation automatique et les règles ignorent cette transaction, votre correction est donc conservée."
+          },
+          {
+            "q": "À quoi sert l'exclusion d'une transaction ?",
+            "a": "Une transaction exclue reste visible dans la liste mais n'entre pas dans les budgets, les rapports, les analyses ni le score de santé. Idéal pour les virements entre vos propres comptes, les remboursements ou tout ce qui fausserait votre portrait de dépenses."
+          },
+          {
+            "q": "Que sont les règles d'exclusion ?",
+            "a": "Elles fonctionnent comme les règles de catégorisation, mais excluent au lieu de catégoriser : si une description correspond, la transaction est exclue automatiquement à la synchronisation ou à l'import. Elles ne sont créées que par vous : exclure une transaction ne crée jamais de règle à votre insu. Un aperçu est toujours possible avant de l'appliquer au passé."
+          },
+          {
+            "q": "Comment diviser une transaction ?",
+            "a": "Dans le menu d'actions de la ligne, choisissez Diviser. Répartissez le total en plusieurs parts, chacune avec sa catégorie — pratique pour un même reçu couvrant épicerie et articles ménagers. Les rapports utilisent les parts, pas le montant d'origine."
+          },
+          {
+            "q": "Une transaction divisée apparaît encore comme non catégorisée. Pourquoi ?",
+            "a": "Cela arrive seulement si certaines parts n'ont pas encore de catégorie. Dès que toutes les parts incluses en ont une, la transaction disparaît du filtre « non catégorisées »."
+          },
+          {
+            "q": "Pourquoi ne puis-je modifier le montant que de certaines transactions ?",
+            "a": "La modification du montant est réservée aux transactions en devise étrangère (ou déjà ajustées), car ce sont les seuls cas où le montant converti peut différer de ce que votre banque a réellement facturé. Les autres conservent le montant bancaire."
+          },
+          {
+            "q": "Puis-je changer la date d'une transaction ?",
+            "a": "Oui, avec « Modifier la date ». La date d'origine de la banque est conservée et affichée en indice, vous savez donc toujours ce qui a été modifié. Utile quand un achat est comptabilisé le mois suivant et que vous voulez l'imputer à la bonne période budgétaire."
+          },
+          {
+            "q": "Puis-je ajouter une transaction à la main ?",
+            "a": "Oui, avec « Ajouter une transaction ». Surtout utile pour les comptes manuels, les dépenses en argent comptant ou ce que votre banque ne rapporte pas."
+          },
+          {
+            "q": "Comment importer un fichier CSV ?",
+            "a": "Choisissez Importer CSV, sélectionnez le compte, puis associez les colonnes de votre fichier (date, description, montant et, au besoin, catégorie) aux champs de l'application. Un aperçu s'affiche avant l'enregistrement, les doublons probables sont signalés et ignorés, et vos règles de catégorisation et d'exclusion s'appliquent aux lignes importées."
+          },
+          {
+            "q": "Puis-je exporter mes transactions ?",
+            "a": "Oui. L'outil d'export produit un CSV correspondant aux filtres en cours, à envoyer dans un tableur ou à votre comptable."
+          }
+        ]
+      },
+      {
+        "id": "budgets",
+        "title": "Budgets",
+        "desc": "Objectifs de dépenses mensuels par catégorie.",
+        "items": [
+          {
+            "q": "Comment fonctionne un budget ?",
+            "a": "Vous fixez un montant mensuel pour une catégorie. L'application additionne vos dépenses de cette catégorie pour le mois en cours et affiche ce qu'il reste. Les mois budgétaires commencent toujours le 1er."
+          },
+          {
+            "q": "Qu'est-ce qui compte dans un budget ?",
+            "a": "Les dépenses complétées de la catégorie, parts de transactions divisées incluses. Les transactions exclues, les transactions en attente et les revenus ne comptent pas."
+          },
+          {
+            "q": "Que signifient les couleurs ?",
+            "a": "Vert : confortablement dans le budget. Ambre : vous approchez de la limite. Rouge : vous l'avez dépassée."
+          },
+          {
+            "q": "Un budget non dépensé est-il reporté ?",
+            "a": "Non. Chaque mois repart à zéro, un mois tranquille n'augmente donc pas l'enveloppe du mois suivant."
+          },
+          {
+            "q": "Puis-je voir l'historique d'un budget ?",
+            "a": "Oui : chaque budget dispose d'un graphique comparant, mois par mois, le montant prévu et le montant réellement dépensé."
+          }
+        ]
+      },
+      {
+        "id": "reports",
+        "title": "Rapports",
+        "desc": "Tendances, comparaisons et répartitions par catégorie.",
+        "items": [
+          {
+            "q": "Quelles périodes puis-je choisir ?",
+            "a": "Un mois précis, le cumul de l'année, ou les 12 derniers mois glissants. Les vues annuelles et glissantes passent en graphiques pleine largeur pour rester lisibles."
+          },
+          {
+            "q": "Qu'est-ce que Revenus vs Dépenses ?",
+            "a": "Des barres mois par mois comparant l'argent entrant et l'argent sortant, pour repérer les mois où la tendance s'est inversée."
+          },
+          {
+            "q": "Qu'est-ce que l'épargne nette par mois ?",
+            "a": "Les revenus moins les dépenses de chaque mois. Au-dessus de la ligne, vous avez mis de l'argent de côté ; en dessous, vous avez puisé dans votre épargne."
+          },
+          {
+            "q": "Qu'est-ce que la tendance du taux d'épargne ?",
+            "a": "La part de vos revenus conservée chaque mois : (revenus − dépenses) ÷ revenus, en pourcentage. C'est une comparaison plus juste que les dollars lorsque vos revenus varient."
+          },
+          {
+            "q": "Qu'est-ce que l'épargne cumulative ?",
+            "a": "Le cumul de votre épargne nette mensuelle sur la période choisie : vous voyez la direction générale, indépendamment de quelques mauvais mois."
+          },
+          {
+            "q": "Comment voir les transactions derrière un graphique ?",
+            "a": "Cliquez sur une catégorie dans la répartition. Si elle a des sous-catégories, vous y descendez d'abord ; sinon, vous arrivez directement aux transactions."
+          },
+          {
+            "q": "Pourquoi les rapports diffèrent-ils de mon relevé bancaire ?",
+            "a": "Les rapports ignorent les transactions exclues, utilisent les parts des transactions divisées, respectent votre préférence de masquage des transactions en attente et ignorent les comptes exclus."
+          }
+        ]
+      },
+      {
+        "id": "accounts",
+        "title": "Comptes",
+        "desc": "Comptes bancaires et manuels.",
+        "items": [
+          {
+            "q": "Que puis-je faire sur cette page ?",
+            "a": "Voir chaque compte avec son solde, ajouter un compte manuel et choisir les comptes à exclure de vos tableaux de bord et rapports."
+          },
+          {
+            "q": "Qu'est-ce qu'un compte exclu ?",
+            "a": "Son solde et ses transactions sont retirés des totaux, budgets et rapports. Pratique pour un compte d'entreprise, un compte conjoint que vous ne voulez pas mélanger, ou un ancien compte conservé pour référence."
+          },
+          {
+            "q": "Qu'est-ce qu'un compte manuel ?",
+            "a": "Un compte que l'application ne peut pas connecter : argent comptant, banque étrangère ou institution non prise en charge. Vous le tenez à jour en ajoutant des transactions ou en important des CSV."
+          },
+          {
+            "q": "Quand les soldes sont-ils mis à jour ?",
+            "a": "À chaque synchronisation pour les comptes connectés. Les comptes manuels changent uniquement lorsque vous ajoutez ou importez des transactions."
+          }
+        ]
+      },
+      {
+        "id": "connections",
+        "title": "Connexions bancaires",
+        "desc": "Relier une banque, synchroniser et régler les problèmes.",
+        "items": [
+          {
+            "q": "Comment connecter une banque ?",
+            "a": "Dans Connexions bancaires, démarrez une nouvelle connexion. Vous vous authentifiez sur l'écran sécurisé de votre banque : l'application ne voit ni ne conserve votre mot de passe bancaire. Une fois approuvée, vos comptes et votre historique récent sont importés."
+          },
+          {
+            "q": "Que fait la synchronisation ?",
+            "a": "Elle demande à votre banque les transactions nouvelles ou modifiées, actualise les soldes et ajoute les nouveaux comptes trouvés sur une connexion existante. Vos règles de catégorisation et d'exclusion s'appliquent aux données reçues."
+          },
+          {
+            "q": "J'ai ouvert un nouveau compte dans une banque déjà connectée. Comment l'obtenir ?",
+            "a": "Lancez d'abord une synchronisation : les nouveaux comptes sont généralement détectés automatiquement. S'il n'apparaît toujours pas, utilisez « Actualiser l'accès » sur cette connexion : votre banque vous demandera quels comptes partager et vous pourrez cocher le nouveau."
+          },
+          {
+            "q": "Pourquoi ma banque me demande-t-elle de me reconnecter ?",
+            "a": "Les banques font expirer l'autorisation accordée, ou exigent une reconfirmation après un changement de mot de passe ou un événement de sécurité. La connexion est alors signalée et un bouton de reconnexion apparaît. Les pannes temporaires côté banque ne désactivent pas la connexion : l'application réessaie à la prochaine synchronisation."
+          },
+          {
+            "q": "Que se passe-t-il si je supprime une connexion ?",
+            "a": "Le lien avec votre banque est supprimé et aucune donnée n'est plus récupérée. Les transactions déjà importées restent dans l'application tant que vous ne les supprimez pas."
+          },
+          {
+            "q": "Jusqu'où remonte l'historique ?",
+            "a": "Cela dépend de la banque, mais généralement jusqu'à environ deux ans au premier import. Le reste peut être ajouté par import CSV."
+          }
+        ]
+      },
+      {
+        "id": "subscriptions",
+        "title": "Abonnements",
+        "desc": "Détection automatique des paiements récurrents.",
+        "items": [
+          {
+            "q": "Comment les abonnements sont-ils détectés ?",
+            "a": "L'application regroupe les transactions par commerçant, puis cherche un motif répétitif : des montants semblables à un rythme régulier (hebdomadaire, mensuel, trimestriel ou annuel). Les noms de commerçants sont d'abord nettoyés — numéros de succursale, dates et codes de référence retirés — pour que « NETFLIX.COM 8663 » et « Netflix » soient considérés comme un seul commerçant."
+          },
+          {
+            "q": "Pourquoi les montants doivent-ils être semblables ?",
+            "a": "Pour éviter de considérer votre épicerie comme un abonnement. Les montants très variables sont écartés, alors que les petits écarts (hausse de prix, ajustement de taxe) sont tolérés et qu'un montant aberrant isolé peut être ignoré."
+          },
+          {
+            "q": "Que signifient « Bientôt dû » et « Manqué » ?",
+            "a": "« Bientôt dû » : le prochain prélèvement est attendu dans les prochains jours selon le rythme observé. « Manqué » : la date attendue est passée sans prélèvement correspondant — service annulé, changement de carte ou simple retard d'affichage."
+          },
+          {
+            "q": "Un abonnement que je paie n'apparaît pas. Que faire ?",
+            "a": "Causes habituelles : historique insuffisant (il faut plusieurs prélèvements), transactions exclues ou en attente, ou nom de commerçant trop variable d'une fois à l'autre. Un administrateur peut ajuster les réglages de détection et utiliser le panneau de test intégré pour voir pourquoi un commerçant a été écarté."
+          },
+          {
+            "q": "Puis-je retirer un faux abonnement ?",
+            "a": "Exclure les transactions concernées les retire de la détection. La détection est en lecture seule : elle ne modifie jamais vos transactions."
+          }
+        ]
+      },
+      {
+        "id": "insights",
+        "title": "Analyses",
+        "desc": "Observations automatiques sur vos dépenses.",
+        "items": [
+          {
+            "q": "Que sont les analyses ?",
+            "a": "De courtes observations en langage simple, générées en comparant votre activité récente à votre propre historique : une catégorie en forte hausse, un nouveau prélèvement récurrent, ou un achat inhabituellement élevé."
+          },
+          {
+            "q": "Quelles données utilisent-elles ?",
+            "a": "Uniquement les transactions complétées. Les transactions en attente, exclues ou appartenant à un compte exclu sont ignorées, afin qu'une analyse ne réagisse jamais à une donnée encore susceptible de changer."
+          },
+          {
+            "q": "À quelle fréquence changent-elles ?",
+            "a": "Elles sont recalculées à chaque ouverture de la page : une synchronisation ou un changement de catégorie est donc pris en compte immédiatement."
+          },
+          {
+            "q": "Que sont les conseils et recommandations ?",
+            "a": "Des suggestions basées sur les tendances détectées : une catégorie à budgéter, un abonnement peut-être inutile, etc. Ce sont des pistes, pas des conseils financiers, et rien n'est modifié automatiquement."
+          }
+        ]
+      },
+      {
+        "id": "health",
+        "title": "Score de santé financière",
+        "desc": "Un score unique bâti sur plusieurs habitudes.",
+        "items": [
+          {
+            "q": "Qu'est-ce que le score de santé ?",
+            "a": "Une note globale sur 100 qui résume plusieurs habitudes financières, accompagnée d'un détail montrant la contribution de chaque composante. C'est un outil de suivi personnel, pas une cote de crédit."
+          },
+          {
+            "q": "Qu'est-ce que le taux d'épargne ?",
+            "a": "La part de vos revenus que vous conservez plutôt que de la dépenser. Plus il est élevé, mieux c'est ; un taux positif constant est bien noté."
+          },
+          {
+            "q": "Qu'est-ce que le respect des budgets ?",
+            "a": "La mesure de l'écart entre vos dépenses réelles et les budgets fixés. Rester à l'intérieur du budget est bien noté ; seuls les dépassements coûtent des points."
+          },
+          {
+            "q": "Comment la régularité des revenus est-elle mesurée ?",
+            "a": "Vos revenus sont comparés à un mois typique (médiane) des 12 derniers mois, en ignorant le mois en cours incomplet. Seuls les manques à gagner pénalisent : un boni ou un très bon mois ne fait jamais baisser le score, et le pire mois est écarté pour qu'une exception ne domine pas le calcul."
+          },
+          {
+            "q": "Comment la stabilité des dépenses est-elle mesurée ?",
+            "a": "Le même principe appliqué aux dépenses : chaque mois est comparé à votre niveau typique sur 12 mois et seuls les dépassements pénalisent. Dépenser moins que d'habitude ne réduit jamais le score, le mois en cours incomplet est exclu et le pire mois est écarté."
+          },
+          {
+            "q": "Pourquoi mon score a-t-il changé sans que je fasse rien ?",
+            "a": "Le score utilise une fenêtre glissante de 12 mois : un vieux mois qui sort de la fenêtre ou une nouvelle synchronisation peut le faire bouger. Catégoriser, exclure ou diviser des transactions modifie aussi les chiffres sous-jacents."
+          }
+        ]
+      },
+      {
+        "id": "simulator",
+        "title": "Simulateur",
+        "desc": "Tester des scénarios « et si ».",
+        "items": [
+          {
+            "q": "Que fait le simulateur ?",
+            "a": "Il projette vos finances dans le futur à partir de vos revenus, dépenses et soldes actuels, pour voir l'effet à long terme d'un changement avant de le faire."
+          },
+          {
+            "q": "Comment fonctionnent les curseurs de dépenses ?",
+            "a": "Chaque curseur augmente ou diminue une catégorie d'un pourcentage. La projection se met à jour en direct et montre ce que cet ajustement vaudrait sur des mois et des années."
+          },
+          {
+            "q": "Que fait l'annulation d'abonnements ?",
+            "a": "Désactiver un abonnement détecté retire son coût récurrent de la projection. Rien n'est annulé dans la réalité : c'est une simulation."
+          },
+          {
+            "q": "Quelle est sa précision ?",
+            "a": "Il suppose que vos habitudes actuelles se poursuivent : voyez-le comme une direction, pas une prévision. Il ne modélise ni augmentations de salaire, ni inflation, ni rendements de placement, ni événements ponctuels."
+          }
+        ]
+      },
+      {
+        "id": "settings",
+        "title": "Paramètres",
+        "desc": "Compte, préférences, catégories, règles et données.",
+        "items": [
+          {
+            "q": "Comment changer mon mot de passe ?",
+            "a": "Paramètres > Compte. Votre mot de passe actuel est requis et vous restez connecté sur l'appareil utilisé."
+          },
+          {
+            "q": "Qu'est-ce que l'authentification à deux facteurs ?",
+            "a": "Une étape supplémentaire à la connexion : après le mot de passe, vous saisissez un code à 6 chiffres provenant d'une application d'authentification. Activez-la en scannant le code QR et en confirmant un code. Vous pouvez marquer un appareil comme fiable pour ne pas être sollicité à chaque fois."
+          },
+          {
+            "q": "Comment gérer les catégories ?",
+            "a": "Paramètres > Catégories. Créez, renommez, supprimez et organisez les catégories sur deux niveaux (une catégorie parente et ses sous-catégories). Supprimer une catégorie laisse ses transactions sans catégorie plutôt que de les supprimer."
+          },
+          {
+            "q": "Quelles préférences puis-je définir ?",
+            "a": "La langue, l'affichage ou non des transactions en attente, la synchronisation automatique à l'ouverture du tableau de bord et vos vues par défaut. Les préférences sont enregistrées dans votre profil et vous suivent d'un appareil à l'autre."
+          },
+          {
+            "q": "À quoi sert l'outil de conversion rétroactive des devises ?",
+            "a": "Il repasse une fois sur vos anciennes transactions et convertit les montants en devise étrangère en dollars canadiens, au taux officiel de la date de chaque transaction. Vos ajustements manuels de montant sont conservés."
+          },
+          {
+            "q": "Comment exporter ou supprimer mes données ?",
+            "a": "Paramètres > Données permet d'exporter vos transactions en CSV et de supprimer définitivement vos données. La suppression est irréversible et demande une confirmation explicite."
+          },
+          {
+            "q": "À quoi servent les paramètres de confidentialité ?",
+            "a": "Ils déterminent ce que l'application peut traiter et conserver, y compris vos préférences de témoins (cookies). Désactiver le traitement des données met en pause les fonctions concernées et l'application vous indique quels écrans sont touchés plutôt que d'échouer silencieusement."
+          }
+        ]
+      },
+      {
+        "id": "security",
+        "title": "Confidentialité et sécurité",
+        "desc": "Comment vos informations sont protégées.",
+        "items": [
+          {
+            "q": "L'application connaît-elle mon mot de passe bancaire ?",
+            "a": "Non. L'authentification se fait sur l'écran sécurisé de votre banque, via le fournisseur de connexion. L'application ne reçoit qu'un jeton lui permettant de lire les comptes que vous avez approuvés."
+          },
+          {
+            "q": "Qui peut voir mes données ?",
+            "a": "Vous seul. Les données de chaque compte sont séparées, et les administrateurs gèrent les utilisateurs et la configuration plutôt que de consulter vos transactions."
+          },
+          {
+            "q": "Qu'est-ce que le journal d'audit ?",
+            "a": "Une vue réservée aux administrateurs qui recense les connexions, les sessions actives et les actions sensibles. Un administrateur peut forcer la déconnexion d'un utilisateur en cas d'appareil perdu."
+          },
+          {
+            "q": "Comment me déconnecter partout ?",
+            "a": "Changer votre mot de passe met fin aux autres sessions. En cas de doute, demandez à un administrateur de forcer la déconnexion de votre compte."
+          }
+        ]
+      },
+      {
+        "id": "trouble",
+        "title": "Dépannage",
+        "desc": "Problèmes courants et solutions rapides.",
+        "items": [
+          {
+            "q": "Une transaction est absente.",
+            "a": "Vérifiez que son compte n'est pas exclu, que le masquage des transactions en attente ne la cache pas, que vos filtres de date et de catégorie ne sont pas trop restrictifs et qu'une règle d'exclusion ne l'a pas attrapée. Lancez ensuite une synchronisation : certaines banques prennent un ou deux jours."
+          },
+          {
+            "q": "Une date semble décalée d'un jour.",
+            "a": "Les dates sont affichées exactement comme la banque les a transmises, sans décalage de fuseau horaire. Si la date de comptabilisation ne correspond pas au moment du paiement, utilisez « Modifier la date » ; la date d'origine est conservée en référence."
+          },
+          {
+            "q": "La synchronisation échoue.",
+            "a": "Réessayez dans quelques minutes : la plupart des échecs sont des problèmes temporaires chez la banque. Si l'application demande une nouvelle authentification, utilisez la reconnexion sur cette connexion. Signalez les échecs répétés à votre administrateur, qui peut consulter les journaux."
+          },
+          {
+            "q": "Mes chiffres semblent faux.",
+            "a": "La plupart des écarts viennent de quatre choses : transactions ou comptes exclus, transactions en attente masquées, transactions divisées comptées en parts, et ajustements manuels de montant ou de date. Les vérifier explique généralement la différence."
+          },
+          {
+            "q": "Une page est vide ou demande un consentement.",
+            "a": "Certaines sections nécessitent le consentement au traitement des données. Ouvrez Paramètres > Confidentialité pour l'activer, ou utilisez le lien affiché sur la page."
+          }
+        ]
+      }
+    ]
   }
 }
