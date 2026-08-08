@@ -22,7 +22,8 @@
     "insights": "Insights",
     "healthScore": "Health Score",
     "simulator": "Simulator",
-    "reorder": "Reorder"
+    "reorder": "Reorder",
+    "help": "Help"
   },
   "auth": {
     "signIn": "Sign In",
@@ -1078,5 +1079,435 @@
         }
       }
     }
+  },
+  "help": {
+    "title": "Help Center",
+    "subtitle": "Everything you need to know about BudgetWise — what each screen does, what every option means, and how the numbers are calculated.",
+    "searchPlaceholder": "Search the help center...",
+    "noResults": "No help topics match your search.",
+    "clearSearch": "Clear search",
+    "expandAll": "Expand all",
+    "collapseAll": "Collapse all",
+    "footer": "Still stuck? Contact your administrator — they can check the Audit Log and connection status for your account.",
+    "sections": [
+      {
+        "id": "start",
+        "title": "Getting started",
+        "desc": "How the app is organised and what to do first.",
+        "items": [
+          {
+            "q": "What does BudgetWise do?",
+            "a": "BudgetWise brings all of your bank accounts together in one place, sorts your transactions into categories, and turns them into budgets, reports, subscription tracking and long-term projections. You connect a bank (or import a CSV file), and everything else is built from those transactions."
+          },
+          {
+            "q": "What should I do first?",
+            "a": "1) Connect a bank in Bank Connections, or add a manual account and import a CSV file. 2) Wait for the first sync to finish. 3) Review your transactions and assign categories. 4) Set monthly budgets for the categories that matter. After that, the Dashboard, Reports, Insights and Health Score fill in automatically."
+          },
+          {
+            "q": "How do I move around the app?",
+            "a": "The left sidebar holds every section. You can reorder it: on a computer, drag an item using the handle that appears when you hover; on a phone or tablet, tap 'Reorder' and use the arrows. Your order is saved to your profile, so it follows you to any device."
+          },
+          {
+            "q": "Can I use the app in French?",
+            "a": "Yes. Open Settings > Preferences and choose your language. Every screen, including this help centre, switches immediately. Amounts are always shown in Canadian dollar format ($1,234.56)."
+          }
+        ]
+      },
+      {
+        "id": "dashboard",
+        "title": "Dashboard",
+        "desc": "Your monthly snapshot.",
+        "items": [
+          {
+            "q": "What do the four cards at the top mean?",
+            "a": "Total Balance is the sum of the accounts you chose to include. Monthly Income and Monthly Expenses cover the current month only, from the 1st up to today. Net Savings is simply income minus expenses for that same period — green when you are ahead, red when you are behind."
+          },
+          {
+            "q": "Why doesn't Total Balance match my bank?",
+            "a": "Two common reasons: an account is excluded from totals (Accounts page), or you deselected it in the picker on the Total Balance card. Balances also come from your bank at the last sync, so a purchase made minutes ago may not be reflected yet."
+          },
+          {
+            "q": "Can I choose which accounts count toward the balance?",
+            "a": "Yes. Use the small selector on the Total Balance card to tick the accounts you want included. This choice is saved to your profile and only affects that card."
+          },
+          {
+            "q": "What is the spending chart showing?",
+            "a": "It breaks down this month's spending by category, largest first, so you can see where the money actually went. Click through to Reports for a longer history."
+          },
+          {
+            "q": "Does the Dashboard refresh my bank data?",
+            "a": "Only if automatic sync is enabled in Settings > Preferences. Otherwise, press the Sync button at the top of the page whenever you want fresh data."
+          }
+        ]
+      },
+      {
+        "id": "transactions",
+        "title": "Transactions",
+        "desc": "Searching, categorising, splitting, locking and fixing transactions.",
+        "items": [
+          {
+            "q": "How do I find a specific transaction?",
+            "a": "Use the search strip at the top: type part of the description, then narrow further with the date range, account, or category filters. Filters combine, so you can look at, say, 'groceries in March on the joint account'."
+          },
+          {
+            "q": "What does 'pending' mean?",
+            "a": "A pending transaction has been authorised by the merchant but not finalised by your bank. The amount or date can still change. You can hide pending transactions with the toggle; when hidden, they are also left out of your reports and insights."
+          },
+          {
+            "q": "How do I categorise a transaction?",
+            "a": "Click the category on the transaction row and pick one. Categories can have a parent and a subcategory (for example Food > Groceries), which lets reports roll up or drill down."
+          },
+          {
+            "q": "What are categorisation rules?",
+            "a": "In Settings you can create rules that say 'if the description contains these words, use this category'. A rule can list several keywords, and matching any one of them is enough. You can preview a rule before applying it, and run it over your whole history at once. Locked transactions are never touched by rules."
+          },
+          {
+            "q": "What does locking a transaction do?",
+            "a": "Locking freezes your manual changes. Future syncs, automatic categorisation and bulk rule runs will skip that transaction, so your correction sticks."
+          },
+          {
+            "q": "What does excluding a transaction do?",
+            "a": "An excluded transaction stays visible in the list but is left out of budgets, reports, insights and the health score. Use it for transfers between your own accounts, reimbursements, or anything that would distort your spending picture."
+          },
+          {
+            "q": "What are exclusion rules?",
+            "a": "They work like categorisation rules, but they exclude instead of categorise: if a description matches your pattern, the transaction is excluded automatically at sync or import. They are only ever created by you — excluding a single transaction never creates a rule behind your back. You can always preview the effect before applying a rule to past transactions."
+          },
+          {
+            "q": "How do I split a transaction?",
+            "a": "Open the actions menu on the row and choose Split. Divide the total into several parts and give each part its own category — useful for a single store receipt covering groceries and household items. Reports use the split parts, not the original total."
+          },
+          {
+            "q": "A split transaction still shows as uncategorised. Why?",
+            "a": "That happens only when some of its parts are still without a category. Once every included part has one, the parent disappears from the 'uncategorised' filter."
+          },
+          {
+            "q": "Why can I edit the amount on some transactions only?",
+            "a": "Amount editing is reserved for foreign-currency transactions (or ones you have already adjusted), because those are the cases where the converted amount can differ from what your bank actually charged. Everything else keeps the bank's amount."
+          },
+          {
+            "q": "Can I change a transaction's date?",
+            "a": "Yes. Use Edit date in the actions menu. The bank's original date is kept and shown as a hint, so you always know what was changed. This is handy when a purchase posts in the following month and you want it counted in the right budget period."
+          },
+          {
+            "q": "Can I add a transaction by hand?",
+            "a": "Yes — use Add transaction. This is mainly for manual (non-connected) accounts, cash spending, or anything your bank does not report."
+          },
+          {
+            "q": "How do I import a CSV file?",
+            "a": "Choose Import CSV, pick the account, then map your file's columns (date, description, amount, and optionally category) to the app's fields. You get a preview before anything is saved, likely duplicates are flagged and skipped, and your categorisation and exclusion rules run on the imported rows."
+          },
+          {
+            "q": "Can I export my transactions?",
+            "a": "Yes. The export tool produces a CSV of whatever is currently filtered, so you can send it to a spreadsheet or your accountant."
+          }
+        ]
+      },
+      {
+        "id": "budgets",
+        "title": "Budgets",
+        "desc": "Monthly spending targets per category.",
+        "items": [
+          {
+            "q": "How does a budget work?",
+            "a": "You set a monthly amount for a category. The app then adds up your spending in that category for the current month and shows how much is left. Budget months always start on the 1st."
+          },
+          {
+            "q": "What counts against a budget?",
+            "a": "Completed spending in that category, including split parts. Excluded transactions, pending transactions and income are not counted."
+          },
+          {
+            "q": "What do the colours mean?",
+            "a": "Green means comfortably within budget, amber means you are getting close to the limit, and red means you have gone over."
+          },
+          {
+            "q": "Does an unspent budget roll over?",
+            "a": "No. Each month starts fresh, so a quiet month does not inflate next month's allowance."
+          },
+          {
+            "q": "Can I see how a budget performed historically?",
+            "a": "Yes — each budget has a history chart comparing what you planned against what you actually spent, month by month."
+          }
+        ]
+      },
+      {
+        "id": "reports",
+        "title": "Reports",
+        "desc": "Trends, comparisons and category breakdowns.",
+        "items": [
+          {
+            "q": "What time ranges can I choose?",
+            "a": "A single month, year-to-date, or a rolling 12 months. Year-to-date and rolling views switch to full-width charts so longer trends stay readable."
+          },
+          {
+            "q": "What is Income vs Expenses?",
+            "a": "Month-by-month bars of money in against money out, so you can spot the months where the two crossed over."
+          },
+          {
+            "q": "What is Net Savings by Month?",
+            "a": "Income minus expenses for each month. Bars above the line are months where you kept money; bars below are months where you dipped into savings."
+          },
+          {
+            "q": "What is the Savings Rate trend?",
+            "a": "The share of your income you kept, month by month: (income − expenses) ÷ income, shown as a percentage. It is a fairer comparison than dollars when your income varies."
+          },
+          {
+            "q": "What is Cumulative Savings?",
+            "a": "A running total of your monthly net savings across the selected period, so you can see whether the overall direction is up or down regardless of individual bad months."
+          },
+          {
+            "q": "How do I see the transactions behind a chart?",
+            "a": "Click a category in the breakdown. If it has subcategories, you drill into those first; if it does not, you go straight to the matching transactions."
+          },
+          {
+            "q": "Why are report numbers different from my bank statement?",
+            "a": "Reports leave out excluded transactions, use split parts instead of the original amount, respect your 'hide pending' preference, and ignore accounts you marked as excluded."
+          }
+        ]
+      },
+      {
+        "id": "accounts",
+        "title": "Accounts",
+        "desc": "Bank and manual accounts.",
+        "items": [
+          {
+            "q": "What can I do on this page?",
+            "a": "See every account with its current balance, add a manual account, and choose which accounts should be excluded from your dashboards and reports."
+          },
+          {
+            "q": "What is an excluded account?",
+            "a": "Its balance and transactions are left out of totals, budgets and reports. Useful for a business account, a joint account you do not want mixed in, or an old account you keep for reference."
+          },
+          {
+            "q": "What is a manual account?",
+            "a": "An account the app cannot connect to — cash, a foreign bank, or an institution that is not supported. You keep it up to date by adding transactions yourself or importing CSV files."
+          },
+          {
+            "q": "When do balances update?",
+            "a": "At each sync for connected accounts. Manual accounts change only when you add or import transactions."
+          }
+        ]
+      },
+      {
+        "id": "connections",
+        "title": "Bank Connections",
+        "desc": "Linking banks, syncing and fixing connection problems.",
+        "items": [
+          {
+            "q": "How do I connect a bank?",
+            "a": "Go to Bank Connections and start a new connection. You sign in on your bank's own secure screen — the app never sees or stores your banking password. Once approved, your accounts and recent history are imported."
+          },
+          {
+            "q": "What does syncing do?",
+            "a": "It asks your bank for new and updated transactions, refreshes balances, and adds any new accounts it finds on an existing connection. Your categorisation and exclusion rules run on whatever comes in."
+          },
+          {
+            "q": "I opened a new account at a bank I already connected. How do I get it?",
+            "a": "Run a sync first — new accounts are usually picked up automatically. If it still does not appear, use 'Refresh access' on that connection: your bank will ask you to confirm which accounts to share, and you can tick the new one."
+          },
+          {
+            "q": "Why does my bank ask me to sign in again?",
+            "a": "Banks expire the permission you granted periodically, or require re-confirmation after a password change or security event. When that happens the connection is flagged and a Re-link button appears. Temporary outages on the bank's side do not disable the connection — the app simply retries at the next sync."
+          },
+          {
+            "q": "What happens if I remove a connection?",
+            "a": "The link to your bank is deleted and no further data is fetched. Transactions already imported stay in the app unless you delete them."
+          },
+          {
+            "q": "How far back does history go?",
+            "a": "It depends on the bank, but typically up to about two years on the first import. Anything older can be added with a CSV import."
+          }
+        ]
+      },
+      {
+        "id": "subscriptions",
+        "title": "Subscriptions",
+        "desc": "Automatic detection of recurring payments.",
+        "items": [
+          {
+            "q": "How are subscriptions detected?",
+            "a": "The app groups transactions by merchant, then looks for a repeating pattern: similar amounts charged at a regular rhythm (weekly, monthly, quarterly or yearly). Merchant names are cleaned up first — store numbers, dates and reference codes are stripped — so 'NETFLIX.COM 8663' and 'Netflix' are treated as the same merchant."
+          },
+          {
+            "q": "Why must the amounts be similar?",
+            "a": "To avoid flagging your grocery store as a subscription. Charges that vary widely are rejected, while small changes such as a price increase or a tax adjustment are tolerated, and a single odd charge can be ignored as an outlier."
+          },
+          {
+            "q": "What do 'Due soon' and 'Missed' mean?",
+            "a": "Due soon means the next charge is expected within the next few days, based on the rhythm observed so far. Missed means the expected date has passed without a matching charge — often a cancelled service, a card change, or simply a late posting."
+          },
+          {
+            "q": "A subscription I definitely pay is missing. What can I do?",
+            "a": "Usual causes: not enough history yet (a pattern needs several charges), the transactions are excluded or pending, or the merchant name changes so much between charges that they are not recognised as one. An administrator can adjust the detection settings and use the built-in test panel to see exactly why a merchant was rejected."
+          },
+          {
+            "q": "Can I remove something that isn't a subscription?",
+            "a": "Excluding the underlying transactions removes them from detection. Detection is read-only: it never changes your transactions."
+          }
+        ]
+      },
+      {
+        "id": "insights",
+        "title": "Insights",
+        "desc": "Automatic observations about your spending.",
+        "items": [
+          {
+            "q": "What are insights?",
+            "a": "Short, plain-language notes the app generates by comparing recent activity with your own history — for example a category that jumped compared with your usual level, a new recurring charge, or an unusually large single purchase."
+          },
+          {
+            "q": "What data do they use?",
+            "a": "Only completed transactions. Pending and excluded transactions, and transactions in excluded accounts, are ignored, so an insight never reacts to something that may still change."
+          },
+          {
+            "q": "How often do they change?",
+            "a": "They are recalculated from your current data every time you open the page, so a sync or a categorisation change is reflected immediately."
+          },
+          {
+            "q": "What are Tips & Recommendations?",
+            "a": "Suggestions based on the patterns found — such as a category worth budgeting, or a subscription you may no longer use. They are guidance, not financial advice, and nothing is ever changed automatically."
+          }
+        ]
+      },
+      {
+        "id": "health",
+        "title": "Financial Health Score",
+        "desc": "A single score built from several habits.",
+        "items": [
+          {
+            "q": "What is the health score?",
+            "a": "An overall rating out of 100 that summarises several financial habits into one number, with a breakdown showing how each part contributed. It is a way to track your own progress over time, not a credit score."
+          },
+          {
+            "q": "What is Savings Rate?",
+            "a": "How much of your income you keep rather than spend. Higher is better; a consistently positive rate scores well."
+          },
+          {
+            "q": "What is Budget Adherence?",
+            "a": "How closely your actual spending tracks the budgets you set. Staying at or under budget scores well; only overspending costs points."
+          },
+          {
+            "q": "How is Income Consistency measured?",
+            "a": "Your income is compared with a typical (median) month from the last 12 months, ignoring the current partial month. Only shortfalls count against you — a bonus or an unusually strong month never lowers your score — and the single worst month is dropped so one exception does not dominate."
+          },
+          {
+            "q": "How is Expense Stability measured?",
+            "a": "The same idea applied to spending: months are compared with your 12-month typical level, and only overspending counts against you. Spending less than usual never reduces the score, the current partial month is excluded, and the single worst month is dropped."
+          },
+          {
+            "q": "Why did my score change without me doing anything?",
+            "a": "The score follows a rolling 12-month window, so an old month dropping out or a new sync arriving can shift it. Categorising, excluding or splitting transactions also changes the underlying numbers."
+          }
+        ]
+      },
+      {
+        "id": "simulator",
+        "title": "Simulator",
+        "desc": "Try out 'what if' scenarios.",
+        "items": [
+          {
+            "q": "What does the simulator do?",
+            "a": "It projects your finances forward using your current income, spending and balances as the starting point, so you can see the long-term effect of a change before making it."
+          },
+          {
+            "q": "How do the spending sliders work?",
+            "a": "Each slider raises or lowers a category by a percentage. The projection updates live, showing what that adjustment would be worth over months and years."
+          },
+          {
+            "q": "What does cancelling subscriptions do?",
+            "a": "Toggling off a detected subscription removes its recurring cost from the projection. Nothing is cancelled in real life — it is purely a simulation."
+          },
+          {
+            "q": "How accurate is it?",
+            "a": "It assumes your current patterns continue, so treat it as a direction rather than a forecast. It does not model raises, inflation, investment returns or one-off events."
+          }
+        ]
+      },
+      {
+        "id": "settings",
+        "title": "Settings",
+        "desc": "Your account, preferences, categories, rules and data.",
+        "items": [
+          {
+            "q": "How do I change my password?",
+            "a": "Settings > Account. You will need your current password, and you stay signed in on the device you are using."
+          },
+          {
+            "q": "What is two-factor authentication?",
+            "a": "An extra step at sign-in: after your password, you enter a 6-digit code from an authenticator app on your phone. Set it up by scanning the QR code and confirming one code. You can mark a device as trusted so it does not ask every time."
+          },
+          {
+            "q": "How do I manage categories?",
+            "a": "Settings > Categories. Create, rename, delete and organise categories into two levels (a parent and its subcategories). Deleting a category leaves its transactions uncategorised rather than deleting them."
+          },
+          {
+            "q": "What preferences can I set?",
+            "a": "Language, whether pending transactions are shown, whether the app syncs automatically when you open the dashboard, and your default views. Preferences are saved to your profile, so they follow you across devices and browsers."
+          },
+          {
+            "q": "What is the currency backfill tool?",
+            "a": "A one-time pass over your past transactions that converts foreign-currency amounts to Canadian dollars using official exchange rates for the date of each transaction. Manual amount adjustments you made are preserved."
+          },
+          {
+            "q": "How do I export or delete my data?",
+            "a": "Settings > Data lets you export your transactions as CSV, and permanently delete your data. Deletion is irreversible and requires an explicit confirmation."
+          },
+          {
+            "q": "What are the privacy settings?",
+            "a": "They control what the app is allowed to process and store, including cookie preferences. Turning off data processing pauses the features that depend on it, and the app tells you which screens are affected instead of failing silently."
+          }
+        ]
+      },
+      {
+        "id": "security",
+        "title": "Privacy & security",
+        "desc": "How your information is protected.",
+        "items": [
+          {
+            "q": "Does the app know my banking password?",
+            "a": "No. Bank sign-in happens on your bank's own secure screen through the connection provider. The app only ever receives a token allowing it to read the accounts you approved."
+          },
+          {
+            "q": "Who can see my data?",
+            "a": "Only you. Each account's data is separated, and administrators manage users and configuration rather than browsing your transactions."
+          },
+          {
+            "q": "What is the audit log?",
+            "a": "An administrator view recording sign-ins, active sessions and sensitive actions. Administrators can force a user to sign out everywhere if a device is lost."
+          },
+          {
+            "q": "How do I sign out everywhere?",
+            "a": "Changing your password ends other sessions. If you suspect a problem, ask an administrator to force a logout on your account."
+          }
+        ]
+      },
+      {
+        "id": "trouble",
+        "title": "Troubleshooting",
+        "desc": "Common problems and quick fixes.",
+        "items": [
+          {
+            "q": "A transaction is missing.",
+            "a": "Check that its account is not excluded, that 'hide pending' is not hiding it, that your date and category filters are not too narrow, and that an exclusion rule has not caught it. Then run a sync — banks can take a day or two to release some transactions."
+          },
+          {
+            "q": "A date looks one day off.",
+            "a": "Dates are shown exactly as your bank reported them, without any timezone shifting. If the posting date does not match when you actually paid, use Edit date; the bank's original date is kept as a reference."
+          },
+          {
+            "q": "Sync says it failed.",
+            "a": "Try again in a few minutes — most failures are temporary problems at the bank. If the app asks you to sign in again, use Re-link on that connection. Repeated failures should be reported to your administrator, who can check the logs."
+          },
+          {
+            "q": "My numbers look wrong.",
+            "a": "Most differences come from four things: excluded transactions or accounts, pending transactions being hidden, split transactions counted in parts, and manual amount or date overrides. Reviewing those usually explains the gap."
+          },
+          {
+            "q": "A page is empty or asks for consent.",
+            "a": "Some sections need data processing consent to work. Open Settings > Privacy and enable it, or use the link shown on the page itself."
+          }
+        ]
+      }
+    ]
   }
 }

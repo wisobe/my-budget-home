@@ -23,6 +23,7 @@ import Subscriptions from "./pages/Subscriptions";
 import Insights from "./pages/Insights";
 import HealthScore from "./pages/HealthScore";
 import Simulator from "./pages/Simulator";
+import Help from "./pages/Help";
 import AdminUsers from "./pages/AdminUsers";
 import AdminPlaid from "./pages/AdminPlaid";
 import AdminBackend from "./pages/AdminBackend";
@@ -147,6 +148,7 @@ const App = () => (
                           <Route path="/health-score" element={<HealthScore />} />
                           <Route path="/simulator" element={<Simulator />} />
                           <Route path="/settings" element={<Settings />} />
+                          <Route path="/help" element={<Help />} />
                           <Route path="/admin/users" element={<AdminUsers />} />
                           <Route path="/admin/plaid" element={<AdminPlaid />} />
                           <Route path="/admin/backend" element={<AdminBackend />} />
