@@ -23,6 +23,7 @@ import {
   ChevronDown,
   Pencil,
   Check,
+  HelpCircle,
 } from 'lucide-react';
 import {
   DndContext,
@@ -73,6 +74,7 @@ const defaultNavigation: NavItem[] = [
   { key: 'nav.healthScore', href: '/health-score', icon: Heart },
   { key: 'nav.simulator', href: '/simulator', icon: Calculator },
   { key: 'nav.settings', href: '/settings', icon: Settings },
+  { key: 'nav.help', href: '/help', icon: HelpCircle },
 ];
 
 const adminNavigationKeys: NavItem[] = [
