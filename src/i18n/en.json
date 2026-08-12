@@ -942,7 +942,7 @@
       "items": {
         "connect": {
           "title": "Bank connections",
-          "description": "Securely link your banks through Plaid and sync balances and transactions automatically."
+          "description": "Securely link your bank accounts and sync balances and transactions automatically."
         },
         "budgets": {
           "title": "Smart budgets",
@@ -974,7 +974,7 @@
         },
         "security": {
           "title": "Security first",
-          "description": "Two-factor authentication, audit logs, session control and granular privacy consent."
+          "description": "Two-factor authentication and granular privacy consent keep your data in your control."
         }
       }
     },
@@ -1042,7 +1042,7 @@
       "settings": {
         "eyebrow": "Control",
         "title": "Rules that work while you sleep",
-        "description": "Auto-categorization and exclusion rules, category management, privacy consent, data export and Plaid environment switching — all in one settings hub.",
+        "description": "Auto-categorization and exclusion rules, category management, privacy consent, data export and environment switching — all in one settings hub.",
         "alt": "Settings page with categorization and exclusion rules"
       },
       "transactions": {
@@ -1057,6 +1057,7 @@
       "subtitle": "Sign in to your BudgetWise workspace and get a clear view of your finances in minutes.",
       "button": "Go to sign in"
     },
+    "dataNote": "Reports can hold up to 12 months of history. The first bank sync usually brings up to 3 months, depending on your bank.",
     "footer": {
       "privacy": "Privacy policy",
       "security": "Security policy"

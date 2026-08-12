@@ -942,7 +942,7 @@
       "items": {
         "connect": {
           "title": "Connexions bancaires",
-          "description": "Reliez vos banques en toute sécurité via Plaid et synchronisez soldes et transactions automatiquement."
+          "description": "Reliez vos comptes bancaires en toute sécurité et synchronisez soldes et transactions automatiquement."
         },
         "budgets": {
           "title": "Budgets intelligents",
@@ -974,7 +974,7 @@
         },
         "security": {
           "title": "La sécurité d'abord",
-          "description": "Authentification à deux facteurs, journaux d'audit, contrôle des sessions et consentement détaillé."
+          "description": "L'authentification à deux facteurs et un consentement détaillé gardent vos données sous votre contrôle."
         }
       }
     },
@@ -1042,7 +1042,7 @@
       "settings": {
         "eyebrow": "Contrôle",
         "title": "Des règles qui travaillent pour vous",
-        "description": "Règles de catégorisation et d'exclusion, gestion des catégories, consentement, exportation des données et environnement Plaid — tout au même endroit.",
+        "description": "Règles de catégorisation et d'exclusion, gestion des catégories, consentement, exportation des données et changement d'environnement — tout au même endroit.",
         "alt": "Page Paramètres avec règles de catégorisation et d'exclusion"
       },
       "transactions": {
@@ -1057,6 +1057,7 @@
       "subtitle": "Connectez-vous à votre espace BudgetWise et obtenez une vision claire de vos finances en quelques minutes.",
       "button": "Aller à la connexion"
     },
+    "dataNote": "Les rapports peuvent couvrir jusqu'à 12 mois d'historique. La première synchronisation bancaire apporte généralement jusqu'à 3 mois, selon votre banque.",
     "footer": {
       "privacy": "Politique de confidentialité",
       "security": "Politique de sécurité"
