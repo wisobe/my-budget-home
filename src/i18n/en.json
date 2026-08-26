@@ -354,7 +354,7 @@
     "addCategorizationRule": "Add Categorization Rule",
     "keyword": "Keyword",
     "keywordPlaceholder": "e.g. STARBUCKS or STARBUCKS|SBUX|STAR BUCKS",
-    "keywordDesc": "Use | to separate multiple keywords (OR match). Case-insensitive.",
+    "keywordDesc": "Use | to separate multiple keywords (OR match). Each keyword or phrase must appear in full; matching is case-insensitive.",
     "selectCategory": "Select category",
     "matchType": "Match Type",
     "contains": "Contains",
