@@ -28,6 +28,7 @@ require_once __DIR__ . '/Database.php';
 require_once __DIR__ . '/PlaidClient.php';
 require_once __DIR__ . '/Response.php';
 require_once __DIR__ . '/AuditLog.php';
+require_once __DIR__ . '/RuleMatcher.php';
 
 // Initialize components
 Response::init($config['app']['allowed_origins'] ?? ['*']);

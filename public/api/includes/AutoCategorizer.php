@@ -1,4 +1,6 @@
 <?php
+require_once __DIR__ . '/RuleMatcher.php';
+
 /**
  * AutoCategorizer - matches transaction names against category rules
  * Now user-scoped and environment-scoped: rules belong to individual users per environment
@@ -43,7 +45,8 @@ class AutoCategorizer {
                         break;
                     case 'contains':
                     default:
-                        $matched = (strpos($nameUpper, $keyword) !== false || ($merchantUpper && strpos($merchantUpper, $keyword) !== false));
+                        $matched = (RuleMatcher::contains($transactionName, $keyword)
+                            || ($merchantName !== null && RuleMatcher::contains($merchantName, $keyword)));
                         break;
                 }
                 if ($matched) break;
