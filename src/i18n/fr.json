@@ -354,7 +354,7 @@
     "addCategorizationRule": "Ajouter une règle de catégorisation",
     "keyword": "Mot-clé",
     "keywordPlaceholder": "ex. STARBUCKS ou STARBUCKS|SBUX|STAR BUCKS",
-    "keywordDesc": "Utilisez | pour séparer plusieurs mots-clés (correspondance OU). Insensible à la casse.",
+    "keywordDesc": "Utilisez | pour séparer plusieurs mots-clés (correspondance OU). Chaque mot-clé ou expression doit apparaître au complet; la casse est ignorée.",
     "selectCategory": "Sélectionner une catégorie",
     "matchType": "Type de correspondance",
     "contains": "Contient",
