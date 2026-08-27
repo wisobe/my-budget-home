@@ -56,9 +56,9 @@ try {
                     break;
                 case 'contains':
                 default:
-                    $allConditions[] = "(UPPER(t.name) LIKE :{$kwParam} OR UPPER(t.merchant_name) LIKE :{$kwParam2})";
-                    $params[$kwParam] = '%' . strtoupper($kw) . '%';
-                    $params[$kwParam2] = '%' . strtoupper($kw) . '%';
+                    $allConditions[] = "(UPPER(t.name) REGEXP :{$kwParam} OR UPPER(t.merchant_name) REGEXP :{$kwParam2})";
+                    $params[$kwParam] = RuleMatcher::containsSqlPattern($kw);
+                    $params[$kwParam2] = RuleMatcher::containsSqlPattern($kw);
                     break;
             }
             $paramIdx++;
