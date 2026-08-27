@@ -1,4 +1,6 @@
 <?php
+require_once __DIR__ . '/RuleMatcher.php';
+
 /**
  * AutoExcluder - matches transaction names against exclusion rules
  * User-scoped and environment-scoped.
@@ -39,7 +41,8 @@ class AutoExcluder {
                         break;
                     case 'contains':
                     default:
-                        $matched = (strpos($nameUpper, $keyword) !== false || ($merchantUpper && strpos($merchantUpper, $keyword) !== false));
+                        $matched = (RuleMatcher::contains($transactionName, $keyword)
+                            || ($merchantName !== null && RuleMatcher::contains($merchantName, $keyword)));
                         break;
                 }
                 if ($matched) return true;
