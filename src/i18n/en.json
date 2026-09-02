@@ -47,6 +47,7 @@
     "monthlyIncome": "Monthly Income",
     "monthlyExpenses": "Monthly Expenses",
     "netSavings": "Net Savings",
+    "netLoss": "Net Loss",
     "thisMonth": "This month",
     "connectedAccounts": "Connected Accounts",
     "recentTransactions": "Recent Transactions",

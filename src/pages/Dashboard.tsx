@@ -78,7 +78,7 @@ const Dashboard = () => {
             description={t('dashboard.thisMonth')}
           />
           <StatCard
-            title={t('dashboard.netSavings')}
+            title={netSavings >= 0 ? t('dashboard.netSavings') : t('dashboard.netLoss')}
             value={netSavings}
             icon={PiggyBank}
             variant={netSavings >= 0 ? 'income' : 'expense'}
